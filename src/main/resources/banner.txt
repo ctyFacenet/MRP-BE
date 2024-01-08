@@ -1,0 +1,10 @@
+
+${AnsiColor.BRIGHT_BLUE}███████╗  █████╗  ██████╗███████╗${AnsiColor.BLUE}███╗   ██╗███████╗████████╗
+${AnsiColor.BRIGHT_BLUE}██╔════╝ ██╔══██╗██╔════╝██╔════╝${AnsiColor.BLUE}████╗  ██║██╔════╝╚══██╔══╝
+${AnsiColor.BRIGHT_BLUE}█████╗   ███████║██║     █████╗  ${AnsiColor.BLUE}██╔██╗ ██║█████╗     ██║
+${AnsiColor.BRIGHT_BLUE}██╔══╝   ██╔══██║██║     ██╔══╝  ${AnsiColor.BLUE}██║╚██╗██║██╔══╝     ██║
+${AnsiColor.BRIGHT_BLUE}██║      ██║  ██║╚██████╗███████╗${AnsiColor.BLUE}██║ ╚████║███████╗   ██║
+${AnsiColor.BRIGHT_BLUE}╚═╝      ╚═╝  ╚═╝ ╚═════╝╚══════╝${AnsiColor.BLUE}╚═╝  ╚═══╝╚══════╝   ╚═╝
+
+
+${AnsiColor.BRIGHT_BLUE}:: Material Requirements Planing  :: Running Spring Boot ${spring-boot.version} ::

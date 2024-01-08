@@ -1,0 +1,9 @@
+services:
+  app:
+    container_name: mrp-backend
+    image: "mrp-service"
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8312:8312"
