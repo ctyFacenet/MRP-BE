@@ -1,19 +1,25 @@
 pipeline {
-    agent {label "MRP_RD"}
+    agent {label "MRP_DEV"}
     stages{
         stage("Check old image") {
             steps {
-                sh 'docker rm -f mrp-backend || echo "this container does not exist" '
-                sh 'docker image rm -f mrp-service-mrp-backend || echo "this image dose not exist" '
+                sh 'docker rm -f rd-mrp-be || echo "this container does not exist" '
+                sh 'docker image rm -f mrp_dev-rd-mrp-be || echo "this image dose not exist" '
             }
         }
-        stage('clean') {
+        stage('Clean') {
             steps {
                 sh 'chmod +x mvnw'
                 sh "./mvnw -ntp clean -P-webapp"
             }
         }
-        stage('packaging') {
+        stage('Validate') {
+            steps {
+                sh 'chmod +x mvnw'
+                sh "./mvnw -ntp validate"
+            }
+        }
+        stage('Packaging') {
             steps {
                 sh "./mvnw -ntp verify -P-webapp -Pdev -Dmaven.test.skip -Dcheckstyle.skip"
             }
