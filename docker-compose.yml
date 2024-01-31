@@ -9,4 +9,4 @@ services:
     ports:
       - '8313:8313'
     volumes:
-      - /home/ubuntu/uploads:/app/uploads
+      - /home/ubuntu/mrp-mks/uploads:/mrp-mks/uploads
