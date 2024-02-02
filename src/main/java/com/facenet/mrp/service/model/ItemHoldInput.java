@@ -5,6 +5,7 @@ import java.util.List;
 
 public class ItemHoldInput {
     private String analysisPeriod;
+    private String mrpSubCode;
     private Date timeStart;
     private Date timeEnd;
     private List<String> warehouses;
@@ -39,5 +40,13 @@ public class ItemHoldInput {
 
     public void setWarehouses(List<String> warehouses) {
         this.warehouses = warehouses;
+    }
+
+    public String getMrpSubCode() {
+        return mrpSubCode;
+    }
+
+    public void setMrpSubCode(String mrpSubCode) {
+        this.mrpSubCode = mrpSubCode;
     }
 }

@@ -6,11 +6,12 @@ public class MoqDTO {
     private Integer itemPriceId;
     private String vendorCode;
     private String itemCode;
+    private Date timeStart;
     private Integer rangeStart;
     private Integer rangeEnd;
     private Double price;
     private Integer leadTime;
-
+    private Integer timeUsed;
     private String currency;
     private Date dueDate;
     private String note;
@@ -66,15 +67,17 @@ public class MoqDTO {
     public MoqDTO() {
     }
 
-    public MoqDTO(Integer itemPriceId, String vendorCode, String itemCode, Integer rangeStart, Integer rangeEnd, Double price, Integer leadTime, String currency) {
+    public MoqDTO(Integer itemPriceId, String vendorCode, String itemCode, Date timeStart, Integer rangeStart, Integer rangeEnd, Double price, Integer leadTime, String currency, Integer timeUsed) {
         this.itemPriceId = itemPriceId;
         this.vendorCode = vendorCode;
         this.itemCode = itemCode;
+        this.timeStart = timeStart;
         this.rangeStart = rangeStart;
         this.rangeEnd = rangeEnd;
         this.price = price;
         this.leadTime = leadTime;
         this.currency = currency;
+        this.timeUsed = timeUsed;
     }
 
     public MoqDTO(Integer itemPriceId, String vendorCode, String itemCode, Integer rangeStart, Integer rangeEnd, Double price, Integer leadTime, String currency, Date dueDate, String note) {
@@ -120,5 +123,21 @@ public class MoqDTO {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public Integer getTimeUsed() {
+        return timeUsed;
+    }
+
+    public void setTimeUsed(Integer timeUsed) {
+        this.timeUsed = timeUsed;
+    }
+
+    public Date getTimeStart() {
+        return timeStart;
+    }
+
+    public void setTimeStart(Date timeStart) {
+        this.timeStart = timeStart;
     }
 }

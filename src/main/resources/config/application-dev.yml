@@ -42,9 +42,9 @@ spring:
       jdbc-url: jdbc:mariadb://222.252.25.37:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
       username: root
       password: 171ca9e4eb616be4a8007db9fa1da1091480f211e39c2ed8cc56cd6d6d25b09a
-#      jdbc-url: jdbc:mariadb://192.168.68.87:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
+#      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
 #      username: root
-#      password: Facenet@123
+#      password: Facenet@2023
       hikari:
         poolName: Hikari
         auto-commit: false
@@ -120,3 +120,4 @@ jhipster:
 # ===================================================================
 
 # application:
+

@@ -130,11 +130,12 @@ public class CsvHandle {
                 throw new CustomException("object.must.be.greater.than.at", "thời gian trả hàng", "thời gian phát sinh", String.valueOf(csvRecord.get(11).trim() + 1));
             donHang.setEndDate(endTime);
         }
-        donHang.setSaleId(csvRecord.get(15));
-        donHang.setSaleName(csvRecord.get(16));
+        donHang.setPartCode(csvRecord.get(15));
+        donHang.setPartName(csvRecord.get(16));
         donHang.setCreatedAt(Instant.now());
 
-        String po_id = donHang.getCustomerId() + "-" + new SimpleDateFormat("yyyyMMdd").format(donHang.getOrderDate());
+//        String po_id = donHang.getCustomerId() + "-" + new SimpleDateFormat("yyyyMMdd").format(donHang.getOrderDate());
+        String po_id = donHang.getProductOrderCode();
         donHang.setMrpPoId(po_id);
         return donHang;
     }

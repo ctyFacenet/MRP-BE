@@ -169,7 +169,7 @@ spring:
       client:
         provider:
           oidc:
-            issuer-uri: https://sso.xfactory.vn/auth/realms/Facenet
+            issuer-uri: https://sso.xfactory.vn/auth/realms/QLSX
         registration:
           oidc:
             client-id: mrp_backend
@@ -184,7 +184,7 @@ keycloak:
     username: admin
     password: 'admin'
   approval:
-    realm: Facenet
+    realm: QLSX
     role: MRP_QL
 
 server:

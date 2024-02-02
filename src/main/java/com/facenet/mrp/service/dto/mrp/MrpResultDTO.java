@@ -101,6 +101,7 @@ public class MrpResultDTO {
     }
 
     public Double getSumPoAndDeliveringQuantity() {
+        if (this.sumPoAndDeliveringQuantity != null) return this.sumPoAndDeliveringQuantity;
         return getPoQuantity() + getDeliveringQuantity();
     }
 
@@ -117,8 +118,7 @@ public class MrpResultDTO {
     }
 
     public Double getNeedQuantity() {
-        if (getSumPoAndDeliveringQuantity() == 0.0) return 0.0;
-        return Math.min(this.getInStockQuantity() - this.getTotalOriginQuantity(), 0.0);
+        return this.needQuantity == null ? 0.0 : this.needQuantity;
     }
 
     public void setNeedQuantity(Double needQuantity) {

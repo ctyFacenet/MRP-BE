@@ -2079,7 +2079,7 @@ public class MrpAdvancedAnalysisServiceV2 {
 
     public List<MrpImportExcelModel> mrpAdvancedImportExcel(MultipartFile file) throws IOException {
 
-        MrpImportExcelModel mrpImportExcelModel;
+        MrpImportExcelModel mrpImportExcelModel = null;
         List<MrpImportExcelModel> mrpImportExcelModels = new ArrayList<>();
         MrpDateQuantity mrpDateQuantity;
         List<MrpDateQuantity> mrpDateQuantityList;
@@ -2091,6 +2091,9 @@ public class MrpAdvancedAnalysisServiceV2 {
 
         //Lấy ra header row
         Row headerRow = sheet.getRow(0);
+//        int lastLevel = 0;
+//        MrpImportExcelModel lastMrpImportExcelModel = null;
+//        Stack<MrpImportExcelModel> stack = new Stack<>();
 
         //Vòng lặp đầu lấy thông tin chi tiết của TP
         for (Row row : sheet) {
@@ -2099,28 +2102,49 @@ public class MrpAdvancedAnalysisServiceV2 {
                 log.info("Skip row 0");
                 continue;
             }
+
             mrpDateQuantityList = new ArrayList<>();
 
-            ExcelUtils.validateRow(row, 0, 3);
+//            ExcelUtils.validateRow(row, offset, offset + 2);
 
             //add giá tri
             mrpImportExcelModel = new MrpImportExcelModel();
 
-            mrpImportExcelModel.setProductCode(row.getCell(0).getStringCellValue());
-            mrpImportExcelModel.setProductName(row.getCell(1).getStringCellValue());
-            mrpImportExcelModel.setBomVersion(row.getCell(2).getStringCellValue());
-            mrpImportExcelModel.setRequiredQuantity(row.getCell(3).getNumericCellValue());
+            mrpImportExcelModel.setProductCode(ExcelUtils.getStringCellValue(row.getCell(0)));
+            mrpImportExcelModel.setProductName(ExcelUtils.getStringCellValue(row.getCell(1)));
+            mrpImportExcelModel.setBomVersion(ExcelUtils.getStringCellValue(row.getCell(2)));
+            mrpImportExcelModel.setLevel(ExcelUtils.getIntegerCellValue(row.getCell(4)));
+            mrpImportExcelModel.setRequiredQuantity(row.getCell(6).getNumericCellValue());
 
-            for (int i = 4; i < row.getLastCellNum(); i++) {
+            int i = 7;
+            while (row.getCell(i) != null) {
                 mrpDateQuantity = new MrpDateQuantity();
-                mrpDateQuantity.setLandmark(sheet.getRow(0).getCell(i).getStringCellValue());
-                mrpDateQuantity.setQuantity(row.getCell(i).getNumericCellValue());
+//                mrpDateQuantity.setLandmark(sheet.getRow(0).getCell(i).getStringCellValue());
+                mrpDateQuantity.setLandmark(row.getCell(i).getStringCellValue());
+                if (row.getCell(++i) == null) break;
+                mrpDateQuantity.setQuantity(ExcelUtils.getIntegerCellValue(row.getCell(i)));
 
                 mrpDateQuantityList.add(mrpDateQuantity);
+                i++;
             }
             mrpImportExcelModel.setLandMarkDTOs(mrpDateQuantityList);
-
             mrpImportExcelModels.add(mrpImportExcelModel);
+
+//            int level = ExcelUtils.getIntegerCellValue(row.getCell(4));
+//            if (level == 1) {
+//                mrpImportExcelModels.add(mrpImportExcelModel);
+//            } else {
+//                if (lastLevel == level - 1) {
+//                    stack.push(lastMrpImportExcelModel);
+//                } else if (lastLevel > level) {
+//                    while (lastLevel-- != level) {
+//                        stack.pop();
+//                    }
+//                }
+//                stack.peek().getChildren().add(mrpImportExcelModel);
+//            }
+//            lastMrpImportExcelModel = mrpImportExcelModel;
+//            lastLevel = level;
         }
 
         return mrpImportExcelModels;

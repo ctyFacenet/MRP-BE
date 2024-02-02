@@ -1,30 +1,39 @@
 package com.facenet.mrp.service;
 
+import com.facenet.mrp.domain.mrp.MrpOrderQuantityEntity;
+import com.facenet.mrp.domain.mrp.ProductOrder;
+import com.facenet.mrp.domain.mrp.ProductOrderDetail;
+import com.facenet.mrp.domain.mrp.ResultMrpJsonEntity;
 import com.facenet.mrp.repository.MrpAnalysisCache;
-import com.facenet.mrp.repository.mrp.*;
+import com.facenet.mrp.repository.mrp.ItemHoldRepository;
+import com.facenet.mrp.repository.mrp.MrpBomDetailRepository;
+import com.facenet.mrp.repository.mrp.MrpOrderQuantityRepository;
+import com.facenet.mrp.repository.mrp.PurchaseRecommendationPlanRepository;
 import com.facenet.mrp.repository.sap.OitwRepository;
 import com.facenet.mrp.repository.sap.Por1Repository;
 import com.facenet.mrp.repository.sap.Prq1Repository;
 import com.facenet.mrp.service.dto.AdvancedMrpDTO;
+import com.facenet.mrp.service.dto.ProductOrderDTOAPS;
+import com.facenet.mrp.service.dto.ProductOrderDetailDTOAPS;
 import com.facenet.mrp.service.dto.mrp.*;
-import com.facenet.mrp.service.exception.CustomException;
+
 import com.facenet.mrp.service.dto.request.AnalyticsSearchRequest;
-import com.facenet.mrp.service.mapper.MrpAnalyticsMapper;
 import com.facenet.mrp.service.utils.Constants;
 import com.facenet.mrp.service.utils.MrpAnalysisUtil;
 import com.facenet.mrp.service.utils.Utils;
 import com.facenet.mrp.thread.CloneBomService;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,8 +49,11 @@ public class MrpAdvancedAnalysisServiceV3 {
     private final PurchaseRecommendationPlanRepository purchaseRecommendationPlanRepository;
     private final Prq1Repository prq1Repository;
     private final Por1Repository por1Repository;
+    private final MrpOrderQuantityRepository mrpOrderQuantityRepository;
 
-    public MrpAdvancedAnalysisServiceV3(CloneBomService bomService, MrpAnalysisCache mrpAnalysisCache, ItemHoldRepository itemHoldRepository, OitwRepository oitwRepository, MrpBomDetailRepository mrpBomDetailRepository, PurchaseRecommendationPlanRepository purchaseRecommendationPlanRepository, Prq1Repository prq1Repository, Por1Repository por1Repository) {
+
+    public MrpAdvancedAnalysisServiceV3(CloneBomService bomService, MrpAnalysisCache mrpAnalysisCache, ItemHoldRepository itemHoldRepository, OitwRepository oitwRepository, MrpBomDetailRepository mrpBomDetailRepository, PurchaseRecommendationPlanRepository purchaseRecommendationPlanRepository, Prq1Repository prq1Repository, Por1Repository por1Repository,
+                                        MrpOrderQuantityRepository mrpOrderQuantityRepository) {
         this.bomService = bomService;
         this.mrpAnalysisCache = mrpAnalysisCache;
         this.itemHoldRepository = itemHoldRepository;
@@ -50,9 +62,10 @@ public class MrpAdvancedAnalysisServiceV3 {
         this.purchaseRecommendationPlanRepository = purchaseRecommendationPlanRepository;
         this.prq1Repository = prq1Repository;
         this.por1Repository = por1Repository;
+        this.mrpOrderQuantityRepository = mrpOrderQuantityRepository;
     }
 
-    public AdvancedMrpDTO pagingCache(String ssId, int page, int pageSize, AnalyticsSearchRequest filter){
+    public AdvancedMrpDTO pagingCache(String ssId, int page, int pageSize, AnalyticsSearchRequest filter) {
 
         List<MrpDetailDTO> listDetailSearch = new ArrayList<>();
 
@@ -62,11 +75,11 @@ public class MrpAdvancedAnalysisServiceV3 {
         AdvancedMrpDTO newPaging = new AdvancedMrpDTO(resultOfAnalytics);
 
         //Search
-        if (filter.getProductCode() == null && filter.getProductName() == null){
+        if (filter.getProductCode() == null && filter.getProductName() == null) {
             newPaging.setResultData(paginate(resultOfAnalytics.getResultData(), page, pageSize));
-        }else {
-            for (MrpDetailDTO dto : newPaging.getResultData()){
-                if (dto != null){
+        } else {
+            for (MrpDetailDTO dto : newPaging.getResultData()) {
+                if (dto != null) {
                     searching(listDetailSearch, filter, dto, dto);
                 }
             }
@@ -78,9 +91,6 @@ public class MrpAdvancedAnalysisServiceV3 {
     }
 
     public AdvancedMrpDTO pagingResult(AdvancedMrpDTO advancedMrpDTO, int page, int pageSize) throws ParseException {
-
-
-
         //Paginated for the response
         AdvancedMrpDTO resultOfAnalytics = advancedMrpAnalysis(advancedMrpDTO);
 
@@ -90,57 +100,57 @@ public class MrpAdvancedAnalysisServiceV3 {
         return newPaging;
     }
 
-    public void searching (List<MrpDetailDTO> listDetailSearch ,AnalyticsSearchRequest filter, MrpDetailDTO firstDto, MrpDetailDTO childDto){
-        if (filter.getProductCode() != null){
-            if (firstDto.getItemCode().contains(filter.getProductCode())){
+    public void searching(List<MrpDetailDTO> listDetailSearch, AnalyticsSearchRequest filter, MrpDetailDTO firstDto, MrpDetailDTO childDto) {
+        if (filter.getProductCode() != null) {
+            if (firstDto.getItemCode().contains(filter.getProductCode())) {
                 listDetailSearch.add(firstDto);
-            }else {
-                for (MrpDetailDTO child : childDto.getChildren()){
-                    if (child.getItemCode().contains(filter.getProductCode())){
+            } else {
+                for (MrpDetailDTO child : childDto.getChildren()) {
+                    if (child.getItemCode().contains(filter.getProductCode())) {
                         listDetailSearch.add(firstDto);
                         break;
                     }
-                    if (child.getChildren() != null){
-                        searching(listDetailSearch, filter, firstDto,child);
+                    if (child.getChildren() != null) {
+                        searching(listDetailSearch, filter, firstDto, child);
                     }
-                    if (listDetailSearch.contains(child)){
+                    if (listDetailSearch.contains(child)) {
                         break;
                     }
                 }
             }
-        }else if (filter.getProductName() != null){
-            if (firstDto.getItemName().contains(filter.getProductName())){
+        } else if (filter.getProductName() != null) {
+            if (firstDto.getItemName().contains(filter.getProductName())) {
                 listDetailSearch.add(firstDto);
-            }else {
-                for (MrpDetailDTO child : childDto.getChildren()){
-                    if (child.getItemName().contains(filter.getProductName())){
+            } else {
+                for (MrpDetailDTO child : childDto.getChildren()) {
+                    if (child.getItemName().contains(filter.getProductName())) {
                         listDetailSearch.add(firstDto);
                         break;
                     }
-                    if (child.getChildren() != null){
+                    if (child.getChildren() != null) {
                         searching(listDetailSearch, filter, firstDto, child);
                     }
-                    if (listDetailSearch.contains(child)){
+                    if (listDetailSearch.contains(child)) {
                         break;
                     }
                 }
             }
         } else if (filter.getProductName() != null && filter.getProductCode() != null) {
             if (firstDto.getItemName().contains(filter.getProductName())
-                && firstDto.getItemCode().contains(filter.getProductCode())){
+                && firstDto.getItemCode().contains(filter.getProductCode())) {
 
                 listDetailSearch.add(firstDto);
-            }else {
-                for (MrpDetailDTO child : childDto.getChildren()){
+            } else {
+                for (MrpDetailDTO child : childDto.getChildren()) {
                     if (child.getItemName().contains(filter.getProductName())
-                    && child.getItemCode().contains(filter.getProductCode())){
+                        && child.getItemCode().contains(filter.getProductCode())) {
                         listDetailSearch.add(firstDto);
                         break;
                     }
-                    if (child.getChildren() != null){
+                    if (child.getChildren() != null) {
                         searching(listDetailSearch, filter, firstDto, child);
                     }
-                    if (listDetailSearch.contains(child)){
+                    if (listDetailSearch.contains(child)) {
                         break;
                     }
                 }
@@ -158,7 +168,7 @@ public class MrpAdvancedAnalysisServiceV3 {
         Map<String, List<ItemQuantityWithDate>> itemHoldQuantity = new HashMap<>();
         Map<String, List<ItemQuantityWithDate>> itemOnOrderQuantityMap = new HashMap<>();
         Map<String, Double> inStockQuantityMap = new HashMap<>();
-        Map<String,  List<CurrentWarehouseInventory>> inStockQuantityMapWithWhsCode = new HashMap<>();
+        Map<String, List<CurrentWarehouseInventory>> inStockQuantityMapWithWhsCode = new HashMap<>();
 
         Calendar totalStartTime = Calendar.getInstance();
         Calendar totalEndTime = Calendar.getInstance();
@@ -170,12 +180,12 @@ public class MrpAdvancedAnalysisServiceV3 {
         long start = System.currentTimeMillis();
         TreeSet<Date> listTimeSet = new TreeSet<>();
         for (MrpDetailDTO detailDTO : advancedMrpDTO.getResultData()) {
-            getStartTimeOfMrpAnalytic(listTimeSet, detailDTO);
+            getStartTimeOfMrpAnalytic(listTimeSet, detailDTO, advancedMrpDTO.getAnalysisPeriod());
         }
         List<Date> listTime = new ArrayList<>(listTimeSet);
         totalStartTime.setTime(listTime.get(0));
         List<Date> allTime = generateDate(totalStartTime, totalEndTime, listTime, advancedMrpDTO.getAnalysisPeriod());
-        log.info("Finish gen date for {} ms", (System.currentTimeMillis() -  start));
+        log.info("Finish gen date for {} ms", (System.currentTimeMillis() - start));
 
         // Get MRP Bom
         Map<String, List<MrpDetailDTO>> additionalItemInBomMap = new HashMap<>();
@@ -183,27 +193,39 @@ public class MrpAdvancedAnalysisServiceV3 {
         if (!CollectionUtils.isEmpty(additionalItemInBom))
             additionalItemInBomMap = additionalItemInBom.stream().collect(Collectors.groupingBy(MrpDetailDTO::getParentPath));
 
+        boolean isFirstTime = advancedMrpDTO.getMrpSubCode().split("\\.")[1].equals("1");
+
         // Lấy số lượng item bị hold
-        itemHoldQuantityByWhs = itemHoldRepository.getAllHoldQuantityItemMapByWhs(
-            advancedMrpDTO.getWarehouseAnalysis(),
-            DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH),
-            totalEndTime.getTime(),
-            advancedMrpDTO.getAnalysisPeriod()
-        );
+//            itemHoldQuantityByWhs = itemHoldRepository.getAllHoldQuantityItemMapByWhs(
+//                advancedMrpDTO.getWarehouseAnalysis(),
+//                DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH),
+//                totalEndTime.getTime(),
+//                advancedMrpDTO.getAnalysisPeriod()
+//            );
         if (advancedMrpDTO.getAnalysisType() == Constants.AnalysisType.NEW) {
-            itemHoldQuantity = itemHoldRepository.getAllHoldQuantityItemMap(
-                advancedMrpDTO.getWarehouseAnalysis(),
-                DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH),
-                totalEndTime.getTime()
-            );
+            if (isFirstTime) {
+                itemHoldQuantity = itemHoldRepository.getAllHoldQuantityItemMap(
+                    advancedMrpDTO.getWarehouseAnalysis(),
+                    DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH),
+                    totalEndTime.getTime()
+                );
+            } else {
+                itemHoldQuantity = itemHoldRepository.getAllHoldQuantityItemMapExceptMrpCode(
+                    DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH),
+                    totalEndTime.getTime(),
+                    advancedMrpDTO.getMrpCode()
+                );
+            }
         }
 
         // Lấy tổng số lượng PR ở MRP
         if (advancedMrpDTO.getAnalysisWhs().contains("PR/PO")) {
             itemOnOrderQuantityMap = purchaseRecommendationPlanRepository.sumAllQuantityOfItemsByDayMap(totalStartTime.getTime(), totalEndTime.getTime());
+            // Từ kỳ 2 sẽ ko lấy             System.err.println("FIRST TIME");
             prQuantityMap = prq1Repository.getOpenQuantityMap();
             poQuantityMap = por1Repository.getOpenQuantityMap();
         }
+
 
         if (advancedMrpDTO.getAnalysisWhs().contains("kho")) {
             //Lấy số lượng hiện trạng tồn kho của list NVL
@@ -267,6 +289,7 @@ public class MrpAdvancedAnalysisServiceV3 {
                         }
                     }
                 }
+                boolean isPassMinDate = false;
 
                 double lastInStockQuantity = result.get(0).getOriginQuantity();
                 for (int i = 1; i < result.size(); i++) {
@@ -279,14 +302,57 @@ public class MrpAdvancedAnalysisServiceV3 {
                     // Set sum need quantity
                     mrpResultDTO.setTotalOriginQuantity(sumOriginQuantity);
 
-                    // min Date of Pr Po
-                    if (simpleDateFormat.parse(mrpResultDTO.getLandmark()).equals(minDate)) {
+                    // Find last date
+                    Date currentDate = simpleDateFormat.parse(mrpResultDTO.getLandmark());
+
+                    if (currentDate.equals(minDate)) {
                         mrpResultDTO.setDeliveringQuantity(deliveringQuantity);
                         mrpResultDTO.setPoQuantity(poQuantity);
-                    } else {
-                        mrpResultDTO.setDeliveringQuantity(0.0);
-                        mrpResultDTO.setPoQuantity(0.0);
+                    } else if (currentDate.compareTo(minDate) > 0) {
+                        mrpResultDTO.setSumPoAndDeliveringQuantity(
+                            Math.max(
+                                result.get(i-1).getReadyQuantity()
+                                - result.get(i-1).getTotalOriginQuantity(), 0
+                            )
+                        );
                     }
+
+                    Date lastDate = new Date();
+                    switch (advancedMrpDTO.getAnalysisPeriod()) {
+                        case "Ngày":
+                            lastDate = DateUtils.addDays(currentDate, -1);
+                            break;
+                        case "Tuần":
+                            lastDate = DateUtils.addDays(currentDate, -7);
+                            break;
+                        case "1/2 tuần":
+                            lastDate = DateUtils.addDays(currentDate, -3);
+                            break;
+                        case "2 Tuần":
+                            lastDate = DateUtils.addDays(currentDate, -14);
+                            break;
+                        case "Tháng":
+                            lastDate = DateUtils.addMonths(currentDate, -1);
+                            break;
+                    }
+                    String lastDateStr = simpleDateFormat.format(lastDate);
+                    MrpResultDTO lastResult = null;
+                    // Find lastResult (date - 1)
+                    for (int j = i; j > 1; j--) {
+                        if (result.get(j).getLandmark().equals(lastDateStr)) {
+                            lastResult = result.get(j);
+                            break;
+                        }
+                    }
+
+                    // min Date of Pr Po
+//                    if (simpleDateFormat.parse(mrpResultDTO.getLandmark()).equals(minDate)) {
+//                        mrpResultDTO.setDeliveringQuantity(1.0);
+//                        mrpResultDTO.setPoQuantity(2.0);
+//                    } else {
+//                        mrpResultDTO.setDeliveringQuantity(1.0);
+//                        mrpResultDTO.setPoQuantity(2.0);
+//                    }
 
                     mrpResultDTO.setInStockQuantity(lastInStockQuantity);
                     mrpResultDTO.setReadyQuantity(
@@ -297,18 +363,34 @@ public class MrpAdvancedAnalysisServiceV3 {
                     );
 
 //                    if (mrpResultDTO.getReadyQuantity() > 0) {
-                    if (mrpResultDTO.getReadyQuantity() > sumOriginQuantity) {
-                        lastInStockQuantity = mrpResultDTO.getReadyQuantity() - sumOriginQuantity;
-                    } else {
-                        mrpResultDTO.setOrderQuantity(
-                            sumOriginQuantity - mrpResultDTO.getReadyQuantity()
-                        );
-                        lastInStockQuantity = 0.0;
-                    }
+//                    if (mrpResultDTO.getReadyQuantity() > sumOriginQuantity) {
+//                        lastInStockQuantity = mrpResultDTO.getReadyQuantity() - sumOriginQuantity;
 //                    } else {
-//                        mrpResultDTO.setOrderQuantity(sumOriginQuantity);
+//                        if (lastResult != null) {
+//                            lastResult.setOrderQuantity(
+//                                sumOriginQuantity - mrpResultDTO.getReadyQuantity()
+//                            );
+//                        }
 //                        lastInStockQuantity = 0.0;
 //                    }
+
+                    lastInStockQuantity = Math.max(lastInStockQuantity
+                        - mrpResultDTO.getTotalOriginQuantity()
+                        - mrpResultDTO.getRequiredQuantity(), 0
+                    );
+
+                    if (lastResult != null) {
+                        lastResult.setOrderQuantity(
+                            Math.min(mrpResultDTO.getReadyQuantity() - mrpResultDTO.getTotalOriginQuantity(), 0)
+                        );
+
+                        if (result.get(i).getSumPoAndDeliveringQuantity() > 0) {
+                            lastResult.setNeedQuantity(
+                                // Always < 0, ignore > 0
+                                Math.min(mrpResultDTO.getInStockQuantity() - mrpResultDTO.getTotalOriginQuantity(), 0)
+                            );
+                        }
+                    }
                 }
 
                 // Set all result to new result
@@ -322,13 +404,14 @@ public class MrpAdvancedAnalysisServiceV3 {
 //                        mrpResultDetail.setDeliveringQuantity(0.0);
 //                        mrpResultDetail.setOrderQuantity(result.get(j).getOrderQuantity());
                         mrpResultDetail.setOrderQuantity(0.0);
+                        mrpResultDetail.setNeedQuantity(0.0);
                     }
                 }
             }
         }
 
         if (!StringUtils.isEmpty(advancedMrpDTO.getSessionId())) {
-            mrpAnalysisCache.putMrpResult(advancedMrpDTO.getSessionId() ,advancedMrpDTO);
+            mrpAnalysisCache.putMrpResult(advancedMrpDTO.getSessionId(), advancedMrpDTO);
         }
 
         return advancedMrpDTO;
@@ -359,12 +442,6 @@ public class MrpAdvancedAnalysisServiceV3 {
         Calendar totalCheckEndTime = Calendar.getInstance();
         List<MrpResultDTO> detailResult = new ArrayList<>();
         String itemStartDate = mrpDetailDTO.getDetailResult().get(0).getLandmark();
-
-        //Lấy danh sách thời gian phân tích ở mức cha
-//        HashMap<String, Double> listAnalysisTime = new HashMap<>();
-//        for (MrpResultDTO resultDTO : mrpDetailDTO.getDetailResult()) {
-//            listAnalysisTime.put(resultDTO.getLandmark(), resultDTO.getOriginQuantity());
-//        }
 
         totalCheckStartTime.setTime(totalStartTime.getTime());
         beforeDate.setTime(totalStartTime.getTime());
@@ -464,7 +541,7 @@ public class MrpAdvancedAnalysisServiceV3 {
     public void analysisLevelNvl(
         MrpDetailDTO parentItem,
         Map<String, List<List<MrpResultDTO>>> itemOnDuplicateMap,
-        String  itemStartDate,
+        String itemStartDate,
         Map<String, Double> inStockQuantityMap,
         Map<String, List<CurrentWarehouseInventory>> inStockQuantityMapWithWhsCode,
         Map<String, Double> prQuantityMap,
@@ -513,7 +590,9 @@ public class MrpAdvancedAnalysisServiceV3 {
                 poQuantityMap,
                 prQuantityMap,
                 itemHoldQuantity,
-                itemHoldQuantityByWhs);
+                itemHoldQuantityByWhs,
+                analysisPeriod
+            );
 
             //******************************
 
@@ -549,8 +628,8 @@ public class MrpAdvancedAnalysisServiceV3 {
         Map<String, Double> poQuantity,
         Map<String, Double> prQuantity,
         Map<String, List<ItemQuantityWithDate>> itemHoldQuantity,
-        Map<String, List<ItemQuantityWithDate>> itemHoldQuantityByWhs
-    ) throws ParseException {
+        Map<String, List<ItemQuantityWithDate>> itemHoldQuantityByWhs,
+        String analysisPeriod) throws ParseException {
         Calendar totalCheckStartTime = Calendar.getInstance();
         Calendar totalCheckEndTime = Calendar.getInstance();
 
@@ -561,6 +640,7 @@ public class MrpAdvancedAnalysisServiceV3 {
         MrpResultDTO itemResult;
         double lastInStockQuantity = currentItem.getDetailResult().get(0).getOriginQuantity();
         boolean isPassFirstDate = false;
+        boolean isStart = false;
 
         Date beforeDate = new Date(Long.MIN_VALUE);
         Date holdBeforeDate = new Date(Long.MIN_VALUE);
@@ -573,19 +653,58 @@ public class MrpAdvancedAnalysisServiceV3 {
             itemResult.setLandmark(parentIte.getLandmark());
             itemResult.setOriginQuantity(parentIte.getOriginQuantity() * currentItem.getQuota());
 
-            MrpAnalysisUtil.setAnalysisDetailV2(currentItem, itemResult, beforeDate, totalCheckStartTime, itemOnOrderQuantityMap, simpleDateFormat);
-            if (!isPassFirstDate && parentIte.getLandmark().equals(itemStartDate)) {
-                MrpAnalysisUtil.setPrPoQuantityV3(currentItem.getItemCode(), itemResult, prQuantity, poQuantity);
-                isPassFirstDate = true;
+            // Find last date
+            Date lastDate = new Date();
+            switch (analysisPeriod) {
+            case "Ngày":
+                lastDate = DateUtils.addDays(currentDate, -1);
+                break;
+            case "Tuần":
+                lastDate = DateUtils.addDays(currentDate, -7);
+                break;
+            case "1/2 tuần":
+                lastDate = DateUtils.addDays(currentDate, -3);
+                break;
+            case "2 Tuần":
+                lastDate = DateUtils.addDays(currentDate, -14);
+                break;
+            case "Tháng":
+                lastDate = DateUtils.addMonths(currentDate, -1);
+                break;
+            }
+            String lastDateStr = simpleDateFormat.format(lastDate);
+            MrpResultDTO lastResult = null;
+            // Find lastResult (date - 1)
+            for (int j = i; j > 1; j--) {
+                if (parentItem.getDetailResult().get(j).getLandmark().equals(lastDateStr)) {
+                    lastResult = currentItem.getDetailResult().get(j);
+                    break;
+                }
             }
 
-            if (isPassFirstDate) {
-                MrpAnalysisUtil.setHoldQuantityV3(
-                    currentItem, itemResult, holdBeforeDate, currentDate, itemHoldQuantityByWhs, simpleDateFormat);
+            MrpAnalysisUtil.setAnalysisDetailV2(currentItem, itemResult, beforeDate, totalCheckStartTime, itemOnOrderQuantityMap, simpleDateFormat);
+            if (!isPassFirstDate && parentIte.getLandmark().equals(itemStartDate)) {
+                isStart = true;
+                MrpAnalysisUtil.setPrPoQuantityV3(currentItem.getItemCode(), itemResult, prQuantity, poQuantity);
+            }
+
+            if (isStart) {
+//                MrpAnalysisUtil.setHoldQuantityV3(
+//                    currentItem, itemResult, holdBeforeDate, currentDate, itemHoldQuantityByWhs, simpleDateFormat);
                 MrpAnalysisUtil.setHoldQuantityV3(
                     currentItem, itemResult, holdBeforeDate, currentDate, itemHoldQuantity, simpleDateFormat);
                 holdBeforeDate.setTime(currentDate.getTime());
             }
+
+            if (isPassFirstDate) {
+                itemResult.setSumPoAndDeliveringQuantity(
+                    Math.max(
+                        currentItem.getDetailResult().get(i-1).getReadyQuantity()
+                        - currentItem.getDetailResult().get(i-1).getOriginQuantity(), 0.0
+                    )
+                );
+            }
+            if (parentIte.getLandmark().equals(itemStartDate)) isPassFirstDate = true;
 
             itemResult.setInStockQuantity(lastInStockQuantity);
             itemResult.setReadyQuantity(
@@ -596,13 +715,32 @@ public class MrpAdvancedAnalysisServiceV3 {
             );
 
 //            if (mrpResultDTO.getReadyQuantity() > 0) {
-            if (itemResult.getReadyQuantity() > itemResult.getOriginQuantity()) {
-                lastInStockQuantity = itemResult.getReadyQuantity() - itemResult.getOriginQuantity();
-            } else {
-                itemResult.setOrderQuantity(
-                    itemResult.getOriginQuantity() - itemResult.getReadyQuantity()
+//            if (itemResult.getReadyQuantity() > itemResult.getOriginQuantity()) {
+//                lastInStockQuantity = itemResult.getReadyQuantity() - itemResult.getOriginQuantity();
+//            } else {
+//                if (lastResult != null) {
+//                    lastResult.setOrderQuantity(
+//                        itemResult.getOriginQuantity() - itemResult.getReadyQuantity()
+//                    );
+//                }
+//                lastInStockQuantity = 0.0;
+//            }
+            lastInStockQuantity = Math.max(
+                lastInStockQuantity
+                    - itemResult.getOriginQuantity()
+                    - itemResult.getRequiredQuantity(), 0
+            );
+            if (lastResult != null) {
+                lastResult.setOrderQuantity(
+                    Math.min(itemResult.getReadyQuantity() - itemResult.getOriginQuantity(), 0.0)
                 );
-                lastInStockQuantity = 0.0;
+
+                if (itemResult.getSumPoAndDeliveringQuantity() > 0) {
+                    lastResult.setNeedQuantity(
+                        // Always < 0, ignore > 0
+                        Math.min(itemResult.getInStockQuantity() - itemResult.getTotalOriginQuantity(), 0)
+                    );
+                }
             }
 
             currentItem.getDetailResult().add(itemResult);
@@ -610,20 +748,39 @@ public class MrpAdvancedAnalysisServiceV3 {
     }
 
 
-    public void getStartTimeOfMrpAnalytic(TreeSet<Date> listTime, MrpDetailDTO mrpDetailDTO) throws ParseException {
+    public void getStartTimeOfMrpAnalytic(TreeSet<Date> listTime, MrpDetailDTO mrpDetailDTO, String analysisPeriod) throws ParseException {
         // Skip first landmark
         for (MrpResultDTO detail : mrpDetailDTO.getDetailResult()) {
-            listTime.add(simpleDateFormat.parse(detail.getLandmark()));
+            Date date = simpleDateFormat.parse(detail.getLandmark());
+            listTime.add(date);
+            switch (analysisPeriod) {
+                case "Ngày":
+                    listTime.add(DateUtils.addDays(date, -1));
+                    break;
+                case "Tuần":
+                    listTime.add(DateUtils.addDays(date, -7));
+                    break;
+                case "1/2 tuần":
+                    listTime.add(DateUtils.addDays(date, -3));
+                    break;
+                case "2 Tuần":
+                    listTime.add(DateUtils.addDays(date, -14));
+                    break;
+                case "Tháng":
+                    listTime.add(DateUtils.addMonths(date, -1));
+                    break;
+            }
         }
         if (!CollectionUtils.isEmpty(mrpDetailDTO.getChildren())) {
             for (MrpDetailDTO child : mrpDetailDTO.getChildren()) {
-                getStartTimeOfMrpAnalytic(listTime, child);
+                getStartTimeOfMrpAnalytic(listTime, child, analysisPeriod);
             }
         }
     }
 
     /**
      * Adpater for generate date
+     *
      * @param startTime
      * @param endTime
      * @param listTime
@@ -649,12 +806,13 @@ public class MrpAdvancedAnalysisServiceV3 {
 
     /**
      * Tạo list ngày
-     * @param allTime List kết quả
-     * @param dateIte ngày đang xét
-     * @param endTime ngày kết thúc
-     * @param listTime ngày của tp/btp
+     *
+     * @param allTime        List kết quả
+     * @param dateIte        ngày đang xét
+     * @param endTime        ngày kết thúc
+     * @param listTime       ngày của tp/btp
      * @param analysisPeriod chu kì
-     * @param listTimeIndex index hiện tại cuả listTime
+     * @param listTimeIndex  index hiện tại cuả listTime
      * @return listTimeIndex để xác định ngày cuối
      */
     private int generateDate(
@@ -699,22 +857,15 @@ public class MrpAdvancedAnalysisServiceV3 {
         return listTimeIndex;
     }
 
-    /**
-     * @param dateFormat
-     * @return
-     * @throws ParseException
-     */
-    public Calendar parseStringToCalendar(String dateFormat) throws ParseException {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(simpleDateFormat.parse(dateFormat));
-        return calendar;
-    }
-
     // Helper method to manually paginate the data
     private List<MrpDetailDTO> paginate(List<MrpDetailDTO> items, int page, int pageSize) {
+        if (pageSize == 0) return items;
         int fromIndex = page * pageSize;
         int toIndex = Math.min(fromIndex + pageSize, items.size());
         return items.subList(fromIndex, toIndex);
     }
 
+    private String getKeyForOrderQuantityMap(String itemCode, String date) {
+        return itemCode + "-" + date;
+    }
 }

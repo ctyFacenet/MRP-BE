@@ -32,6 +32,13 @@ public class Constants {
         int CLOSED = 6;
     }
 
+    public interface Mrp {
+        byte NEW = 0;
+        byte NEW_WITH_HOLD = 1;
+        byte SENT_PURCHASE_RECOMMENDATION = 2; // Gui khuyen nghi
+        byte BUYING_PROGRESS = 3; // Dang mua
+    }
+
     public interface MrpSub {
         byte NEW = 0;
         byte SENT_PURCHASE_RECOMMENDATION = 1; // Gui khuyen nghi

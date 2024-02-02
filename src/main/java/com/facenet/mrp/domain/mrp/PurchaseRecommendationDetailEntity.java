@@ -48,6 +48,10 @@ public class PurchaseRecommendationDetailEntity {
     @Column(name = "moq_price_id")
     private Integer moqPriceId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "moq_price_id", referencedColumnName = "item_price_id", insertable = false, updatable = false)
+    private MqqPriceEntity moqPriceEntity;
+
     @Column(name = "status")
     private Integer status;
 
@@ -62,6 +66,7 @@ public class PurchaseRecommendationDetailEntity {
 
     @Column(name = "analysis_result")
     private String analysisResult;
+
     @Column(name = "created_at")
     @CreatedDate
     private Instant createdAt;
@@ -231,5 +236,13 @@ public class PurchaseRecommendationDetailEntity {
 
     public void setRequiredQuantity(Double requiredQuantity) {
         this.requiredQuantity = requiredQuantity;
+    }
+
+    public MqqPriceEntity getMoqPriceEntity() {
+        return moqPriceEntity;
+    }
+
+    public void setMoqPriceEntity(MqqPriceEntity moqPriceEntity) {
+        this.moqPriceEntity = moqPriceEntity;
     }
 }

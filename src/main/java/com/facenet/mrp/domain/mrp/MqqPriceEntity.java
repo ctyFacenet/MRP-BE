@@ -38,6 +38,13 @@ public class MqqPriceEntity {
     @Column(name = "time_end", nullable = true)
     private Date timeEnd;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+        @JoinColumn(name = "vendor_code", referencedColumnName = "vendor_code", insertable = false, updatable = false),
+        @JoinColumn(name = "item_code", referencedColumnName = "item_code", insertable = false, updatable = false),
+    })
+    private VendorItemEntity vendorItemEntity;
+
     @Column(name = "range_start", nullable = true)
     private Integer rangeStart;
 
@@ -248,5 +255,13 @@ public class MqqPriceEntity {
 
     public void setLeadTimeNote(String leadTimeNote) {
         this.leadTimeNote = leadTimeNote;
+    }
+
+    public VendorItemEntity getVendorItemEntity() {
+        return vendorItemEntity;
+    }
+
+    public void setVendorItemEntity(VendorItemEntity vendorItemEntity) {
+        this.vendorItemEntity = vendorItemEntity;
     }
 }

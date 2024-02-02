@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
 
 public class ExcelUtils {
 
@@ -54,7 +55,6 @@ public class ExcelUtils {
     }
 
     public static Integer getIntegerCellValue(Cell cell){
-        System.out.println("cell.getCellType()"+cell.getCellType());
         switch (cell.getCellType()){
             case STRING: {
                 try {
@@ -93,6 +93,9 @@ public class ExcelUtils {
     }
 
     public static boolean isEmpty(Cell cell) {
-        return cell == null || cell.getCellType() == CellType.BLANK;
+        if (cell == null || cell.getCellType() == CellType.BLANK) {
+            return true;
+        }
+        return !StringUtils.hasText(getStringCellValue(cell));
     }
 }

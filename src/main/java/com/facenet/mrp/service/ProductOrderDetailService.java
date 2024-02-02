@@ -131,6 +131,21 @@ public class ProductOrderDetailService {
             booleanBuilder.and(qProductOrderDetail.supplyType.containsIgnoreCase(filter.getSupplyMethod()));
         }
 
+        if (!StringUtils.isEmpty(filter.getProductOrderChild())) {
+            booleanBuilder.and(qProductOrderDetail.productOrderChild.containsIgnoreCase(filter.getProductOrderChild()));
+        }
+
+        if (!StringUtils.isEmpty(filter.getCustomerCode())) {
+            booleanBuilder.and(qProductOrderDetail.customerCode.containsIgnoreCase(filter.getCustomerCode()));
+        }
+        if (!StringUtils.isEmpty(filter.getCustomerName())) {
+            booleanBuilder.and(qProductOrderDetail.customerName.containsIgnoreCase(filter.getCustomerName()));
+        }
+
+        if (!StringUtils.isEmpty(filter.getSaleCode())) {
+            booleanBuilder.and(qProductOrderDetail.saleCode.containsIgnoreCase(filter.getSaleCode()));
+        }
+
         query.where(booleanBuilder).orderBy(qProductOrderDetail.createdAt.desc());
         List<ProductOrderDetail> result = query.fetch();
         long count = query.fetchCount();
@@ -248,6 +263,10 @@ public class ProductOrderDetailService {
             existDetail.setPriority(Integer.valueOf(dto.getPriority()));
             existDetail.setNote(dto.getNote());
             existDetail.setBomStatus(dto.getBomStatus());
+            existDetail.setCustomerCode(dto.getCustomerCode());
+            existDetail.setProductOrderChild(dto.getProductOrderChild());
+            existDetail.setCustomerName(dto.getCustomerName());
+            existDetail.setSaleCode(dto.getSaleCode());
         } else {
             int checkExistProduct = detailRepository.checkExistProduct(dto.getProductCode(), productOrderCode);
 
@@ -264,6 +283,10 @@ public class ProductOrderDetailService {
                 existDetail.setPriority(Integer.valueOf(dto.getPriority()));
                 existDetail.setNote(dto.getNote());
                 existDetail.setBomStatus(dto.getBomStatus());
+                existDetail.setCustomerCode(dto.getCustomerCode());
+                existDetail.setProductOrderChild(dto.getProductOrderChild());
+                existDetail.setCustomerName(dto.getCustomerName());
+                existDetail.setSaleCode(dto.getSaleCode());
             }
         }
 
@@ -368,6 +391,7 @@ public class ProductOrderDetailService {
             if (!StringUtils.isEmpty(filter.getProductCode())) {
                 booleanBuilder.and(qForecastOrderDetail.itemCode.containsIgnoreCase(filter.getProductCode()));
             }
+
             if (!StringUtils.isEmpty(filter.getProductName())) {
                 booleanBuilder.and(qForecastOrderDetail.itemDescription.containsIgnoreCase(filter.getProductName()));
             }
@@ -445,6 +469,10 @@ public class ProductOrderDetailService {
             }
             if (!StringUtils.isEmpty(filter.getProductName())) {
                 booleanBuilder.and(qProductOrderDetail.productName.containsIgnoreCase(filter.getProductName()));
+            }
+
+            if (!StringUtils.isEmpty(filter.getProductOrderChild())) {
+                booleanBuilder.and(qProductOrderDetail.productOrderChild.containsIgnoreCase(filter.getProductOrderChild()));
             }
             if (!StringUtils.isEmpty(filter.getBomVersion())) {
                 booleanBuilder.and(qProductOrderDetail.bomVersion.containsIgnoreCase(filter.getBomVersion()));

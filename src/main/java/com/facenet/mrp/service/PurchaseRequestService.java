@@ -64,9 +64,9 @@ public class PurchaseRequestService {
                 new QPurchaseRequestDTO(
                     qPrq1Entity.uSo,
                     qPrq1Entity.uMcode,
-                    qPrq1Entity.docEntry.stringValue(),
-                    qPor1Entity.docEntry.stringValue(),
-                    qPdn1Entity.docEntry.stringValue(),
+                    qPrq1Entity.docEntry.stringValue().trim(),
+                    qPor1Entity.docEntry.stringValue().trim(),
+                    qPdn1Entity.docEntry.stringValue().trim(),
                     qPrq1Entity.itemCode,
                     qPrq1Entity.dscription,
                     qPrq1Entity.uTenkythuat,

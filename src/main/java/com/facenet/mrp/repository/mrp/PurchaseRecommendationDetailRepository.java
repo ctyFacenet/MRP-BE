@@ -48,13 +48,15 @@ public interface PurchaseRecommendationDetailRepository extends JpaRepository<Pu
 //        "and l.isActive = 1 and mqq.isActive = 1 " +
 //        "and (mqq.timeStart is null or mqq.timeStart <= current_date) " +
 //        "and (current_date <= mqq.timeEnd or mqq.timeEnd is null)")
-    @Query("select new com.facenet.mrp.service.dto.ItemPriceOfVendorDTO(mqq.itemPriceId, mqq.vendorCode, l.leadTime, mqq.rangeStart, mqq.rangeEnd, mqq.price, mqq.timeStart, mqq.currency, mqq.isPromotion) " +
+    @Query("select new com.facenet.mrp.service.dto.ItemPriceOfVendorDTO(mqq.itemPriceId, mqq.vendorCode, v.vendorName, l.leadTime, mqq.rangeStart, mqq.rangeEnd, mqq.price, mqq.timeStart, mqq.currency, mqq.isPromotion) " +
     "from MqqPriceEntity mqq " +
     "left join LeadTimeEntity l on mqq.itemCode = l.itemCode and mqq.vendorCode = l.vendorCode " +
-    "where mqq.itemCode = :itemCode and ((mqq.rangeStart <= :quantity and mqq.rangeEnd >= :quantity) or (mqq.rangeStart = 0 and mqq.rangeEnd = 0)) " +
+        "left join VendorEntity v on v.vendorCode = mqq.vendorCode " +
+        "left join VendorItemEntity vi on  mqq.itemCode = vi.itemCode and mqq.vendorCode = vi.vendorCode " +
+    "where mqq.itemCode = :itemCode " +
     "and l.isActive = 1 and mqq.isActive = 1 " +
-    "and ( mqq.timeStart > current_date OR (mqq.timeStart = (SELECT MAX(timeStart) FROM MqqPriceEntity WHERE timeStart <= CURDATE() and itemCode = :itemCode) AND mqq.price = (SELECT MIN(price) FROM MqqPriceEntity WHERE timeStart = (SELECT MAX(timeStart) FROM MqqPriceEntity WHERE timeStart <= CURDATE() and itemCode = :itemCode))))")
-    List<ItemPriceOfVendorDTO> getAllItemPrice(@Param("itemCode") String itemCode, @Param("quantity") Integer quantity);
+        "order by vi.timeUsed desc, mqq.timeStart desc")
+    List<ItemPriceOfVendorDTO> getAllItemPrice(@Param("itemCode") String itemCode);
 
     @Modifying
     @Query("update PurchaseRecommendationDetailEntity p set p.status = :newStatus " +
@@ -156,4 +158,13 @@ public interface PurchaseRecommendationDetailRepository extends JpaRepository<Pu
     @Query(value = "select sum(pd.quantity) from PurchaseRecommendationDetailEntity pd join PurchaseRecommendationEntity p on p.purchaseRecommendationId = pd.purchaseRecommendationId where pd.isActive = true and p.isActive= true and p.mrpPoId = :soCode")
     Double sumQuantitySo(@Param("soCode") String soCode);
 
+    @Query("select p from PurchaseRecommendationDetailEntity p " +
+        "left join fetch p.moqPriceEntity m " +
+        "left join fetch m.vendorItemEntity v " +
+        "where p.isActive = true " +
+        "and p.purchaseRecommendation = :purchaseRecommendation " +
+        "and p.status in :status and p.itemCode in :items")
+    List<PurchaseRecommendationDetailEntity> getAllWaitingForApprove(@Param("purchaseRecommendation") PurchaseRecommendationEntity purchaseRecommendationEntity,
+                                                                     @Param("status") List<Integer> status,
+                                                                     @Param("items") List<String> items);
 }

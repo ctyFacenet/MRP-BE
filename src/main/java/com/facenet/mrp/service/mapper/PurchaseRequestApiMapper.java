@@ -2,6 +2,7 @@ package com.facenet.mrp.service.mapper;
 
 import com.facenet.mrp.domain.mrp.PurchaseHasRecommendationEntity;
 import com.facenet.mrp.domain.mrp.PurchaseRecommendationEntity;
+import com.facenet.mrp.security.SecurityUtils;
 import com.facenet.mrp.service.dto.sap.PurchaseRequestApiDTO;
 import com.facenet.mrp.service.dto.sap.PurchaseRequestDetailApiDTO;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class PurchaseRequestApiMapper {
     public PurchaseRequestApiDTO toDTO(PurchaseRecommendationEntity purchaseRecommendationEntity, List<PurchaseRequestDetailApiDTO> plans, PurchaseHasRecommendationEntity purchaseHasRecommendationEntity) {
         PurchaseRequestApiDTO purchaseRequestDTO = new PurchaseRequestApiDTO();
         purchaseRequestDTO.setType("PR");
-        purchaseRequestDTO.setUser("manager");
+        purchaseRequestDTO.setUser(SecurityUtils.getUserSap());
         purchaseRequestDTO.setTimeRequestPR(simpleDateFormat.format(purchaseHasRecommendationEntity.getDueDate()));
         purchaseRequestDTO.setRemark(purchaseHasRecommendationEntity.getNote());
         purchaseRequestDTO.setMrpSubCode(purchaseRecommendationEntity.getMrpSubCode());

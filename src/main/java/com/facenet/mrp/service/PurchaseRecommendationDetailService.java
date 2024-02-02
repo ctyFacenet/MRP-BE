@@ -1,7 +1,6 @@
 package com.facenet.mrp.service;
 
 import com.facenet.mrp.domain.mrp.*;
-import com.facenet.mrp.domain.sap.OcrdEntity;
 import com.facenet.mrp.repository.mrp.*;
 import com.facenet.mrp.repository.sap.OcrdRepository;
 import com.facenet.mrp.security.SecurityUtils;
@@ -29,8 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -48,13 +45,10 @@ public class PurchaseRecommendationDetailService {
     private static final Logger logger = LogManager.getLogger(PurchaseRecommendationDetailService.class);
     private final PurchaseRecommendationDetailRepository purchaseRecommendationDetailRepository;
     private final PurchaseRecommendationRepository purchaseRecommendationRepository;
-    private final OcrdRepository ocrdRepository;
     private final MqqPriceRepository mqqPriceRepository;
     private final ItemHoldRepository itemHoldRepository;
-    private final ItemHoldMapper itemHoldMapper;
     private final EntityManager entityManager;
     private final PurchaseRecommendationPlanRepository planRepository;
-    private final RateExchangeService rateExchangeService;
     private final RecommendationPlanMapper planMapper;
     private final PurchaseRequestApiMapper purchaseRequestApiMapper;
     private final PurchaseRecommendationBatchRepository purchaseRecommendationBatchRepository;
@@ -62,34 +56,29 @@ public class PurchaseRecommendationDetailService {
     private final ConfigRepository configRepository;
     private final ApprovalUserAuthorizationRepository approvalUserAuthorizationRepository;
     private final MrpSubRepository mrpSubRepository;
-    private final DetailVendorService detailVendorService;
 
     public PurchaseRecommendationDetailService(PurchaseHasRecommendationRepository purchaseHasRecommendationRepository, PurchaseRecommendationBatchRepository purchaseRecommendationBatchRepository, PurchaseRecommendationDetailRepository purchaseRecommendationDetailRepository, PurchaseRecommendationRepository purchaseRecommendationRepository, OcrdRepository ocrdRepository, MqqPriceRepository mqqPriceRepository, ItemHoldRepository itemHoldRepository, ItemHoldMapper itemHoldMapper, @Qualifier("mrpEntityManager") EntityManager entityManager, PurchaseRecommendationPlanRepository planRepository, RateExchangeService rateExchangeService, RecommendationPlanMapper planMapper, PurchaseRequestApiMapper purchaseRequestApiMapper,
                                                ConfigRepository configRepository,
                                                ApprovalUserAuthorizationRepository approvalUserAuthorizationRepository,
-                                               MrpSubRepository mrpSubRepository,
-                                               DetailVendorService detailVendorService) {
+                                               MrpSubRepository mrpSubRepository) {
         this.purchaseHasRecommendationRepository = purchaseHasRecommendationRepository;
         this.purchaseRecommendationBatchRepository = purchaseRecommendationBatchRepository;
         this.purchaseRecommendationDetailRepository = purchaseRecommendationDetailRepository;
         this.purchaseRecommendationRepository = purchaseRecommendationRepository;
-        this.ocrdRepository = ocrdRepository;
         this.mqqPriceRepository = mqqPriceRepository;
         this.itemHoldRepository = itemHoldRepository;
-        this.itemHoldMapper = itemHoldMapper;
         this.entityManager = entityManager;
         this.planRepository = planRepository;
-        this.rateExchangeService = rateExchangeService;
         this.planMapper = planMapper;
         this.purchaseRequestApiMapper = purchaseRequestApiMapper;
         this.configRepository = configRepository;
         this.approvalUserAuthorizationRepository = approvalUserAuthorizationRepository;
         this.mrpSubRepository = mrpSubRepository;
-        this.detailVendorService = detailVendorService;
     }
 
     /**
      * hàm lấy tất cả item đã vào ds khuyến nghị
+     *
      * @param purchaseRecommendationId
      * @param input
      * @return
@@ -101,29 +90,18 @@ public class PurchaseRecommendationDetailService {
         ItemFilter filter = input.getFilter();
         JPAQuery<PurchaseRecommendationDetailDTO> query = buildQuery(purchaseRecommendationId, filter);
         List<PurchaseRecommendationDetailDTO> resultList = query.fetch();
-        for(PurchaseRecommendationDetailDTO dto : resultList){
-            ItemInVendorDTO itemInVendorDTO = detailVendorService.getDetailItem(dto.getItemCode());
-            dto.setTechName(itemInVendorDTO.getTechName());
-            dto.setUnit(itemInVendorDTO.getUnit());
-            dto.setGroupName(itemInVendorDTO.getGroupName());
-            if (itemInVendorDTO.getGroupType() == 101){
-                dto.setGroup("BTP");
-            } else {
-                dto.setGroup("NVL");
-            }
-        }
-        long count = query.fetchCount();
-        // Query set tên NCC
-        //TODO: need OPTIMIZE
-//        Map<String, String> vendorMap = new HashMap<>();
-//        for (PurchaseRecommendationDetailDTO result : resultList) {
-//            if (!vendorMap.containsKey(result.getVendorCode())) {
-//                OcrdEntity ocrdEntity = ocrdRepository.getVendor(result.getVendorCode());
-//                if (ocrdEntity != null)
-//                    vendorMap.put(ocrdEntity.getCardCode(), ocrdEntity.getCardName());
+//        for(PurchaseRecommendationDetailDTO dto : resultList){
+//            ItemInVendorDTO itemInVendorDTO = detailVendorService.getDetailItem(dto.getItemCode());
+//            dto.setTechName(itemInVendorDTO.getTechName());
+//            dto.setUnit(itemInVendorDTO.getUnit());
+//            dto.setGroupName(itemInVendorDTO.getGroupName());
+//            if (itemInVendorDTO.getGroupType() == 101){
+//                dto.setGroup("BTP");
+//            } else {
+//                dto.setGroup("NVL");
 //            }
-//            result.setVendorName(vendorMap.get(result.getVendorCode()));
 //        }
+        long count = query.fetchCount();
         return new PageResponse<List<PurchaseRecommendationDetailDTO>>()
             .result("00", "Thành công", true)
             .data(resultList)
@@ -132,12 +110,13 @@ public class PurchaseRecommendationDetailService {
 
     /**
      * hàm lấy tất cả item đã gửi khuyến nghị
+     *
      * @param purchaseRecommendationId
      * @param batch
      * @param input
      * @return
      */
-    public PageResponse<List<PurchaseRecommendationDetailDTO>> getAllItemsHasRecommendation(Integer purchaseRecommendationId,Integer batch, PageFilterInput<ItemFilter> input) {
+    public PageResponse<List<PurchaseRecommendationDetailDTO>> getAllItemsHasRecommendation(Integer purchaseRecommendationId, Integer batch, PageFilterInput<ItemFilter> input) {
         if (purchaseRecommendationRepository.findByPurchaseRecommendationIdAndIsActiveTrue(purchaseRecommendationId) == null) {
             throw new CustomException(HttpStatus.NOT_FOUND, "record.notfound");
         }
@@ -155,9 +134,9 @@ public class PurchaseRecommendationDetailService {
 //                if (ocrdEntity != null)
 //                    vendorMap.put(ocrdEntity.getCardCode(), ocrdEntity.getCardName());
 //            }
-            result.setQuantity(planRepository.sumQuantity(result.getItemCode(),purchaseRecommendationId,batch));
-            result.setSumPrQuantity(planRepository.sumPrQuantity(result.getItemCode(),purchaseRecommendationId));
-            result.setSumRequestQuantity(planRepository.sumRequestQuantity(result.getItemCode(),purchaseRecommendationId));
+            result.setQuantity(planRepository.sumQuantity(result.getItemCode(), purchaseRecommendationId, batch));
+            result.setSumPrQuantity(planRepository.sumPrQuantity(result.getItemCode(), purchaseRecommendationId));
+            result.setSumRequestQuantity(planRepository.sumRequestQuantity(result.getItemCode(), purchaseRecommendationId));
 //            result.setVendorName(vendorMap.get(result.getVendorCode()));
         }
 
@@ -169,25 +148,14 @@ public class PurchaseRecommendationDetailService {
 
     public PageResponse<ItemPriceOfVendorListDTO> getAllPriceOfItem(String itemCode, Integer purchaseRecommendationId, PageFilterInput<Double> input) throws JsonProcessingException {
         PurchaseRecommendationDetailEntity purchaseRecommendationDetailEntity = purchaseRecommendationDetailRepository.findByPRIdAndItemCode(purchaseRecommendationId, itemCode);
-        if (purchaseRecommendationDetailEntity == null) throw new CustomException(HttpStatus.NOT_FOUND, "record.notfound");
-        Map<String, Float> rateExchange = rateExchangeService.getRateExchange();
-
-        Pageable pageable = PageRequest.of(input.getPageNumber(), input.getPageSize());
-        List<ItemPriceOfVendorDTO> priceList = purchaseRecommendationDetailRepository.getAllItemPrice(itemCode , input.getFilter().intValue());
-        Map<String, String> vendorMap = new HashMap<>();
-        for (ItemPriceOfVendorDTO result : priceList) {
-            result.setStatus(result.getPromotion() ? "Đang khuyến mãi" : "Giá MOQ");
-            result.setActualPrice((double) (result.getPrice() * rateExchange.get(result.getCurrency())));
-            if (!vendorMap.containsKey(result.getVendorCode())) {
-                OcrdEntity ocrdEntity = ocrdRepository.getVendor(result.getVendorCode());
-                if (ocrdEntity != null)
-                    vendorMap.put(ocrdEntity.getCardCode(), ocrdEntity.getCardName());
-            }
-            result.setVendorName(vendorMap.get(result.getVendorCode()));
-        }
-
-        priceList.sort(Comparator.comparing(ItemPriceOfVendorDTO::getPromotion).reversed()
-            .thenComparing(ItemPriceOfVendorDTO::getActualPrice));
+        if (purchaseRecommendationDetailEntity == null)
+            throw new CustomException(HttpStatus.NOT_FOUND, "record.notfound");
+//        Map<String, Float> rateExchange = rateExchangeService.getRateExchange();
+//
+//        Pageable pageable = PageRequest.of(input.getPageNumber(), input.getPageSize());
+        List<ItemPriceOfVendorDTO> priceList = purchaseRecommendationDetailRepository.getAllItemPrice(itemCode);
+//        priceList.sort(Comparator.comparing(ItemPriceOfVendorDTO::getPromotion).reversed()
+//            .thenComparing(ItemPriceOfVendorDTO::getActualPrice));
 
         ItemPriceOfVendorListDTO result = new ItemPriceOfVendorListDTO();
         result.setPriceList(priceList);
@@ -200,6 +168,7 @@ public class PurchaseRecommendationDetailService {
 
     /**
      * hàm gửi duyệt khuyến nghị
+     *
      * @param purchaseRecommendationId
      * @param approvalRequest
      * @return
@@ -211,23 +180,21 @@ public class PurchaseRecommendationDetailService {
 
         PurchaseRecommendationEntity purchaseRecommendationEntity = purchaseRecommendationRepository.findByPurchaseRecommendationIdAndIsActiveTrue(purchaseRecommendationId);
         if (purchaseRecommendationEntity == null) throw new CustomException(HttpStatus.NOT_FOUND, "record.notfound");
-        List<PurchaseRecommendationDetailEntity> recommendationDetailEntities = purchaseRecommendationDetailRepository.getListPurchaseRecommendationDetail(purchaseRecommendationEntity.getPurchaseRecommendationId(),approvalRequest.getItems());
-        if (recommendationDetailEntities.size() == 0) throw new CustomException(HttpStatus.NOT_FOUND,"record.notfound");
+        List<PurchaseRecommendationDetailEntity> recommendationDetailEntities = purchaseRecommendationDetailRepository.getListPurchaseRecommendationDetail(purchaseRecommendationEntity.getPurchaseRecommendationId(), approvalRequest.getItems());
+        if (recommendationDetailEntities.size() == 0)
+            throw new CustomException(HttpStatus.NOT_FOUND, "record.notfound");
 
         List<Integer> purchaseRecommendationDetailIdList = recommendationDetailEntities.stream().map(PurchaseRecommendationDetailEntity::getPurchaseRecommendationDetailId).collect(Collectors.toList());
         StringBuilder mess = new StringBuilder();
-//        List<String> checkSumDTOList = planRepository.countByStatuscountByStatus(purchaseRecommendationId,approvalRequest.getItems());
         Set<String> checkSumDTOList = planRepository.checkByStatus(purchaseRecommendationDetailIdList, Constants.PurchaseRecommendationPlan.CHECKED);
-        System.err.println("Checmsum size " + checkSumDTOList.size());
-        System.err.println("item size " + approvalRequest.getItems().size());
-        if (checkSumDTOList.size() == 0){
+        if (checkSumDTOList.size() == 0) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "choose.notfound", String.join(", ", approvalRequest.getItems()));
-        } else if(checkSumDTOList.size() < approvalRequest.getItems().size()){
-            for (String item:approvalRequest.getItems()) {
+        } else if (checkSumDTOList.size() < approvalRequest.getItems().size()) {
+            for (String item : approvalRequest.getItems()) {
                 if (!checkSumDTOList.contains(item))
                     mess.append(item).append(",");
             }
-            if(!StringUtils.isEmpty(mess.toString())){
+            if (!StringUtils.isEmpty(mess.toString())) {
                 throw new CustomException(HttpStatus.BAD_REQUEST, "choose.notfound", mess.toString());
             }
         }
@@ -250,11 +217,11 @@ public class PurchaseRecommendationDetailService {
         purchaseHasRecommendationEntity.setUpdatedAt(purchaseRecommendationEntity.getUpdatedAt());
         purchaseHasRecommendationEntity.setUpdatedBy(purchaseRecommendationEntity.getUpdatedBy());
         purchaseHasRecommendationEntity.setDueDate(approvalRequest.getDueDate());
-        purchaseHasRecommendationEntity.setBatch(batch+1);
+        purchaseHasRecommendationEntity.setBatch(batch + 1);
         purchaseHasRecommendationRepository.save(purchaseHasRecommendationEntity);
         List<Integer> list = new ArrayList<>();
         List<PurchaseRecommendationBatch> recommendationBatchList = new ArrayList<>();
-        for (PurchaseRecommendationDetailEntity item:recommendationDetailEntities) {
+        for (PurchaseRecommendationDetailEntity item : recommendationDetailEntities) {
             PurchaseRecommendationBatch prb = new PurchaseRecommendationBatch();
             prb.setItemCode(item.getItemCode());
             prb.setItemDescription(item.getItemDescription());
@@ -270,7 +237,7 @@ public class PurchaseRecommendationDetailService {
             prb.setPlanNote(item.getPlanNote());
             prb.setBatch(batch + 1);
             recommendationBatchList.add(prb);
-            if(!list.contains(item.getPurchaseRecommendationDetailId())){
+            if (!list.contains(item.getPurchaseRecommendationDetailId())) {
                 list.add(item.getPurchaseRecommendationDetailId());
             }
         }
@@ -285,8 +252,8 @@ public class PurchaseRecommendationDetailService {
             purchaseRecommendationEntity.setStatus(Constants.PurchaseRecommendation.SEND_APPROVAL);
             purchaseRecommendationRepository.save(purchaseRecommendationEntity);
         }
-        for (Integer item:list){
-            planRepository.setBatchPurchasePlan(item,batch+1);
+        for (Integer item : list) {
+            planRepository.setBatchPurchasePlan(item, batch + 1);
         }
 
         // Lưu user quyền phê duyệt
@@ -305,15 +272,17 @@ public class PurchaseRecommendationDetailService {
 
     /**
      * hàm phê duyệt khuyến nghị
+     *
      * @param purchaseRecommendationId
      * @param batch
      * @param input
      * @return
      */
     @Transactional(rollbackFor = CustomException.class)
-    public CommonResponse approveRecommendation(Integer purchaseRecommendationId,Integer batch, ApproveInput input) {
+    public CommonResponse approveRecommendation(Integer purchaseRecommendationId, Integer batch, ApproveInput input) {
         if (Utils.hasDuplicate(input.getItems())) throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.param");
-        if (!input.getIsApproval() && StringUtils.isEmpty(input.getNote())) throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.param");
+        if (!input.getIsApproval() && StringUtils.isEmpty(input.getNote()))
+            throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.param");
         PurchaseRecommendationEntity purchaseRecommendationEntity = purchaseRecommendationRepository.findByPurchaseRecommendationIdAndIsActiveTrue(purchaseRecommendationId);
         if (purchaseRecommendationEntity == null) throw new CustomException(HttpStatus.NOT_FOUND, "record.notfound");
 
@@ -350,41 +319,61 @@ public class PurchaseRecommendationDetailService {
         if (input.getIsApproval()) {
             PurchaseHasRecommendationEntity purchaseHasRecommendationEntity = purchaseHasRecommendationRepository.getPurchaseHasRecommendationBatch(purchaseRecommendationId, batch);
             List<PurchaseRequestDetailApiDTO> purchaseRequestDetailApiList = planRepository.getAllApprovedByItems(purchaseRecommendationEntity, Constants.PurchaseRecommendationPlan.ACCEPTED, input.getItems(), batch);
-//            purchaseRequestDetailApiList.removeIf(detailApiDTO -> detailApiDTO.getRequiredQuantity() <= 0.0);
-//            if (purchaseRequestDetailApiList.size() > 0) {
-//                RestTemplate restTemplate = new RestTemplate();
-//                PurchaseRequestApiDTO purchaseRequestDTO = purchaseRequestApiMapper.toDTO(purchaseRecommendationEntity, purchaseRequestDetailApiList, purchaseHasRecommendationEntity);
-//                HttpEntity<PurchaseRequestApiDTO> httpEntity = new HttpEntity<>(purchaseRequestDTO);
-//                String sapApiUrl = configRepository.getValueByName("SAP_PR_API").orElseThrow(RuntimeException::new);
-//                try {
-//                    restTemplate.exchange(
-//                        sapApiUrl,
-//                        HttpMethod.POST,
-//                        httpEntity, String.class
-//                    );
-//                } catch (Exception e) {
-//                    logger.error("Send PR to SAP failed", e);
-//                    planRepository.approveRecommendationPlan(
-//                        purchaseRecommendationEntity,
-//                        Constants.PurchaseRecommendationPlan.SEND_APPROVAL,
-//                        input.getItems(),
-//                        batch
-//                    );
-//                    throw new CustomException( "sent.pr.sap.failed");
-//                }
-//            }
+            purchaseRequestDetailApiList.removeIf(detailApiDTO -> detailApiDTO.getRequiredQuantity() <= 0.0);
+            if (purchaseRequestDetailApiList.size() > 0) {
+                RestTemplate restTemplate = new RestTemplate();
+                PurchaseRequestApiDTO purchaseRequestDTO = purchaseRequestApiMapper.toDTO(purchaseRecommendationEntity, purchaseRequestDetailApiList, purchaseHasRecommendationEntity);
+                HttpEntity<PurchaseRequestApiDTO> httpEntity = new HttpEntity<>(purchaseRequestDTO);
+                String sapApiUrl = configRepository.getValueByName("SAP_PR_API").orElseThrow(RuntimeException::new);
+                try {
+                    restTemplate.exchange(
+                        sapApiUrl,
+                        HttpMethod.POST,
+                        httpEntity, String.class
+                    );
+                } catch (Exception e) {
+                    logger.error("Send PR to SAP failed", e);
+                    planRepository.approveRecommendationPlan(
+                        purchaseRecommendationEntity,
+                        Constants.PurchaseRecommendationPlan.SEND_APPROVAL,
+                        input.getItems(),
+                        batch
+                    );
+                    throw new CustomException( "sent.pr.sap.failed");
+                }
+            }
 
             List<ItemHoldEntity> holdingItemList = itemHoldRepository.getAllSourceHoldingItem(purchaseRecommendationEntity.getPurchaseRecommendationId(), input.getItems());
             holdingItemList.forEach(holdEntity -> holdEntity.setStatus(Constants.ItemHold.ACTIVE));
             itemHoldRepository.saveAll(holdingItemList);
         }
 
-        purchaseRecommendationDetailRepository.approveRecommendation(
+//        purchaseRecommendationDetailRepository.approveRecommendation(
+//            purchaseRecommendationEntity,
+//            newStatus,
+//            input.getItems(),
+//            input.getNote()
+//        );
+
+        // Change status PRecommendation => APPROVED or REJECTED
+        List<PurchaseRecommendationDetailEntity> purchaseRecommendationDetailEntities = purchaseRecommendationDetailRepository.getAllWaitingForApprove(
             purchaseRecommendationEntity,
-            newStatus,
-            input.getItems(),
-            input.getNote()
+            List.of(Constants.PurchaseRecommendationDetail.SEND_APPROVAL, Constants.PurchaseRecommendationDetail.REJECTED),
+            input.getItems()
         );
+        for (PurchaseRecommendationDetailEntity purchaseRecommendationDetailEntity : purchaseRecommendationDetailEntities) {
+            purchaseRecommendationDetailEntity.setStatus(newStatus);
+            purchaseRecommendationDetailEntity.setNote(input.getNote());
+
+            if (input.getIsApproval()
+                && purchaseRecommendationDetailEntity.getMoqPriceEntity() != null
+                && purchaseRecommendationDetailEntity.getMoqPriceEntity().getVendorItemEntity() != null
+            ) {
+                purchaseRecommendationDetailEntity.getMoqPriceEntity().getVendorItemEntity().incrementTimeUsed();
+            }
+        }
+
+        purchaseRecommendationDetailRepository.saveAll(purchaseRecommendationDetailEntities);
 
         purchaseRecommendationBatchRepository.approveRecommendation(
             purchaseRecommendationEntity,
@@ -394,9 +383,9 @@ public class PurchaseRecommendationDetailService {
             batch
         );
 
-        Integer countBatch = purchaseRecommendationBatchRepository.countBatchNotApproval(purchaseRecommendationId,batch);
-        if(countBatch == 0){
-            purchaseHasRecommendationRepository.updateStatusPurchaseHasRecomment(purchaseRecommendationId,batch);
+        Integer countBatch = purchaseRecommendationBatchRepository.countBatchNotApproval(purchaseRecommendationId, batch);
+        if (countBatch == 0) {
+            purchaseHasRecommendationRepository.updateStatusPurchaseHasRecomment(purchaseRecommendationId, batch);
         }
 
         MrpSubEntity mrpSubEntity = mrpSubRepository.getByMrpSubCodeAndStatus(purchaseRecommendationEntity.getMrpSubCode(), Constants.MrpSub.SENT_PURCHASE_RECOMMENDATION);
@@ -426,7 +415,8 @@ public class PurchaseRecommendationDetailService {
         }
 
         List<PurchaseRecommendationDetailEntity> entities = purchaseRecommendationDetailRepository.getAllByInItemList(purchaseRecommendationEntity, itemIndex.keySet());
-        if (entities.size() != updateForm.size()) throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "internal.error");
+        if (entities.size() != updateForm.size())
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "internal.error");
 
         // Quantity Diff between new and old
 //        Map<String, Double> itemQuantityDifference = new HashMap<>();
@@ -445,7 +435,8 @@ public class PurchaseRecommendationDetailService {
 
     public CommonResponse updateMoqPriceId(String itemCode, Integer purchaseRecommendationId, Integer moqPriceId) {
         PurchaseRecommendationDetailEntity entity = purchaseRecommendationDetailRepository.findByPRIdAndItemCode(purchaseRecommendationId, itemCode);
-        if (entity == null || mqqPriceRepository.findById(moqPriceId).isEmpty()) throw new CustomException(HttpStatus.NOT_FOUND, "record.notfound");
+        if (entity == null || mqqPriceRepository.findById(moqPriceId).isEmpty())
+            throw new CustomException(HttpStatus.NOT_FOUND, "record.notfound");
 
         entity.setMoqPriceId(moqPriceId);
         purchaseRecommendationDetailRepository.save(entity);
@@ -521,7 +512,7 @@ public class PurchaseRecommendationDetailService {
         return query;
     }
 
-    private JPAQuery<PurchaseRecommendationDetailDTO> buildQueryGetItemHasRecommendation(Integer purchaseRecommendationId,Integer batch, ItemFilter filter) {
+    private JPAQuery<PurchaseRecommendationDetailDTO> buildQueryGetItemHasRecommendation(Integer purchaseRecommendationId, Integer batch, ItemFilter filter) {
         QPurchaseRecommendationBatch qPurchaseRecommendationBatch = QPurchaseRecommendationBatch.purchaseRecommendationBatch;
         QPurchaseRecommendationDetailEntity qPurchaseRecommendationDetail = QPurchaseRecommendationDetailEntity.purchaseRecommendationDetailEntity;
         QVendorEntity qVendorEntity = QVendorEntity.vendorEntity;
@@ -564,7 +555,6 @@ public class PurchaseRecommendationDetailService {
     }
 
     /**
-     *
      * @param soCode
      * @param mrpSubCode
      * @param itemCode
@@ -578,23 +568,23 @@ public class PurchaseRecommendationDetailService {
         //Tìm RecommendationDetail để add theo mapping OneToMany
         List<PurchaseRecommendationDetailEntity> detailEntities = purchaseRecommendationDetailRepository.getAllPurchaseRecommendationDetailEntity(soCode, mrpSubCode, itemCode);
 
-        if (detailEntities == null || detailEntities.isEmpty()){
-            throw new CustomException(HttpStatus.OK,"record.notfound");
+        if (detailEntities == null || detailEntities.isEmpty()) {
+            throw new CustomException(HttpStatus.OK, "record.notfound");
         }
         detailEntities.get(0).setPlanNote(input.getNote());
         purchaseRecommendationDetailRepository.save(detailEntities.get(0));
         //Save record
-        for (RecommendationPlanDto dto : input.getPlans()){
-            if(dto.getChecked() && dto.getStatus() != 2 && dto.getStatus() != 3){
+        for (RecommendationPlanDto dto : input.getPlans()) {
+            if (dto.getChecked() && dto.getStatus() != 2 && dto.getStatus() != 3) {
                 entity = planMapper.dtoToEntity(dto);
                 entity.setPurchaseRecommendationDetailId(detailEntities.get(0).getPurchaseRecommendationDetailId());
                 entity.setStatus(1);
                 entity.setBatch(null);
                 entityList.add(entity);
-            }else if((!dto.getChecked() || dto.getChecked() == null) && dto.getStatus() != 2 && dto.getStatus() != 3){
+            } else if ((!dto.getChecked() || dto.getChecked() == null) && dto.getStatus() != 2 && dto.getStatus() != 3) {
                 entity = planMapper.dtoToEntity(dto);
                 entity.setPurchaseRecommendationDetailId(detailEntities.get(0).getPurchaseRecommendationDetailId());
-                if(entity.getStatus() != 4){
+                if (entity.getStatus() != 4) {
                     entity.setStatus(0);
                 }
                 entityList.add(entity);
@@ -604,10 +594,9 @@ public class PurchaseRecommendationDetailService {
     }
 
     /**
-     *
      * @param dto
      */
-    public void deleteRecommendationPlan(RecommendationPlanDto dto){
+    public void deleteRecommendationPlan(RecommendationPlanDto dto) {
         PurchaseRecommendationPurchasePlanEntity entity = planRepository.findByRecommendationPurchasePlanId(dto.getRecommendationPurchasePlanId());
         entity.setIsActive(false);
         planRepository.save(entity);
@@ -615,6 +604,7 @@ public class PurchaseRecommendationDetailService {
 
     /**
      * hàm lấy tất cả kế hoạch khuyến nghị
+     *
      * @param soCode
      * @param mrpSubCode
      * @param itemCode
@@ -627,16 +617,16 @@ public class PurchaseRecommendationDetailService {
         //Tìm RecommendationDetail để add theo mapping OneToMany
         List<PurchaseRecommendationDetailEntity> detailEntities = purchaseRecommendationDetailRepository.getAllPurchaseRecommendationDetailEntity(soCode, mrpSubCode, itemCode);
 
-        if (detailEntities == null || detailEntities.isEmpty()){
-            throw new CustomException(HttpStatus.OK,"record.notfound");
+        if (detailEntities == null || detailEntities.isEmpty()) {
+            throw new CustomException(HttpStatus.OK, "record.notfound");
         }
 
-        List<PurchaseRecommendationPurchasePlanEntity> plan = planRepository.findAllPlanBatch(detailEntities.get(0).getPurchaseRecommendationDetailId(),batch);
+        List<PurchaseRecommendationPurchasePlanEntity> plan = planRepository.findAllPlanBatch(detailEntities.get(0).getPurchaseRecommendationDetailId(), batch);
 
-        if (plan == null || plan.isEmpty()){
-            throw new CustomException(HttpStatus.OK,"record.notfound");
-        }else {
-            for (PurchaseRecommendationPurchasePlanEntity entity : plan){
+        if (plan == null || plan.isEmpty()) {
+            throw new CustomException(HttpStatus.OK, "record.notfound");
+        } else {
+            for (PurchaseRecommendationPurchasePlanEntity entity : plan) {
                 dto = planMapper.entityToDto(entity);
                 dtoList.add(dto);
             }
@@ -648,12 +638,12 @@ public class PurchaseRecommendationDetailService {
         return result;
     }
 
-    public RecommendationPlanNoteDTO getAllRecommendationPlan( String soCode, String mrpSubCode, String itemCode) {
+    public RecommendationPlanNoteDTO getAllRecommendationPlan(String soCode, String mrpSubCode, String itemCode) {
         //Tìm RecommendationDetail để add theo mapping OneToMany
         List<PurchaseRecommendationDetailEntity> detailEntities = purchaseRecommendationDetailRepository.getAllPurchaseRecommendationDetailEntity(soCode, mrpSubCode, itemCode);
 
-        if (detailEntities == null || detailEntities.isEmpty()){
-            throw new CustomException(HttpStatus.OK,"record.notfound");
+        if (detailEntities == null || detailEntities.isEmpty()) {
+            throw new CustomException(HttpStatus.OK, "record.notfound");
         }
 
 //        List<PurchaseRecommendationPurchasePlanEntity> planEntities = planRepository.findAllPlan(detailEntities.get(0).getPurchaseRecommendationDetailId());
@@ -663,7 +653,7 @@ public class PurchaseRecommendationDetailService {
             List.of(Constants.PurchaseRecommendationPlan.ACCEPTED, Constants.PurchaseRecommendationPlan.CLOSED_ACCEPTED)
         );
 
-        if (planEntities == null || planEntities.isEmpty()){
+        if (planEntities == null || planEntities.isEmpty()) {
             throw new CustomException(HttpStatus.OK, "record.notfound");
         }
 //        else {
@@ -682,7 +672,8 @@ public class PurchaseRecommendationDetailService {
     @Transactional
     public void closePurchaseRequest(Integer purchaseRecommendationId, String itemCode, Integer status) {
         PurchaseRecommendationDetailEntity purchaseRecommendationDetailEntity = purchaseRecommendationDetailRepository.findByPRIdAndItemCode(purchaseRecommendationId, itemCode);
-        if (purchaseRecommendationDetailEntity == null) throw new CustomException(HttpStatus.BAD_REQUEST, "record.notfound");
+        if (purchaseRecommendationDetailEntity == null)
+            throw new CustomException(HttpStatus.BAD_REQUEST, "record.notfound");
 
         purchaseRecommendationDetailEntity.setStatus(status);
         purchaseRecommendationDetailRepository.save(purchaseRecommendationDetailEntity);

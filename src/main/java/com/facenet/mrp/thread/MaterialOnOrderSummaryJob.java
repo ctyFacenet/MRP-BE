@@ -18,6 +18,7 @@ import com.facenet.mrp.service.utils.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
+@Profile("prod")
 @Component
 public class MaterialOnOrderSummaryJob {
 
@@ -135,7 +137,7 @@ public class MaterialOnOrderSummaryJob {
     }
 
 
-//    @Scheduled(fixedDelay = 30 * 60 * 1000)
+    @Scheduled(fixedDelay = 30 * 60 * 1000)
     public void prOnOrderSummary() {
         logger.info("------ start run PR_OnOrderSummary job ------");
         PageFilterInput<PurchaseRequestDTO> input = new PageFilterInput<>();
@@ -225,7 +227,7 @@ public class MaterialOnOrderSummaryJob {
         logger.info("------ finish run PR_OnOrderSummary job ------");
     }
 
-//    @Scheduled(fixedDelay = 30 * 60 * 1000)
+    @Scheduled(fixedDelay = 30 * 60 * 1000)
     public void grpoOnOrderSummary() {
         logger.info("------ start run GRPO_OnOrderSummary job ------");
         PageFilterInput<GrpoDTO> input = new PageFilterInput<>();

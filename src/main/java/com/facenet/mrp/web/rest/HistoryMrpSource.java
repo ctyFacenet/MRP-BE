@@ -1,5 +1,6 @@
 package com.facenet.mrp.web.rest;
 
+import com.facenet.mrp.domain.mrp.ItemHoldEntity;
 import com.facenet.mrp.service.HistoryMrpService;
 import com.facenet.mrp.service.HoldItemService;
 import com.facenet.mrp.service.ListSaleService;
@@ -22,6 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.util.List;
 import java.util.Map;
 
 
@@ -65,15 +67,15 @@ public class HistoryMrpSource {
 
     @PostMapping(value = "/order-analytics/mrp-analytics/new-mrp-script")
     public CommonResponse saveScriptMrp(@RequestBody AdvancedMrpDTO mrpDTO) throws JsonProcessingException, ParseException {
-        historyMrpService.saveMrpResult(mrpDTO);
+        historyMrpService.saveMrpResult(mrpDTO, mrpDTO.isHold());
         // synthetic then save hold
         if (mrpDTO.isHold()) holdItemService.saveHoldItem(viewSyntheticScriptMrp(mrpDTO).getData());
         return new CommonResponse<>().success();
     }
 
     @PostMapping(value = "/order-analytics/mrp-analytics/new-mrp-script/{sessionId}")
-    public CommonResponse saveScriptMrpOfSession(@PathVariable String sessionId, Map<String, Boolean> isHold) throws JsonProcessingException, ParseException {
-        historyMrpService.saveMrpResult(mrpAnalysisCache.getMrpResult(sessionId));
+    public CommonResponse saveScriptMrpOfSession(@PathVariable String sessionId, @RequestBody Map<String, Boolean> isHold) throws JsonProcessingException, ParseException {
+        historyMrpService.saveMrpResult(mrpAnalysisCache.getMrpResult(sessionId), (isHold.containsKey("isHold") && isHold.get("isHold").equals(true)));
         if (isHold.containsKey("isHold") && isHold.get("isHold").equals(true))
             holdItemService.saveHoldItem(viewSyntheticScriptMrp(sessionId).getData());
         mrpAnalysisCache.clearCache(sessionId);

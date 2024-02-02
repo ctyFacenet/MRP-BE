@@ -19,11 +19,8 @@ import java.util.Map;
 public class HoldItemResource {
     private final HoldItemService holdItemService;
 
-    private final SyncDataFromSap syncDataFromSap;
-
-    public HoldItemResource(HoldItemService holdItemService,SyncDataFromSap syncDataFromSap) {
+    public HoldItemResource(HoldItemService holdItemService) {
         this.holdItemService = holdItemService;
-        this.syncDataFromSap = syncDataFromSap;
     }
 
     @GetMapping("/{itemCode}")
@@ -35,5 +32,32 @@ public class HoldItemResource {
     @PostMapping("/{itemCode}")
     public CommonResponse<List<ItemHoldDTO>> getItemHoldWithWarehouse(@PathVariable String itemCode, @RequestBody ItemHoldInput input) {
         return new CommonResponse<>().success().data(holdItemService.getItemHold(itemCode, input));
+    }
+
+    @GetMapping("/mrp-sub/{mrpSubCode}")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'QLSX', 'HT', 'K')")
+    public CommonResponse<List<String>> getListItemHoldOfMrp(@PathVariable String mrpSubCode) {
+        return new CommonResponse<>().success().data(holdItemService.getItemHoldOfMrpSub(mrpSubCode));
+    }
+
+    @PutMapping("/un-hold/mrp/{mrpCode}")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'QLSX', 'HT', 'K')")
+    public CommonResponse<List<ItemHoldDTO>> unHoldAllItemOfMrpCode(@PathVariable String mrpCode) {
+        holdItemService.unHoldMrpCode(mrpCode);
+        return new CommonResponse<>().success();
+    }
+
+    @PutMapping("/un-hold/items/{itemCode}")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'QLSX', 'HT', 'K')")
+    public CommonResponse<List<ItemHoldDTO>> unHoldItem(@PathVariable String itemCode) {
+        holdItemService.unHoldItem(itemCode);
+        return new CommonResponse<>().success();
+    }
+
+    @PutMapping("/un-hold/mrp/{mrpCode}/{itemCode}")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'QLSX', 'HT', 'K')")
+    public CommonResponse<List<ItemHoldDTO>> unHoldItemOfMrpCode(@PathVariable String mrpCode, @PathVariable String itemCode) {
+        holdItemService.unHoldItemOfMrpCode(mrpCode, itemCode);
+        return new CommonResponse<>().success();
     }
 }

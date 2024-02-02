@@ -144,66 +144,86 @@ public class XlsxExcelHandle {
 
     public ProductOrder excelToDonHang(Row row) throws ParseException {
         //TODO: optimize code
-        ExcelUtils.validateRow(row, 0, 7);
-        ExcelUtils.validateRow(row, 11, 16);
+        ExcelUtils.validateRow(row, 0, 11);
+        ExcelUtils.validateRow(row, 15, 18);
 
         ProductOrder donHang = new ProductOrder();
 //        donHang.setId(UUID.randomUUID());
         donHang.setProductOrderCode("RAL-SO-"+ExcelUtils.getStringCellValue(row.getCell(0)));
-        donHang.setCustomerId(ExcelUtils.getStringCellValue(row.getCell(1)));
-        donHang.setCustomerName(ExcelUtils.getStringCellValue(row.getCell(2)));
-        donHang.setProductOrderType(ExcelUtils.getStringCellValue(row.getCell(3)));
+//        donHang.setCustomerId(ExcelUtils.getStringCellValue(row.getCell(1)));
+//        donHang.setCustomerName(ExcelUtils.getStringCellValue(row.getCell(2)));
+        donHang.setProductOrderType(ExcelUtils.getStringCellValue(row.getCell(1)));
         donHang.setType("Đơn hàng");
+        donHang.setProductCodeChild(ExcelUtils.getStringCellValue(row.getCell(2)));
+        donHang.setProductCode(ExcelUtils.getStringCellValue(row.getCell(3)));
+        donHang.setProductName(row.getCell(4).getStringCellValue().trim());
+        donHang.setBomVersion(row.getCell(5).getStringCellValue().trim());
+        donHang.setQuantity(ExcelUtils.getIntegerCellValue(row.getCell(6)));
+        donHang.setCustomerId(ExcelUtils.getStringCellValue(row.getCell(7)));
+
         if(StringUtils.isEmpty(donHang.getCustomerId())){
             throw new CustomException("customer.id.is.empty",row.getRowNum() + "");
         }
-        donHang.setProductCode(ExcelUtils.getStringCellValue(row.getCell(4)));
-        donHang.setProductName(row.getCell(5).getStringCellValue().trim());
-        donHang.setBomVersion(row.getCell(6).getStringCellValue().trim());
-        donHang.setQuantity(ExcelUtils.getIntegerCellValue(row.getCell(7)));
 
-        if (row.getCell(8).getCellType() == CellType.BLANK)
+        donHang.setCustomerName(ExcelUtils.getStringCellValue(row.getCell(8)));
+        donHang.setSaleCode(ExcelUtils.getStringCellValue(row.getCell(9)));
+
+        if(row.getCell(10) != null) {
+            //startTime
+            donHang.setStartDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(10))));
+        }
+        if(row.getCell(11) != null) {
+            //endTime
+            Date endTime = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(11)));
+            if (endTime.compareTo(donHang.getStartDate()) < 0)
+                throw new CustomException("object.must.be.greater.than.at", "thời gian trả hàng", "thời gian phát sinh", String.valueOf(row.getRowNum() + 1));
+            donHang.setEndDate(endTime);
+        }
+
+        if (row.getCell(12).getCellType() == CellType.BLANK)
             donHang.setSupplyType("MRP");
         else
-            donHang.setSupplyType(ExcelUtils.getStringCellValue(row.getCell(8)));
+            donHang.setSupplyType(ExcelUtils.getStringCellValue(row.getCell(12)));
 
-        if (row.getCell(9).getCellType() == CellType.BLANK)
+        if (row.getCell(13).getCellType() == CellType.BLANK)
             donHang.setPriorityProduct(1);
         else
-            donHang.setPriorityProduct(ExcelUtils.getIntegerCellValue(row.getCell(9)));
-        if (row.getCell(10).getCellType() == CellType.BLANK)
+            donHang.setPriorityProduct(ExcelUtils.getIntegerCellValue(row.getCell(13)));
+
+        if (row.getCell(14).getCellType() == CellType.BLANK)
             donHang.setPriority(1);
         else
-            donHang.setPriority(ExcelUtils.getIntegerCellValue(row.getCell(10)));
+            donHang.setPriority(ExcelUtils.getIntegerCellValue(row.getCell(14)));
         donHang.setStatus(1);
-        if(row.getCell(11) != null) {
-            donHang.setOrderDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(11))));
+        if(row.getCell(15) != null) {
+            donHang.setOrderDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(15))));
         }else{
             donHang.setOrderDate(new Date());
         }
-        if (row.getCell(12) != null) {
-            Date deliverDate = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(12)));
+        if (row.getCell(16) != null) {
+            Date deliverDate = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(16)));
             if (deliverDate.compareTo(donHang.getOrderDate()) < 0)
                 throw new CustomException("object.must.be.greater.than.other.at", "thời gian trả hàng", "thời gian đặt hàng", String.valueOf(row.getRowNum() + 1));
             donHang.setDeliverDate(deliverDate);
         }
 
-        if(row.getCell(13) != null) {
-            //startTime
-            donHang.setStartDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(13))));
-        }
-        if(row.getCell(14) != null) {
-            //endTime
-            Date endTime = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(14)));
-            if (endTime.compareTo(donHang.getStartDate()) < 0)
-                throw new CustomException("object.must.be.greater.than.at", "thời gian trả hàng", "thời gian phát sinh", String.valueOf(row.getRowNum() + 1));
-            donHang.setEndDate(endTime);
-        }
-        donHang.setSaleId(ExcelUtils.getStringCellValue(row.getCell(15)));
-        donHang.setSaleName(ExcelUtils.getStringCellValue(row.getCell(16)));
+//        if(row.getCell(13) != null) {
+//            //startTime
+//            donHang.setStartDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(13))));
+//        }
+//        if(row.getCell(14) != null) {
+//            //endTime
+//            Date endTime = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(14)));
+//            if (endTime.compareTo(donHang.getStartDate()) < 0)
+//                throw new CustomException("object.must.be.greater.than.at", "thời gian trả hàng", "thời gian phát sinh", String.valueOf(row.getRowNum() + 1));
+//            donHang.setEndDate(endTime);
+//        }
+        donHang.setPartCode(ExcelUtils.getStringCellValue(row.getCell(17)));
+        donHang.setPartName(ExcelUtils.getStringCellValue(row.getCell(18)));
         donHang.setCreatedAt(Instant.now());
 
-        String po_id = donHang.getCustomerId() + "-" + new SimpleDateFormat("yyyyMMdd").format(donHang.getOrderDate());
+//        String po_id = donHang.getCustomerId() + "-" + new SimpleDateFormat("yyyyMMdd").format(donHang.getOrderDate());
+        String po_id = donHang.getProductOrderCode();
         donHang.setMrpPoId(po_id);
         return donHang;
     }

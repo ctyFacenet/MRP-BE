@@ -21,9 +21,10 @@ public class ItemPriceOfVendorDTO implements Comparable<ItemPriceOfVendorDTO>{
     @JsonIgnore
     private Double actualPrice;
 
-    public ItemPriceOfVendorDTO(Integer moqPriceId, String vendorCode, Integer leadtime, Integer rangeStart, Integer rangeEnd, Double price, Date timeStart, String currency, Boolean isPromotion) {
+    public ItemPriceOfVendorDTO(Integer moqPriceId, String vendorCode,String vendorName, Integer leadtime, Integer rangeStart, Integer rangeEnd, Double price, Date timeStart, String currency, Boolean isPromotion) {
         this.moqPriceId = moqPriceId;
         this.vendorCode = vendorCode;
+        this.vendorName = vendorName;
         this.leadtime = leadtime;
         this.rangeStart = rangeStart;
         this.rangeEnd = rangeEnd;
@@ -90,7 +91,7 @@ public class ItemPriceOfVendorDTO implements Comparable<ItemPriceOfVendorDTO>{
     }
 
     public String getStatus() {
-        return status;
+        return isPromotion ? "Đang khuyễn mãi" : "Giá MOQ";
     }
 
     public void setStatus(String status) {

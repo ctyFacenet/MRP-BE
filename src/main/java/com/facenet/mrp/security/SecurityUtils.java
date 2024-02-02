@@ -37,6 +37,11 @@ public final class SecurityUtils {
         return Optional.ofNullable(extractPrincipal(securityContext.getAuthentication(), "preferred_username"));
     }
 
+    public static String getUserSap() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        return (String) ((JwtAuthenticationToken) securityContext.getAuthentication()).getToken().getClaims().get("sap_user");
+    }
+
     private static String extractPrincipal(Authentication authentication, String field) {
         if (authentication == null) {
             return null;

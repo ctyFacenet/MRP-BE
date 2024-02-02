@@ -1,7 +1,9 @@
 package com.facenet.mrp.web.rest;
 
+import com.facenet.mrp.service.MrpAdvancedAnalysisServiceV3;
 import com.facenet.mrp.service.MrpBomDetailService;
 import com.facenet.mrp.service.ProductOrderAnalyticService;
+import com.facenet.mrp.service.dto.ProductOrderDTOAPS;
 import com.facenet.mrp.service.dto.ProductOrderDto;
 import com.facenet.mrp.service.dto.ProductOrderItemsDTO;
 import com.facenet.mrp.service.dto.request.AddItemToBomRequest;
@@ -27,6 +29,9 @@ public class ProductOrderAnalyticsResource {
     ProductOrderAnalyticService productOrderAnalyticService;
     @Autowired
     private MrpBomDetailService mrpBomDetailService;
+
+    @Autowired
+    MrpAdvancedAnalysisServiceV3 mrpAdvancedAnalysisServiceV3;
 
     @PostMapping("/list-order-analytics")
     @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX')")
@@ -71,5 +76,10 @@ public class ProductOrderAnalyticsResource {
     public CommonResponse<List<ProductOrderItemsDTO>> getAllPoDetail(@PathVariable("productOrderCode") String productOrderCode, @PathVariable(value = "productCode", required = false) String productCode) {
         if (productOrderCode == null) throw new CustomException(HttpStatus.BAD_REQUEST,"invalid.param");
         return productOrderAnalyticService.getAllProductDetail(productOrderCode, productCode);
+    }
+
+    @PostMapping("/services/api/order/create-po-mrp/{ssId}/{mrpCode}")
+    public CommonResponse<ProductOrderDTOAPS> sendPlaningForAPS(@PathVariable("ssId") String ssId, @PathVariable("mrpCode") String mrpCode){
+        return productOrderAnalyticService.sendPlaningForAPS(ssId, mrpCode);
     }
 }

@@ -21,8 +21,8 @@ public interface ProductOrderRepository  extends PagingAndSortingRepository<Prod
         "AND (:poType IS NULL OR p.productOrderType like %:poType%) " +
         "AND (:orderedTime IS NULL OR p.orderDate >= :orderedTime) " +
         "AND (:deliveryTime IS NULL OR p.deliverDate <= :deliveryTime) " +
-        "AND (:salesCode IS NULL OR p.saleId like %:salesCode%) " +
-        "AND (:salesName IS NULL OR p.saleName like %:salesName%) "+
+        "AND (:salesCode IS NULL OR p.partCode like %:salesCode%) " +
+        "AND (:salesName IS NULL OR p.partName like %:salesName%) "+
         "ORDER BY p.createdAt desc "
     )
     Page<ProductOrder> getAllProductOrder(Pageable pageable,
@@ -87,10 +87,10 @@ public interface ProductOrderRepository  extends PagingAndSortingRepository<Prod
     @Query("select distinct po.productOrderType from ProductOrder po where po.isActive = 1 and po.productOrderType like :input%")
     List<String> getAllPOType(@Param("input") String poType, Pageable pageable);
 
-    @Query("select distinct po.saleId from ProductOrder po where po.isActive = 1 and po.saleId like :input%")
+    @Query("select distinct po.partCode from ProductOrder po where po.isActive = 1 and po.partCode like :input%")
     List<String> getAllSalesCode(@Param("input") String salesCode, Pageable pageable);
 
-    @Query("select distinct po.saleName from ProductOrder po where po.isActive = 1 and po.saleName like :input%")
+    @Query("select distinct po.partName from ProductOrder po where po.isActive = 1 and po.partName like :input%")
     List<String> getAllSalesName(@Param("input") String salesName, Pageable pageable);
 
     @Query(value = "select count(f) from ProductOrder f where f.type = 'Forecast' ")

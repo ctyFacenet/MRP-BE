@@ -53,9 +53,9 @@ public class PoRepositoryImpl implements PoCustomRepository {
 
         JPAQuery<PoDto> query = new JPAQueryFactory(em)
             .select(new QPoDto(
-                qPrq1Entity.docEntry.stringValue(),
-                qPor1Entity.docEntry.stringValue(),
-                qPdn1Entity.docEntry.stringValue(),
+                qPrq1Entity.docEntry.stringValue().trim(),
+                qPor1Entity.docEntry.stringValue().trim(),
+                qPdn1Entity.docEntry.stringValue().trim(),
                 qPor1Entity.uSo,
                 qPor1Entity.uMcode,
                 qOporEntity.uCodeInv,
