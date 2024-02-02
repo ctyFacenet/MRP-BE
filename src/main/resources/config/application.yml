@@ -267,4 +267,4 @@ cache-mrp:
 
 file:
   file-path:
-    absolute-path:/home/ubuntu/uploads
+    absolute-path: /home/ubuntu/uploads
