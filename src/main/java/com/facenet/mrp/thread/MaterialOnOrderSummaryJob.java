@@ -18,6 +18,7 @@ import com.facenet.mrp.service.utils.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
+@Profile("prod")
 @Component
 public class MaterialOnOrderSummaryJob {
 
@@ -49,7 +51,7 @@ public class MaterialOnOrderSummaryJob {
     @Autowired
     private PrPoGrpoCache prPoGrpoCache;
 
-    @Scheduled(fixedDelay = 30 * 60 * 1000)
+//    @Scheduled(fixedDelay = 30 * 60 * 1000)
     public void poOnOrderSummary() {
         logger.info("------ start run PO_OnOrderSummary job ------");
         PoFilter poFilter = new PoFilter();
