@@ -1,12 +1,12 @@
 version: '3.8'
 services:
   backend:
-    container_name: mks-mrp-be
+    container_name: rd-mrp-be
     build:
       dockerfile: Dockerfile
-    image: mks-mrp-be
+    image: rd-mrp-be
     restart: always
     ports:
-      - '8313:8313'
+      - '8312:8312'
     volumes:
-      - /home/ubuntu/mrp-mks/uploads:/mrp-mks/uploads
+      - /home/ubuntu/uploads:/rd/uploads

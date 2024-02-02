@@ -83,7 +83,7 @@ spring:
   thymeleaf:
     cache: false
 server:
-  port: 8313
+  port: 8312
 
 # ===================================================================
 # JHipster specific properties
