@@ -39,7 +39,7 @@ public class MqqPriceRepositoryImpl implements MqqPriceCustomRepository {
 
         //Query lấy list MqqPrice
         JPAQuery<MqqPriceDTO> query = new JPAQueryFactory(em)
-            .selectDistinct(new QMqqPriceDTO(
+            .select(new QMqqPriceDTO(
                 qMqqPriceEntity.itemPriceId,
                 qMqqPriceEntity.rangeStart,
                 qMqqPriceEntity.rangeEnd,

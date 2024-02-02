@@ -62,7 +62,7 @@ public interface ProductOrderDetailRepository extends PagingAndSortingRepository
     @Query(value = "select p from ProductOrderDetail p join ProductOrder po on p.productOrderCode = po.mrpPoId where po.isActive = 1 and p.isActive = 1 and p.productCode = :productCode and po.productOrderCode = :productOrderCode")
     ProductOrderDetail findByProductCode(@Param("productCode") String productCode,@Param("productOrderCode") String productOrderCode);
 
-    @Query("select new com.facenet.mrp.service.dto.ProductOrderItemsDTO(p.id, p.productCode, p.productName, p.bomVersion, p.status) from ProductOrderDetail p " +
+    @Query("select new com.facenet.mrp.service.dto.ProductOrderItemsDTO(p.id, p.productCode, p.productName, p.productOrderChild, p.bomVersion, p.status) from ProductOrderDetail p " +
         "where (p.status <> 1 and p.status <> 6) and p.isActive=1 " +
         "and p.productOrderCode.mrpPoId=:mrpPoId " +
         "and (:productCode is null or p.productCode=:productCode) order by p.priority asc")

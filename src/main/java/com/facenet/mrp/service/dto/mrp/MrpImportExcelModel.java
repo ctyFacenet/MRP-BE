@@ -1,5 +1,6 @@
 package com.facenet.mrp.service.dto.mrp;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MrpImportExcelModel {
@@ -7,6 +8,7 @@ public class MrpImportExcelModel {
     private String productCode;
     private String productName;
     private String bomVersion;
+    private Integer level;
     private double requiredQuantity;
     private List<MrpDateQuantity> LandMarkDTOs;
 
@@ -48,5 +50,13 @@ public class MrpImportExcelModel {
 
     public void setLandMarkDTOs(List<MrpDateQuantity> landMarkDTOs) {
         LandMarkDTOs = landMarkDTOs;
+    }
+
+    public Integer getLevel() {
+        return level;
+    }
+
+    public void setLevel(Integer level) {
+        this.level = level;
     }
 }

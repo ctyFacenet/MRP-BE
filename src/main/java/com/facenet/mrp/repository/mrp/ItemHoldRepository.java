@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public interface ItemHoldRepository extends JpaRepository<ItemHoldEntity, Integer> {
+    List<ItemHoldEntity> findByMrpSubCodeAndItemCode(String mrpSubCode, String itemCode);
+    List<ItemHoldEntity> findByMrpSubCodeStartsWith(String mrpSubCode);
     List<ItemHoldEntity> findByPurchaseRecommendationId(Integer purchaseRecommendationId);
     @Query("select sum (i.quantity) from ItemHoldEntity i where i.isActive = true and i.status = 2 and i.itemCode = :itemCode and (i.mrpSubCode is null or i.mrpSubCode = :mrpSubCode) and i.productOrderCode = :productOrderCode")
     Double sumItemHold(
@@ -136,6 +138,34 @@ public interface ItemHoldRepository extends JpaRepository<ItemHoldEntity, Intege
         ));
     }
 
+    @Query("select new com.facenet.mrp.service.dto.mrp.ItemQuantityWithDate(i.holdDate, i.itemCode, sum(i.quantity)) " +
+        "from ItemHoldEntity i " +
+//        "join MrpSubEntity m on i.mrpSubCode = m.mrpSubCode " +
+        "where i.warehouseCode is null " +
+        "and :startTime <= i.holdDate and i.holdDate <= :endTime " +
+        "and i.mrpSubCode not like :mrpCode% " +
+        "and i.isActive = true " +
+        "and i.status = :status " +
+        "group by i.itemCode, i.holdDate " +
+        "order by i.holdDate")
+    List<ItemQuantityWithDate> getAllHoldNeedQuantityItemExceptMrpCode(
+        @Param("startTime") Date startTime,
+        @Param("endTime") Date endTime,
+        @Param("mrpCode") String mrpCode,
+        @Param("status") int status
+    );
+    default Map<String, List<ItemQuantityWithDate>> getAllHoldQuantityItemMapExceptMrpCode(Date startTime, Date endTime, String mrpCode) {
+        return getAllHoldNeedQuantityItemExceptMrpCode(
+            //startTime,endTime,
+            Utils.toUTC(startTime),
+            Utils.toUTC(endTime),
+            mrpCode + ".",
+            Constants.ItemHold.ACTIVE
+        ).stream().collect(Collectors.groupingBy(
+            ItemQuantityWithDate::getItemCode
+        ));
+    }
+
     @Query("select i from ItemHoldEntity i " +
         "where i.isActive = true " +
         "and i.itemCode in :items " +
@@ -153,6 +183,12 @@ public interface ItemHoldRepository extends JpaRepository<ItemHoldEntity, Intege
     @Modifying
     @Query("update ItemHoldEntity i set i.isActive = false where i.mrpSubCode = :mrpSubCode")
     int unHoldItemsOf(@Param("mrpSubCode") String mrpSubCode);
+
+
+    @Transactional
+    @Modifying
+    @Query("update ItemHoldEntity i set i.isActive = false where i.mrpSubCode like :mrpSubCode%")
+    int unHoldItemsOfMrpStartWith(@Param("mrpSubCode") String mrpSubCode);
 
     @Transactional
     @Modifying
@@ -212,4 +248,25 @@ public interface ItemHoldRepository extends JpaRepository<ItemHoldEntity, Intege
                                        @Param("timeEnd") Date timeEnd
 //                                       @Param("analysisPeriod")String analysisPeriod
     );
+
+    @Query("select new com.facenet.mrp.service.dto.ItemHoldDTO(i.mrpSubCode, i.productOrderCode, i.quantity, i.warehouseCode, i.holdDate) " +
+        "from ItemHoldEntity i " +
+        "where i.itemCode = :itemCode and i.status = 2 " +
+        "and i.mrpSubCode not like :mrpCode% " +
+        "and :timeStart <= i.holdDate and i.holdDate <= :timeEnd " +
+        "and i.isActive = true " +
+        "order by i.holdDate asc"
+    )
+    List<ItemHoldDTO> getAllByItemCodeExceptMrpCode(@Param("itemCode") String itemCode,
+                                       @Param("timeStart") Date timeStart,
+                                        @Param("timeEnd") Date timeEnd,
+                                        @Param("mrpCode") String mrpCode
+//                                       @Param("analysisPeriod")String analysisPeriod
+    );
+
+    @Query("select distinct i.itemCode from ItemHoldEntity i where i.mrpSubCode = :mrpSubCode and i.isActive = true and i.status = 2")
+    List<String> findAllByMrpSubCode(@Param("mrpSubCode") String mrpSubCode);
+
+    @Query("select i from ItemHoldEntity i where i.itemCode = :itemCode and i.isActive = true and i.status = 2")
+    List<ItemHoldEntity> findByItemCode(@Param("itemCode") String itemCode);
 }

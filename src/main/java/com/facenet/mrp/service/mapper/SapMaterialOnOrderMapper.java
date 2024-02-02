@@ -46,6 +46,8 @@ public class SapMaterialOnOrderMapper {
         entity.setGrpoCode(dto.getGrpoId() == null ? null : dto.getGrpoId().trim());
         entity.setDueDate(dto.getDeliverAt());
         entity.setLineNumber(dto.getLineNumber());
+        entity.setCreatePoUser(dto.getCreatedBy());
+        entity.setPoCreateDate(dto.getCreatedAt());
         return entity;
     }
 

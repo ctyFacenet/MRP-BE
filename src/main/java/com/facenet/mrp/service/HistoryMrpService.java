@@ -10,6 +10,7 @@ import com.facenet.mrp.service.dto.mrp.MrpResultDTO;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
+import com.facenet.mrp.service.mapper.MrpOrderQuantityMapper;
 import com.facenet.mrp.service.mapper.MrpProductionQuantityMapper;
 import com.facenet.mrp.service.mapper.MrpRequiredQuantityMapper;
 import com.facenet.mrp.service.utils.Constants;
@@ -67,6 +68,8 @@ public class HistoryMrpService {
     private ProductOrderDetailRepository productOrderDetailRepository;
     @Autowired
     private ProductOrderRepository productOrderRepository;
+    @Autowired
+    private MrpOrderQuantityMapper mrpOrderQuantityMapper;
 
     @Value("${file.file-path.absolute-path}")
     private String absolutePath;
@@ -185,7 +188,7 @@ public class HistoryMrpService {
     }
 
     @Transactional
-    public void saveMrpResult(AdvancedMrpDTO mrpDTO) throws JsonProcessingException, ParseException {
+    public void saveMrpResult(AdvancedMrpDTO mrpDTO, boolean isHold) throws JsonProcessingException, ParseException {
 
         // Define the file path
         String filePath = absolutePath + mrpDTO.getMrpSubCode();
@@ -224,7 +227,7 @@ public class HistoryMrpService {
         mrp.setMrpPoId(mrpDTO.getSoCode());
         mrp.setStartTime(mrpDTO.getTimeStart());
         mrp.setEndTime(mrpDTO.getTimeEnd());
-        mrp.setStatus((byte) 0);
+        mrp.setStatus(isHold ? Constants.Mrp.NEW_WITH_HOLD : Constants.Mrp.NEW);
         mrp.setIsActive((byte) 1);
         mrp.setLastAccess(mrpDTO.getAnalysisDate());
         historyMrpRepository.save(mrp);
@@ -294,6 +297,7 @@ public class HistoryMrpService {
                         mrpRequiredQuantityMapper.toEntity(mrpDTO.getSoCode(), mrpDTO.getMrpSubCode(), item)
                     );
                 }
+
             }
         }
         mrpProductionQuantityRepository.saveAll(itemProductionQuantityList);
@@ -355,7 +359,7 @@ public class HistoryMrpService {
         List<MrpDetailDTO> items = mrpDTO.getResultData();
         List<ItemSyntheticDTO> itemSyntheticDTOList = new ArrayList<>();//danh sách tổng hợp nvl
         Set<String> itemCodeSet = new HashSet<>();
-        int c = 0;
+
         for (MrpDetailDTO item : items) {
             List<MrpDetailDTO> mrpDetailDTOList = item.getChildren();//danh sách item trong sản phẩm
             List<ItemSyntheticDTO> itemSyntheticDTOs = new ArrayList<>();
@@ -375,17 +379,6 @@ public class HistoryMrpService {
                     }
                     List<DetailItemSyntheticDTO> list1 = itemSyntheticDTO.getDetailData();
                     List<DetailItemSyntheticDTO> list2 = list.getDetailData();
-
-                    if (list.getItemCode().equals("00030454")) {
-                        System.err.println(++c + " 00030454 ");
-                    }
-                    if (list1.size() != list2.size())  {
-                        System.err.println("item " + list.getItemCode());
-                        System.err.println("List1 size: " + list1.size());
-                        System.err.println("List2 size: " + list2.size());
-                        System.err.println(list1.get(list1.size() - 1).getLandMark());
-                        System.err.println(list2.get(list2.size() - 1).getLandMark());
-                    }
                     // skip Hiện trạng
                     for (int i = 1; i < list1.size(); i++) {
                         list1.get(i).setRequiredQuantity(list1.get(i).getRequiredQuantity() + list2.get(i).getRequiredQuantity());
@@ -557,6 +550,7 @@ public class HistoryMrpService {
                     detailItemSyntheticDTO.setOriginQuantity(resultDTO.getOriginQuantity());
                     detailItemSyntheticDTO.setOriginalRequiredQuantity(resultDTO.getRequiredQuantity());
                     detailItemSyntheticDTO.setRequiredQuantity(resultDTO.getOriginQuantity());
+                    detailItemSyntheticDTO.setOrderQuantity(resultDTO.getOrderQuantity());
 //                    detailItemSyntheticDTO.setRequiredQuantity(resultDTO.getOrderQuantity());
 //                    prNumber += detailItemSyntheticDTO.getExpectedQuantity();
                     prNumber += detailItemSyntheticDTO.getSumPoAndDeliveringQuantity();
@@ -606,6 +600,7 @@ public class HistoryMrpService {
                     detailItemSyntheticDTO.setOriginQuantity(resultDTO.getOriginQuantity());
                     detailItemSyntheticDTO.setOriginalRequiredQuantity(resultDTO.getRequiredQuantity());
                     detailItemSyntheticDTO.setRequiredQuantity(resultDTO.getOriginQuantity());
+                    detailItemSyntheticDTO.setOrderQuantity(resultDTO.getOrderQuantity());
 //                    detailItemSyntheticDTO.setRequiredQuantity(resultDTO.getOrderQuantity());
 //                    prNumber += detailItemSyntheticDTO.getExpectedQuantity();
                     prNumber += detailItemSyntheticDTO.getSumPoAndDeliveringQuantity();

@@ -321,7 +321,6 @@ public class MonitoringService {
         }
 
         BooleanBuilder booleanBuilder = new BooleanBuilder();
-        booleanBuilder.and(Expressions.TRUE.isTrue());
         booleanBuilder.and(qSapOnOrderSummary.status.eq("O"));
         booleanBuilder.and(qSapOnOrderSummary.type.eq("PR"));
 

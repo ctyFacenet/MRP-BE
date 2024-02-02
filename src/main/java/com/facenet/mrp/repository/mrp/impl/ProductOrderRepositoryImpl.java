@@ -66,10 +66,10 @@ public class ProductOrderRepositoryImpl implements ProductOrderCustomRepository 
             booleanBuilder.and(qProductOrder.deliverDate.eq(filter.getDeliveryTime()));
         }
         if (!StringUtils.isEmpty(filter.getSalesCode())) {
-            booleanBuilder.and(qProductOrder.saleId.containsIgnoreCase(filter.getSalesCode()));
+            booleanBuilder.and(qProductOrder.partCode.containsIgnoreCase(filter.getSalesCode()));
         }
         if (!StringUtils.isEmpty(filter.getSalesName())) {
-            booleanBuilder.and(qProductOrder.saleName.containsIgnoreCase(filter.getSalesName()));
+            booleanBuilder.and(qProductOrder.partName.containsIgnoreCase(filter.getSalesName()));
         }
         query.where(booleanBuilder).orderBy(qProductOrder.updatedAt.desc());
         List<ProductOrder> result = query.fetch();
@@ -110,7 +110,7 @@ public class ProductOrderRepositoryImpl implements ProductOrderCustomRepository 
             booleanBuilder.and(qProductOrder.customerName.containsIgnoreCase(filter.getCustomerName()));
         }
         if (!StringUtils.isEmpty(filter.getSaleCode())) {
-            booleanBuilder.and(qProductOrder.saleId.containsIgnoreCase(filter.getSaleCode()));
+            booleanBuilder.and(qProductOrder.partCode.containsIgnoreCase(filter.getSaleCode()));
         }
         if (filter.getOrderDate() != null) {
             booleanBuilder.and(qProductOrder.orderDate.goe(filter.getOrderDate()));

@@ -4,6 +4,7 @@ import com.facenet.mrp.domain.mrp.ItemHoldEntity;
 import com.facenet.mrp.domain.mrp.PurchaseRecommendationEntity;
 import com.facenet.mrp.service.dto.ItemHoldDTO;
 import com.facenet.mrp.service.dto.ItemSyntheticDTO;
+import com.facenet.mrp.service.dto.SyntheticMrpDTO;
 import com.facenet.mrp.service.dto.mrp.ItemQuantity;
 import com.facenet.mrp.service.dto.mrp.MaterialPlanDTO;
 import org.mapstruct.Mapper;
@@ -25,10 +26,30 @@ public interface ItemHoldMapper {
     @Mapping(target = "mrpSubCode", source = "purchaseRecommendationEntity.mrpSubCode")
     @Mapping(target = "productOrderCode", source = "purchaseRecommendationEntity.mrpPoId")
     @Mapping(target = "purchaseRecommendationId", source = "purchaseRecommendationEntity.purchaseRecommendationId")
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "active", ignore = true)
     @Mapping(target = "holdDate", source = "holdDate")
     @Mapping(target = "warehouseCode", source = "warehouseCode")
     @Mapping(target = "status", ignore = true)
     ItemHoldEntity toItemHoldEntity(ItemSyntheticDTO itemSyntheticDTO, PurchaseRecommendationEntity purchaseRecommendationEntity, double quantity, String warehouseCode,Date holdDate);
+
+    @Mapping(target = "itemCode", source = "itemSyntheticDTO.itemCode")
+    @Mapping(target = "quantity", source = "quantity")
+    @Mapping(target = "mrpSubCode", source = "syntheticMrpDTO.mrpSubCode")
+    @Mapping(target = "productOrderCode", source = "syntheticMrpDTO.soCode")
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "active", ignore = true)
+    @Mapping(target = "holdDate", source = "holdDate")
+    @Mapping(target = "warehouseCode", source = "warehouseCode")
+    @Mapping(target = "status", source = "status")
+    ItemHoldEntity toItemHoldEntity(ItemSyntheticDTO itemSyntheticDTO, SyntheticMrpDTO syntheticMrpDTO, double quantity, String warehouseCode, Date holdDate, int status);
+
 
     @Mapping(target = "itemCode", source = "item.itemCode")
     @Mapping(target = "quantity", source = "totalQuantity")

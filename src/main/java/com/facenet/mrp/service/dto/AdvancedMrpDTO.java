@@ -32,6 +32,7 @@ public class AdvancedMrpDTO extends MrpDTO {
         this.setWarehouseAnalysis(mrpDTO.getWarehouseAnalysis());
         this.setCountData(mrpDTO.getResultData().size());
         this.setResultData(mrpDTO.getResultData());
+        this.setListItemCode(mrpDTO.getListItemCode());
     }
 
     public String getAnalysisMode() {

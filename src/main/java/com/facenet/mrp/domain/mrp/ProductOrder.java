@@ -33,6 +33,8 @@ public class ProductOrder implements Serializable {
     private String productOrderCode;
 
     @Transient
+    private String productCodeChild;
+    @Transient
     private String productCode;
     @Transient
     private String productName;
@@ -51,12 +53,16 @@ public class ProductOrder implements Serializable {
     private String supplyType;
     @Transient
     private Integer priorityProduct;
+
+    @Transient
+    private String saleCode;
+
     @Size(max = 20)
-    @NotEmpty(message = "customer.id.can.not.empty")
+    //@NotEmpty(message = "customer.id.can.not.empty")
     @Column(name = "customer_id", nullable = false, length = 20)
     private String customerId;
 
-    @NotBlank(message = "customer_name.can.not.empty")
+    //@NotBlank(message = "customer_name.can.not.empty")
     @Size(max = 255)
     @Column(name = "customer_name", nullable = false)
     private String customerName;
@@ -75,12 +81,12 @@ public class ProductOrder implements Serializable {
     private Date deliverDate;
 
     @Size(max = 20)
-    @Column(name = "sale_id", nullable = false, length = 20)
-    private String saleId;
+    @Column(name = "part_code", nullable = false, length = 20)
+    private String partCode;
 
     @Size(max = 255)
-    @Column(name = "sale_name", nullable = false)
-    private String saleName;
+    @Column(name = "part_name", nullable = false)
+    private String partName;
 
     @Range(min = 1, max = 3, message = "order.priority.must.from.1.to.3")
     @Column(name = "priority", nullable = false)
@@ -152,7 +158,7 @@ public class ProductOrder implements Serializable {
         this.type = type;
     }
 
-    @OneToMany(mappedBy = "productOrderCode",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "productOrderCode",cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<ProductOrderDetail> productOrderDetails = new ArrayList<>();
 
     public String getMrpPoId() {
@@ -291,20 +297,20 @@ public class ProductOrder implements Serializable {
         this.deliverDate = deliverDate;
     }
 
-    public String getSaleId() {
-        return saleId;
+    public String getPartCode() {
+        return partCode;
     }
 
-    public void setSaleId(String saleId) {
-        this.saleId = saleId;
+    public void setPartCode(String partCode) {
+        this.partCode = partCode;
     }
 
-    public String getSaleName() {
-        return saleName;
+    public String getPartName() {
+        return partName;
     }
 
-    public void setSaleName(String saleName) {
-        this.saleName = saleName;
+    public void setPartName(String partName) {
+        this.partName = partName;
     }
 
     public Integer getPriority() {
@@ -409,5 +415,21 @@ public class ProductOrder implements Serializable {
 
     public void setWarehouseList(String warehouseList) {
         this.warehouseList = warehouseList;
+    }
+
+    public String getProductCodeChild() {
+        return productCodeChild;
+    }
+
+    public void setProductCodeChild(String productCodeChild) {
+        this.productCodeChild = productCodeChild;
+    }
+
+    public String getSaleCode() {
+        return saleCode;
+    }
+
+    public void setSaleCode(String saleCode) {
+        this.saleCode = saleCode;
     }
 }

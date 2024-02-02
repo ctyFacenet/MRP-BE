@@ -37,6 +37,8 @@ public class ProductOrderDetail {
     @JoinColumn(name = "product_order_code", nullable = false, referencedColumnName = "mrp_po_id")
     private ProductOrder productOrderCode;
 
+    @Column(name = "product_order_child")
+    private String productOrderChild;
     @Column(name = "item_index")
     private Integer itemIndex;
 
@@ -71,6 +73,15 @@ public class ProductOrderDetail {
 
     @Column(name = "status", nullable = false)
     private Integer status;
+
+    @Column(name = "customer_code")
+    private String customerCode;
+
+    @Column(name = "customer_name")
+    private String customerName;
+
+    @Column(name = "sale_code")
+    private String saleCode;
 
     @Lob
     @Column(name = "note")
@@ -263,5 +274,37 @@ public class ProductOrderDetail {
 
     public void setMaterialChildrenCount(Integer materialChildrenCount) {
         this.materialChildrenCount = materialChildrenCount;
+    }
+
+    public String getProductOrderChild() {
+        return productOrderChild;
+    }
+
+    public void setProductOrderChild(String productOrderChild) {
+        this.productOrderChild = productOrderChild;
+    }
+
+    public String getCustomerCode() {
+        return customerCode;
+    }
+
+    public void setCustomerCode(String customerCode) {
+        this.customerCode = customerCode;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getSaleCode() {
+        return saleCode;
+    }
+
+    public void setSaleCode(String saleCode) {
+        this.saleCode = saleCode;
     }
 }

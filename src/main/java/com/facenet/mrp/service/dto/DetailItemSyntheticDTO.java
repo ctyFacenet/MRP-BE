@@ -1,5 +1,7 @@
 package com.facenet.mrp.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Objects;
 
 public class DetailItemSyntheticDTO {
@@ -9,6 +11,8 @@ public class DetailItemSyntheticDTO {
     private Double originQuantity;
     private Double originalRequiredQuantity;
     private Double sumPoAndDeliveringQuantity;
+    @JsonIgnore
+    private Double orderQuantity;
 
     public String getLandMark() {
         return landMark;
@@ -66,5 +70,13 @@ public class DetailItemSyntheticDTO {
             ", holdQuantity=" + originalRequiredQuantity +
             ", prQuantity=" + sumPoAndDeliveringQuantity +
             '}';
+    }
+
+    public Double getOrderQuantity() {
+        return orderQuantity;
+    }
+
+    public void setOrderQuantity(Double orderQuantity) {
+        this.orderQuantity = orderQuantity;
     }
 }

@@ -1,5 +1,6 @@
 package com.facenet.mrp.service.dto;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -8,6 +9,8 @@ public class ProductOrderDetailDto implements Serializable {
     private Integer id;
     private String mrpPoId;
     private String productCode;
+
+    private String productOrderChild;
     private String productName;
     private String itemGroup;
     private String bomVersion;
@@ -22,6 +25,13 @@ public class ProductOrderDetailDto implements Serializable {
     private String note;
     private Byte bomStatus;
     private Integer status;
+
+    private String customerCode;
+
+    private String customerName;
+
+    private String saleCode;
+
     private Byte isActive;
 
     public Integer getId() {
@@ -169,5 +179,37 @@ public class ProductOrderDetailDto implements Serializable {
 
     public void setItemGroup(String itemGroup) {
         this.itemGroup = itemGroup;
+    }
+
+    public String getProductOrderChild() {
+        return productOrderChild;
+    }
+
+    public void setProductOrderChild(String productOrderChild) {
+        this.productOrderChild = productOrderChild;
+    }
+
+    public String getCustomerCode() {
+        return customerCode;
+    }
+
+    public void setCustomerCode(String customerCode) {
+        this.customerCode = customerCode;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getSaleCode() {
+        return saleCode;
+    }
+
+    public void setSaleCode(String saleCode) {
+        this.saleCode = saleCode;
     }
 }

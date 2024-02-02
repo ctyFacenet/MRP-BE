@@ -12,6 +12,14 @@ public class ProductOrderDetailFilter {
     private Date deliveryTime;
     private String supplyMethod;
 
+    private String productOrderChild;
+
+    private String customerCode;
+
+    private String customerName;
+
+    private String saleCode;
+
     public String getProductCode() {
         return productCode;
     }
@@ -68,5 +76,37 @@ public class ProductOrderDetailFilter {
 
     public void setSupplyMethod(String supplyMethod) {
         this.supplyMethod = supplyMethod;
+    }
+
+    public String getProductOrderChild() {
+        return productOrderChild;
+    }
+
+    public void setProductOrderChild(String productOrderChild) {
+        this.productOrderChild = productOrderChild;
+    }
+
+    public String getCustomerCode() {
+        return customerCode;
+    }
+
+    public void setCustomerCode(String customerCode) {
+        this.customerCode = customerCode;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getSaleCode() {
+        return saleCode;
+    }
+
+    public void setSaleCode(String saleCode) {
+        this.saleCode = saleCode;
     }
 }

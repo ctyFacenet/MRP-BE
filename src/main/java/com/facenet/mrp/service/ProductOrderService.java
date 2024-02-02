@@ -3,16 +3,20 @@ package com.facenet.mrp.service;
 import com.facenet.mrp.domain.mrp.ProductOrder;
 import com.facenet.mrp.domain.mrp.ProductOrderDetail;
 import com.facenet.mrp.domain.mrp.QProductOrder;
+import com.facenet.mrp.domain.mrp.ResultMrpJsonEntity;
 import com.facenet.mrp.domain.sap.CoittEntity;
-import com.facenet.mrp.repository.mrp.ForecastOrderDetailRepository;
-import com.facenet.mrp.repository.mrp.ItemHoldRepository;
-import com.facenet.mrp.repository.mrp.ProductOrderDetailRepository;
-import com.facenet.mrp.repository.mrp.ProductOrderRepository;
+import com.facenet.mrp.repository.MrpAnalysisCache;
+import com.facenet.mrp.repository.mrp.*;
 import com.facenet.mrp.repository.sap.CoittRepository;
 import com.facenet.mrp.security.SecurityUtils;
+import com.facenet.mrp.service.dto.AdvancedMrpDTO;
+import com.facenet.mrp.service.dto.ProductOrderDTOAPS;
+import com.facenet.mrp.service.dto.ProductOrderDetailDTOAPS;
 import com.facenet.mrp.service.dto.ProductOrderDto;
 import com.facenet.mrp.service.dto.mrp.ItemQuantity;
 import com.facenet.mrp.service.dto.mrp.MrpDetailDTO;
+import com.facenet.mrp.service.dto.response.CommonResponse;
+import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.mapper.ProductOrderMapper;
 import com.facenet.mrp.service.model.ProductOrderFilter;
@@ -21,8 +25,8 @@ import com.facenet.mrp.service.model.ProductOrderResponse;
 import com.facenet.mrp.service.model.ResultCode;
 import com.facenet.mrp.service.utils.Constants;
 import com.facenet.mrp.service.utils.CsvHandle;
-import com.facenet.mrp.service.utils.Utils;
 import com.facenet.mrp.service.utils.XlsxExcelHandle;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -40,8 +44,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 
 import javax.persistence.EntityManager;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -70,6 +77,10 @@ public class ProductOrderService {
     private final ForecastOrderDetailRepository forecastOrderDetailRepository;
     @Autowired
     private ItemHoldRepository itemHoldRepository;
+
+    @Autowired
+    MrpAdvancedAnalysisServiceV3 mrpAdvancedAnalysisServiceV3;
+
 
     public ProductOrderService(ProductOrderRepository productOrderRepository, @Qualifier("mrpEntityManager") EntityManager entityManager, ProductOrderMapper productOrderMapper, ForecastOrderDetailRepository forecastOrderDetailRepository) {
         this.productOrderRepository = productOrderRepository;
@@ -129,10 +140,10 @@ public class ProductOrderService {
             booleanBuilder.and(qProductOrder.deliverDate.eq((filter.getDeliveryTime())));
         }
         if (!StringUtils.isEmpty(filter.getSalesCode())) {
-            booleanBuilder.and(qProductOrder.saleId.containsIgnoreCase(filter.getSalesCode()));
+            booleanBuilder.and(qProductOrder.partCode.containsIgnoreCase(filter.getSalesCode()));
         }
         if (!StringUtils.isEmpty(filter.getSalesName())) {
-            booleanBuilder.and(qProductOrder.saleName.containsIgnoreCase(filter.getSalesName()));
+            booleanBuilder.and(qProductOrder.partName.containsIgnoreCase(filter.getSalesName()));
         }
         query.where(booleanBuilder).orderBy(qProductOrder.createdAt.desc());
         List<ProductOrder> result = query.fetch();
@@ -182,8 +193,8 @@ public class ProductOrderService {
         existPo.setProductOrderType(dto.getPoType());
         existPo.setOrderDate(dto.getOrderedTime());
         existPo.setDeliverDate(dto.getDeliveryTime());
-        existPo.setSaleId(dto.getSalesCode());
-        existPo.setSaleName(dto.getSalesName());
+        existPo.setPartCode(dto.getSalesCode());
+        existPo.setPartName(dto.getSalesName());
         existPo.setPriority(Integer.valueOf(dto.getPriority()));
         existPo.setNote(dto.getNote());
 
@@ -269,6 +280,10 @@ public class ProductOrderService {
                 orderItem.setPriority(order.getPriorityProduct());
                 orderItem.setSupplyType(order.getSupplyType());
                 orderItem.setItemIndex(itemIndex);
+                orderItem.setProductOrderChild(order.getProductCodeChild());
+                orderItem.setCustomerCode(order.getCustomerId());
+                orderItem.setCustomerName(order.getCustomerName());
+                orderItem.setSaleCode(order.getSaleCode());
                 orderItem.setMaterialChildrenCount(countChildren.getQuantity().intValue());
 
                 productOrderDetails.add(orderItem);
@@ -322,7 +337,8 @@ public class ProductOrderService {
                 throw new CustomException("product.order.code.exist", po_id);
             }
 
-            String mrpPoId = productOrder.getCustomerId() + "-" + new SimpleDateFormat("yyyyMMdd").format(productOrder.getOrderDate());
+//            String mrpPoId = productOrder.getCustomerId() + "-" + new SimpleDateFormat("yyyyMMdd").format(productOrder.getOrderDate());
+            String mrpPoId = po_id;
             tmpOrder = productOrderRepository.findProductOrderByMrpPoIdAndIsActive(mrpPoId, (byte) 1);
             if (tmpOrder != null) {
                 logger.info(" mrp po id " + mrpPoId + " is exists in database");
@@ -480,4 +496,6 @@ public class ProductOrderService {
         }
         return in;
     }
+
+
 }

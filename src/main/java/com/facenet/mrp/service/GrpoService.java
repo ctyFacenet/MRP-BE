@@ -48,9 +48,9 @@ public class GrpoService {
                 new QGrpoDTO(
                     qOpdnEntity.uInvCode,
                     qPdn1Entity.uSo,
-                    qPor1Entity.docEntry.stringValue(),
-                    qPrq1Entity.docEntry.stringValue(),
-                    qPdn1Entity.docEntry.stringValue(),
+                    qPor1Entity.docEntry.stringValue().trim(),
+                    qPrq1Entity.docEntry.stringValue().trim(),
+                    qPdn1Entity.docEntry.stringValue().trim(),
                     qPdn1Entity.itemCode,
                     qPdn1Entity.uMCode,
                     qPdn1Entity.dscription,

@@ -13,7 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Repository
 public interface MqqPriceRepository extends PagingAndSortingRepository<MqqPriceEntity, Integer>, MqqPriceCustomRepository {
@@ -69,24 +72,28 @@ public interface MqqPriceRepository extends PagingAndSortingRepository<MqqPriceE
 //        "where mq.itemCode = :itemCode and lt.isActive = 1 and mq.isActive = 1 ")
 //    MoqDTO findMoqMin(@Param("itemCode")String itemCode);
 
-    @Query("select new com.facenet.mrp.service.dto.MoqDTO(mq.itemPriceId,mq.vendorCode,mq.itemCode, mq.rangeStart, mq.rangeEnd,mq.price,lt.leadTime, mq.currency) " +
+    @Query("select new com.facenet.mrp.service.dto.MoqDTO(mq.itemPriceId,mq.vendorCode,mq.itemCode, mq.timeStart, mq.rangeStart, mq.rangeEnd,mq.price,lt.leadTime, mq.currency, mq.vendorItemEntity.timeUsed) " +
         "from LeadTimeEntity lt join MqqPriceEntity mq on lt.itemCode = mq.itemCode and lt.vendorCode = mq.vendorCode " +
         "where lt.isActive = 1 and mq.isActive = 1 " +
         "and (mq.timeEnd >= current_date or mq.timeEnd is null) " +
-//        "and (mq.timeStart is null or mq.timeStart <= current_date) " +
-        "and (mq.timeStart = (SELECT MAX(timeStart) FROM MqqPriceEntity WHERE timeStart <= CURDATE() and vendorCode = mq.vendorCode and itemCode = mq.itemCode))")
+        "and (mq.timeStart is null or mq.timeStart <= current_date)" )
+//        "and (mq.timeStart = (SELECT MAX(timeStart) FROM MqqPriceEntity WHERE timeStart <= CURDATE() and vendorCode = mq.vendorCode and itemCode = mq.itemCode))")
     List<MoqDTO> findMoqMinAndLeadTime();
 
-    @Query("select new com.facenet.mrp.service.dto.MoqDTO(mq.itemPriceId,mq.vendorCode,mq.itemCode, mq.rangeStart, mq.rangeEnd,mq.price,lt.leadTime, mq.currency) " +
-        "from LeadTimeEntity lt join MqqPriceEntity mq on lt.itemCode = mq.itemCode and mq.vendorCode = lt.vendorCode " +
+    @Query("select new com.facenet.mrp.service.dto.MoqDTO(mq.itemPriceId,mq.vendorCode,mq.itemCode, mq.timeStart, mq.rangeStart, mq.rangeEnd, mq.price,lt.leadTime, mq.currency, v.timeUsed) " +
+        "from MqqPriceEntity mq " +
+        "left join LeadTimeEntity lt on lt.itemCode = mq.itemCode and mq.vendorCode = lt.vendorCode " +
+        "left join VendorItemEntity v on v.itemCode = mq.itemCode and mq.vendorCode = v.vendorCode " +
         "where lt.isActive = 1 and mq.isActive = 1 " +
         "and mq.itemCode in :listItem " +
         "and (mq.timeEnd >= current_date or mq.timeEnd is null) " +
-//        "and (mq.timeStart is null or mq.timeStart <= current_date) " +
-        "and (mq.timeStart = (SELECT MAX(timeStart) FROM MqqPriceEntity WHERE timeStart <= CURDATE() and vendorCode = mq.vendorCode and itemCode = mq.itemCode)) ")
-    List<MoqDTO> findMoqMinAndLeadTimeByItemCode(@Param("listItem")List<String> listItem);
+        "and (mq.timeStart is null or mq.timeStart <= current_date) ")
+//        "and (mq.timeStart = (SELECT MAX(timeStart) FROM MqqPriceEntity WHERE timeStart <= CURDATE() and vendorCode = mq.vendorCode and itemCode = mq.itemCode)) ")
+    List<MoqDTO> findMoqMinAndLeadTimeByItemCode(@Param("listItem") List<String> listItem);
 
-
+    default Map<String, List<MoqDTO>> findPriceByItemCodeMap(List<String> listItem) {
+        return findMoqMinAndLeadTimeByItemCode(listItem).stream().collect(Collectors.groupingBy(MoqDTO::getItemCode));
+    }
 
     @Query(value = "select new com.facenet.mrp.service.dto.ItemOnPrPo(s.poCode, s.prCode, s.mrpCode, s.itemCode, s.itemName, s.quantity, s.createdAt, s.dueDate, s.createPoUser, s.providerCode, s.providerName) " +
     "from SapOnOrderSummary s " +
@@ -106,7 +113,8 @@ public interface MqqPriceRepository extends PagingAndSortingRepository<MqqPriceE
     List<InventorySupplierDTO> getAllVendorAndPriceByItemCode(@Param("itemCode")String itemCode);
 
     @Query("select new com.facenet.mrp.service.dto.MoqDTO(mq.itemPriceId,mq.vendorCode,mq.itemCode, mq.rangeStart, mq.rangeEnd,mq.price,lt.leadTime, mq.currency,mq.timeEnd,mq.note) " +
-        "from LeadTimeEntity lt join MqqPriceEntity mq on lt.itemCode = mq.itemCode and lt.vendorCode = mq.vendorCode " +
+        "from MqqPriceEntity mq " +
+        "left join LeadTimeEntity lt on lt.itemCode = mq.itemCode and lt.vendorCode = mq.vendorCode " +
         "where lt.isActive = 1 and mq.isActive = 1 " +
         "and mq.itemCode = ?2 " +
         "and mq.vendorCode = ?1 " +

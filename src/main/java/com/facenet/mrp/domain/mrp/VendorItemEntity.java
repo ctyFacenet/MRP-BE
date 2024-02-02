@@ -13,6 +13,9 @@ public class VendorItemEntity {
     @Column(name = "item_code")
     private String itemCode;
 
+    @Column(name = "time_used")
+    private Integer timeUsed = 0;
+
     public VendorItemEntity() {
     }
 
@@ -35,5 +38,18 @@ public class VendorItemEntity {
 
     public void setItemCode(String itemCode) {
         this.itemCode = itemCode;
+    }
+
+    public Integer getTimeUsed() {
+        return timeUsed;
+    }
+
+    public void setTimeUsed(Integer timeUsed) {
+        this.timeUsed = timeUsed;
+    }
+
+    public void incrementTimeUsed() {
+        if (timeUsed == null) timeUsed = 0;
+        this.timeUsed++;
     }
 }
