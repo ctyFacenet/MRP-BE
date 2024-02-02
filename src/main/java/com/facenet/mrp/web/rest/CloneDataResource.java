@@ -20,9 +20,4 @@ public class CloneDataResource {
     public void syncData() throws ParseException {
         syncDataFromSap.syncData();
     }
-
-    @GetMapping("/pr_po_grpo")
-    public void syncPrPoGrpo() {
-        syncDataFromSap.syncPrPoGrpo();
-    }
 }

@@ -21,6 +21,7 @@ import com.facenet.mrp.service.model.PoFilter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -48,8 +49,8 @@ public class SyncDataFromSap {
     @Autowired
     private PurchaseRecommendationRepository purchaseRecommendationRepository;
 
-    @Autowired
-    private MaterialOnOrderSummaryJob materialOnOrderSummaryJob;
+//    @Autowired
+//    private MaterialOnOrderSummaryJob materialOnOrderSummaryJob;
 
     @Transactional
     public void syncData() throws ParseException {
@@ -121,25 +122,26 @@ public class SyncDataFromSap {
         return null;
     }
 
-    public void syncPrPoGrpo() {
-        PoFilter poFilter = new PoFilter();
-        poFilter.setStatus("O");
-        materialOnOrderSummaryJob.clonePo(poFilter);
-
-        PageFilterInput<PurchaseRequestDTO> prInput = new PageFilterInput<>();
-        prInput.setPageSize(0);
-        prInput.setPageNumber(0);
-        PurchaseRequestDTO prFilter = new PurchaseRequestDTO();
-        prFilter.setStatus("O");
-        prInput.setFilter(prFilter);
-        materialOnOrderSummaryJob.clonePr(prInput);
-
-        PageFilterInput<GrpoDTO> grpoInput = new PageFilterInput<>();
-        grpoInput.setPageSize(0);
-        grpoInput.setPageNumber(0);
-        GrpoDTO grpoFilter = new GrpoDTO();
-        grpoFilter.setStatus("O");
-        grpoInput.setFilter(grpoFilter);
-        materialOnOrderSummaryJob.cloneGrpo(grpoInput);
-    }
+//    @Profile("prod")
+//    public void syncPrPoGrpo() {
+//        PoFilter poFilter = new PoFilter();
+//        poFilter.setStatus("O");
+//        materialOnOrderSummaryJob.clonePo(poFilter);
+//
+//        PageFilterInput<PurchaseRequestDTO> prInput = new PageFilterInput<>();
+//        prInput.setPageSize(0);
+//        prInput.setPageNumber(0);
+//        PurchaseRequestDTO prFilter = new PurchaseRequestDTO();
+//        prFilter.setStatus("O");
+//        prInput.setFilter(prFilter);
+//        materialOnOrderSummaryJob.clonePr(prInput);
+//
+//        PageFilterInput<GrpoDTO> grpoInput = new PageFilterInput<>();
+//        grpoInput.setPageSize(0);
+//        grpoInput.setPageNumber(0);
+//        GrpoDTO grpoFilter = new GrpoDTO();
+//        grpoFilter.setStatus("O");
+//        grpoInput.setFilter(grpoFilter);
+//        materialOnOrderSummaryJob.cloneGrpo(grpoInput);
+//    }
 }
