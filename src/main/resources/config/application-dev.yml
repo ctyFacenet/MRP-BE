@@ -23,7 +23,7 @@ logging:
 spring:
   kafka:
     producer:
-      bootstrap-servers: 222.252.25.37:9092
+      bootstrap-servers: 222.252.25.37:5044
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
   devtools:
@@ -39,7 +39,7 @@ spring:
   datasource:
     primary:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:mariadb://222.252.25.37:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
+      jdbc-url: jdbc:mariadb://192.168.1.20:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
       username: root
       password: 171ca9e4eb616be4a8007db9fa1da1091480f211e39c2ed8cc56cd6d6d25b09a
 #      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
@@ -56,7 +56,7 @@ spring:
           useServerPrepStmts: true
     sap:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:sqlserver://192.168.1.28:1433;database=SAPv6;encrypt=true;trustServerCertificate=true;
+      jdbc-url: jdbc:sqlserver://192.168.1.24:1433;database=Thang4;encrypt=true;trustServerCertificate=true;
       username: sa
       password: facenet@70d61c662aab8f49178f33794acac0deb3298c26b1ccb78c1c294ab2889072c4
 #      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Thang4;encrypt=true;trustServerCertificate=true;
