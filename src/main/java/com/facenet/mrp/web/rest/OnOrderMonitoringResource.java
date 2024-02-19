@@ -13,10 +13,17 @@ import com.facenet.mrp.service.model.PageFilterInput;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
@@ -144,5 +151,63 @@ public class OnOrderMonitoringResource {
     public PageResponse deleteDurationPlanCode(@PathVariable String planCode){
         PageResponse result = monitoringService.deleteDurationPlan(planCode);
         return result;
+    }
+
+//    @GetMapping("/to-excel")
+//    public ResponseEntity<?> exportToExcel() {
+//        try {
+//            monitoringService.exportToExcel();
+//            return ResponseEntity.ok().build();
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred during export: " + e.getMessage());
+//        }
+//    }
+
+    @GetMapping(value = "/to-excel-pr", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<byte[]> exportToExcelPr() {
+        try {
+            byte[] excelData = monitoringService.exportToExcelPr();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            String filename = "Danh_sách_tiến_độ_mua_hàng_theo_PR.xlsx";
+            headers.setContentDispositionFormData(filename, filename);
+            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+            ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(excelData, headers, HttpStatus.OK);
+            return responseEntity;
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(("Error occurred during export: " + e.getMessage()).getBytes());
+        }
+    }
+
+    @GetMapping(value = "/to-excel-po", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<byte[]> exportToExcelPO() {
+        try {
+            byte[] excelData = monitoringService.exportToExcelPO();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            String filename = "Danh_sách_tiến_độ_mua_hàng_theo_PO.xlsx";
+            headers.setContentDispositionFormData(filename, filename);
+            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+            ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(excelData, headers, HttpStatus.OK);
+            return responseEntity;
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(("Error occurred during export: " + e.getMessage()).getBytes());
+        }
+    }
+
+    @GetMapping(value = "/to-excel-duration", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<byte[]> exportToExcelDuration() {
+        try {
+            byte[] excelData = monitoringService.exportToExcelDuration();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            String filename = "Danh_sách_kế_hoạch_tiến_độ_vật_tư.xlsx";
+            headers.setContentDispositionFormData(filename, filename);
+            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+            ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(excelData, headers, HttpStatus.OK);
+            return responseEntity;
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(("Error occurred during export: " + e.getMessage()).getBytes());
+        }
     }
 }

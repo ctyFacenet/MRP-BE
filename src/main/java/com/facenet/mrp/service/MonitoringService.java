@@ -21,6 +21,11 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
@@ -30,7 +35,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.persistence.EntityManager;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -1029,5 +1039,267 @@ public class MonitoringService {
             .errorCode("00")
             .message("Xóa thất bại")
             .isOk(false);
+    }
+
+    public byte[] exportToExcelPr() {
+        List<MonitorListPrDTO> data = prListMonitoring();
+        String[] columns = {"Mã PR", "Mã SO/FC", "Mã chạy MRP", "Người tạo", "Ngày tạo PR", "Ngày phê duyệt", "Trạng thái"};
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Danh sách tiến độ mua hàng theo PR");
+
+            // Create header row
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < columns.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columns[i]);
+            }
+
+            // Write data rows
+            int rowNum = 1;
+            for (MonitorListPrDTO prDTO : data) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(prDTO.getPrCode());
+                row.createCell(1).setCellValue(prDTO.getSoCode());
+                row.createCell(2).setCellValue(prDTO.getMrpCode());
+                row.createCell(3).setCellValue(prDTO.getPrCreateUser());
+                if (prDTO.getPrCreateDate() != null) {
+                    row.createCell(4).setCellValue(dateFormat.format(prDTO.getPrCreateDate()));
+                } else {
+                    row.createCell(4).setCellValue("");
+                }
+                if (prDTO.getAsignDate() != null) {
+                    row.createCell(5).setCellValue(dateFormat.format(prDTO.getAsignDate()));
+                } else {
+                    row.createCell(5).setCellValue("");
+                }
+                row.createCell(6).setCellValue(prDTO.getStatus());
+            }
+
+            // Resize columns to fit content
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // Convert workbook to byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<MonitorListPrDTO> prListMonitoring() {
+        QSapOnOrderSummary qSapOnOrderSummary = QSapOnOrderSummary.sapOnOrderSummary;
+        JPAQuery<MonitorListPrDTO> query = new JPAQueryFactory(entityManager)
+            .select(
+                new QMonitorListPrDTO(
+                    qSapOnOrderSummary.id,
+                    qSapOnOrderSummary.prCode,
+                    qSapOnOrderSummary.soCode,
+                    qSapOnOrderSummary.mrpCode,
+                    qSapOnOrderSummary.createPoUser,
+                    qSapOnOrderSummary.poCreateDate
+                )
+            ).distinct()
+            .from(qSapOnOrderSummary);
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        booleanBuilder.and(qSapOnOrderSummary.status.eq("O"));
+        booleanBuilder.and(qSapOnOrderSummary.type.eq("PR"));
+        query.where(booleanBuilder).groupBy(qSapOnOrderSummary.prCode).orderBy(qSapOnOrderSummary.poCreateDate.desc());
+        List<MonitorListPrDTO> result = query.fetch();
+        return result;
+    }
+
+    public List<OnOrderMonitoringDTO> monitoringDTOList() {
+        QSapOnOrderSummary qSapOnOrderSummary = QSapOnOrderSummary.sapOnOrderSummary;
+        JPAQuery<OnOrderMonitoringDTO> query = new JPAQueryFactory(entityManager)
+            .select(
+                new QOnOrderMonitoringDTO(
+                    qSapOnOrderSummary.poCode,
+                    qSapOnOrderSummary.prCode,
+                    qSapOnOrderSummary.contractNumber,
+                    qSapOnOrderSummary.providerCode,
+                    qSapOnOrderSummary.providerName,
+                    qSapOnOrderSummary.dueDate,
+                    qSapOnOrderSummary.poCreateDate,
+                    qSapOnOrderSummary.createPoUser,
+                    qSapOnOrderSummary.type,
+                    qSapOnOrderSummary.mrpCode,
+                    qSapOnOrderSummary.soCode
+                )
+            )
+            .from(qSapOnOrderSummary);
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        booleanBuilder.and(qSapOnOrderSummary.type.eq("PO"));
+        booleanBuilder.and(qSapOnOrderSummary.status.eq("O"));
+
+        query.where(booleanBuilder).groupBy(qSapOnOrderSummary.poCode).orderBy(qSapOnOrderSummary.poCreateDate.desc());
+        List<OnOrderMonitoringDTO> result = query.fetch();
+        long count = query.fetchCount();
+        Double sumPO;
+        Double sumGrpo;
+        for (OnOrderMonitoringDTO item : result) {
+            sumPO = 0.0;
+            sumGrpo = 0.0;
+            List<SapOnOrderSummary> list = repository.getAllByPo(item.getPoCode());
+            for (SapOnOrderSummary index : list) {
+                if (index.getType().equals("PO")) {
+                    sumPO += index.getQuantity();
+                } else {
+                    sumGrpo += index.getQuantity();
+                }
+            }
+            item.setOrderProgressPercent((int) ((sumGrpo / sumPO) * 100));
+            SapOnOrderSummary sap = repository.getPr(item.getPrCode());
+            if (sap != null) {
+                long diffInMillies = Math.abs(item.getPoCreateDate().getTime() - sap.getPoCreateDate().getTime());
+                Integer diff = Math.toIntExact(TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS));
+                item.setOverDateNumber(diff);
+            }
+            Integer percent = item.getOrderProgressPercent();
+            item.setState("Đúng hạn");
+            if (percent != null && percent >= 100) {
+                if (item.getPoDueDate() != null && item.getPoDueDate().after(new Date())) {
+                    item.setState("Sớm hạn");
+                } else {
+                    item.setState("Đúng hạn");
+                }
+            } else if (item.getPoDueDate() != null && item.getPoDueDate().after(new Date())) {
+                item.setState("Đúng hạn");
+            } else if (item.getPoDueDate() != null) {
+                item.setState("Quá hạn");
+            }
+        }
+        return result;
+    }
+
+    public byte[] exportToExcelPO() {
+        List<OnOrderMonitoringDTO> data = monitoringDTOList();
+        String[] columns = {"Mã PR","Mã PO", "Mã SO/FC", "Mã chạy MRP", "Số hợp đồng", "Mã NCC", "Tên NCC", "Ngày tạo PO", "Người tạo", "Ngày về dự kiến", "Tiến độ mua hàng", "Số ngày quá hạn", "Trạng thái"};
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Danh sách tiến độ mua hàng theo PO");
+
+            // Create header row
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < columns.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columns[i]);
+            }
+
+            // Write data rows
+            int rowNum = 1;
+            for (OnOrderMonitoringDTO poDTO : data) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(poDTO.getPrCode());
+                row.createCell(1).setCellValue(poDTO.getPoCode());
+                row.createCell(2).setCellValue(poDTO.getSoCode());
+                row.createCell(3).setCellValue(poDTO.getMrpCode());
+                row.createCell(4).setCellValue(poDTO.getContractNumber());
+                row.createCell(5).setCellValue(poDTO.getVendorCode());
+                row.createCell(6).setCellValue(poDTO.getVendorName());
+                if (poDTO.getPoCreateDate() != null) {
+                    row.createCell(7).setCellValue(dateFormat.format(poDTO.getPoCreateDate()));
+                } else {
+                    row.createCell(7).setCellValue("");
+                }
+                row.createCell(8).setCellValue(poDTO.getPoCreateUser());
+                if (poDTO.getPoDueDate() != null) {
+                    row.createCell(9).setCellValue(dateFormat.format(poDTO.getPoDueDate()));
+                } else {
+                    row.createCell(9).setCellValue("");
+                }
+                row.createCell(10).setCellValue(poDTO.getOrderProgressPercent());
+                if (poDTO.getOrderProgressPercent() != null) {
+                    row.createCell(10).setCellValue(poDTO.getOrderProgressPercent()+"%");
+                } else {
+                    row.createCell(10).setCellValue("");
+                }
+                if (poDTO.getOverDateNumber() != null) {
+                    row.createCell(11).setCellValue(poDTO.getOverDateNumber());
+                } else {
+                    row.createCell(11).setCellValue("");
+                }
+                row.createCell(12).setCellValue(poDTO.getState());
+            }
+
+            // Resize columns to fit content
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // Convert workbook to byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<DurationPlanDTO> getAllDurationPlan() {
+        QDurationPlanEntity qDurationPlanEntity = QDurationPlanEntity.durationPlanEntity;
+        JPAQuery<DurationPlanDTO> query = new JPAQueryFactory(entityManager)
+            .select(
+                new QDurationPlanDTO(
+                    qDurationPlanEntity.id,
+                    qDurationPlanEntity.planCode,
+                    qDurationPlanEntity.planName,
+                    qDurationPlanEntity.quantityItem,
+                    qDurationPlanEntity.listItem
+                )
+            )
+            .from(qDurationPlanEntity);
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        booleanBuilder.and(Expressions.TRUE.isTrue());
+        booleanBuilder.and(qDurationPlanEntity.isActive.eq(true));
+        query.where(booleanBuilder).orderBy(qDurationPlanEntity.id.desc());
+        List<DurationPlanDTO> result = query.fetch();
+        return result;
+    }
+
+    public byte[] exportToExcelDuration() {
+        List<DurationPlanDTO> data = getAllDurationPlan();
+        String[] columns = {"Mã kế hoạch","Mô tả kế hoạch", "Số lượng vật tư trong kế hoạch"};
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Danh sách tiến độ mua hàng theo PO");
+
+            // Create header row
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < columns.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columns[i]);
+            }
+
+            // Write data rows
+            int rowNum = 1;
+            for (DurationPlanDTO DTO : data) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(DTO.getPlanCode());
+                row.createCell(1).setCellValue(DTO.getPlanName());
+                if (DTO.getQuantityItem() != null) {
+                    row.createCell(2).setCellValue(DTO.getQuantityItem());
+                } else {
+                    row.createCell(2).setCellValue("");
+                }
+            }
+
+            // Resize columns to fit content
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // Convert workbook to byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
