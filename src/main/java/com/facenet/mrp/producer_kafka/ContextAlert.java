@@ -5,6 +5,8 @@ import java.util.Date;
 public class ContextAlert {
     private String soCode;
     private String costomerName;
+    private String saleCode;
+    private String saleName;
     private Date timeStart;
     private Date endStart;
     private String status;
@@ -26,6 +28,22 @@ public class ContextAlert {
 
     public void setCostomerName(String costomerName) {
         this.costomerName = costomerName;
+    }
+
+    public String getSaleCode() {
+        return saleCode;
+    }
+
+    public void setSaleCode(String saleCode) {
+        this.saleCode = saleCode;
+    }
+
+    public String getSaleName() {
+        return saleName;
+    }
+
+    public void setSaleName(String saleName) {
+        this.saleName = saleName;
     }
 
     public Date getTimeStart() {

@@ -60,11 +60,16 @@ public class KafkaService {
             Date endDate = item.getDeliverDate();
             Date now = new Date();
             // Tính khoảng cách giữa 2 ngày
-            long rangeTimePO = Math.abs(endDate.getTime() - startDate.getTime());
-            long poTime = rangeTimePO / (24 * 60 * 60 * 1000);
-            long rangeTimeCheck = Math.abs(now.getTime() - startDate.getTime());
-            long checkTime = rangeTimeCheck / (24 * 60 * 60 * 1000);
-            long percent = (checkTime * 100) / poTime;
+            long percent = 0;
+            try{
+                long rangeTimePO = Math.abs(endDate.getTime() - startDate.getTime());
+                long poTime = rangeTimePO / (24 * 60 * 60 * 1000);
+                long rangeTimeCheck = Math.abs(now.getTime() - startDate.getTime());
+                long checkTime = rangeTimeCheck / (24 * 60 * 60 * 1000);
+                percent = (checkTime * 100) / poTime;
+            } catch (ArithmeticException e) {
+                log.info("Error: Division by zero or other arithmetic exception occurred.");
+            }
             //thời gian đơn hàng quá 60% thì bắt đầu kiểm tra
             if (percent > 60) {
                 Double sumPoQuantity = durationDetailRepository.getSapOnOrderDurationDetailBySo(item.getProductOrderCode());
@@ -80,6 +85,8 @@ public class KafkaService {
                     ContextAlert contextAlert = new ContextAlert();
                     contextAlert.setSoCode(item.getProductOrderCode());
                     contextAlert.setCostomerName(item.getCustomerName());
+                    contextAlert.setSaleCode(item.getPartCode());
+                    contextAlert.setSaleName(item.getPartName());
                     contextAlert.setTimeStart(item.getOrderDate());
                     contextAlert.setEndStart(item.getDeliverDate());
                     contextAlert.setStatus("Hoàn thành sớm");
@@ -97,6 +104,8 @@ public class KafkaService {
                     ContextAlert contextAlert = new ContextAlert();
                     contextAlert.setSoCode(item.getProductOrderCode());
                     contextAlert.setCostomerName(item.getCustomerName());
+                    contextAlert.setSaleCode(item.getPartCode());
+                    contextAlert.setSaleName(item.getPartName());
                     contextAlert.setTimeStart(item.getOrderDate());
                     contextAlert.setEndStart(item.getDeliverDate());
                     contextAlert.setStatus("Có khả năng chậm tiến độ");
@@ -114,6 +123,8 @@ public class KafkaService {
                     ContextAlert contextAlert = new ContextAlert();
                     contextAlert.setSoCode(item.getProductOrderCode());
                     contextAlert.setCostomerName(item.getCustomerName());
+                    contextAlert.setSaleCode(item.getPartCode());
+                    contextAlert.setSaleName(item.getPartName());
                     contextAlert.setTimeStart(item.getOrderDate());
                     contextAlert.setEndStart(item.getDeliverDate());
                     contextAlert.setStatus("Không hoàn thành");
@@ -129,6 +140,8 @@ public class KafkaService {
                     ContextAlert contextAlert = new ContextAlert();
                     contextAlert.setSoCode(item.getProductOrderCode());
                     contextAlert.setCostomerName(item.getCustomerName());
+                    contextAlert.setSaleCode(item.getPartCode());
+                    contextAlert.setSaleName(item.getPartName());
                     contextAlert.setTimeStart(item.getOrderDate());
                     contextAlert.setEndStart(item.getDeliverDate());
                     contextAlert.setStatus("Đã hoàn thành");
@@ -215,11 +228,16 @@ public class KafkaService {
             Date endDate = item.getEndTime();
             Date now = new Date();
             // Tính khoảng cách giữa 2 ngày
-            long rangeTimePO = Math.abs(endDate.getTime() - startDate.getTime());
-            long poTime = rangeTimePO / (24 * 60 * 60 * 1000);
-            long rangeTimeCheck = Math.abs(now.getTime() - startDate.getTime());
-            long checkTime = rangeTimeCheck / (24 * 60 * 60 * 1000);
-            long percent = (checkTime * 100) / poTime;
+            long percent = 0;
+            try{
+                long rangeTimePO = Math.abs(endDate.getTime() - startDate.getTime());
+                long poTime = rangeTimePO / (24 * 60 * 60 * 1000);
+                long rangeTimeCheck = Math.abs(now.getTime() - startDate.getTime());
+                long checkTime = rangeTimeCheck / (24 * 60 * 60 * 1000);
+                percent = (checkTime * 100) / poTime;
+            } catch (ArithmeticException e) {
+                log.info("Error: Division by zero or other arithmetic exception occurred.");
+            }
             Double sumPr = sapOnOrderSummaryRepository.sumQuantityItemPr(item.getSoCode(), item.getMrpCode(), item.getItemCode());
             Double sumPO = sapOnOrderSummaryRepository.sumQuantityItemPO(item.getSoCode(), item.getMrpCode(), item.getItemCode());
             double percentFinsh = 0.0;
