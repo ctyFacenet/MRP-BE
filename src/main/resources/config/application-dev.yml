@@ -53,7 +53,7 @@ spring:
           useServerPrepStmts: true
     sap:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Test-connectPana;integratedSecurity=true;encrypt=true;trustServerCertificate=false;
+      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Test-connectPana;integratedSecurity=true;encrypt=true;trustServerCertificate=true;
       username: read
       password: 2022@mesrd
   jpa:
