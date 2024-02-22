@@ -9,13 +9,11 @@ pipeline {
         }
         stage('Clean') {
             steps {
-                bat 'chmod +x mvnw'
                 bat "./mvnw -ntp clean -P-webapp"
             }
         }
         stage('Validate') {
             steps {
-                bat 'chmod +x mvnw'
                 bat "./mvnw -ntp validate"
             }
         }
