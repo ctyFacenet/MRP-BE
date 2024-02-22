@@ -41,7 +41,7 @@ spring:
       type: com.zaxxer.hikari.HikariDataSource
       jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
       username: root
-      password: Facenet@123
+      password: Facenet@
       hikari:
         poolName: Hikari
         auto-commit: false
