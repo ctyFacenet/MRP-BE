@@ -110,7 +110,7 @@ spring:
     active: #spring.profiles.active#
     group:
       dev:
-        - dev
+        - prod
         - api-docs
         # Uncomment to activate TLS for the dev profile
         #- tls
