@@ -110,7 +110,7 @@ spring:
     active: #spring.profiles.active#
     group:
       dev:
-        - prod
+        - dev
         - api-docs
         # Uncomment to activate TLS for the dev profile
         #- tls
@@ -176,7 +176,7 @@ spring:
             client-secret: mrp_backend
             scope: openid, profile, email, offline_access # last one for refresh tokens
 keycloak:
-  auth-server-url: https://sso.xfactory.vn/auth
+  auth-server-url: https://192.168.68.90:8800/auth
   realm: master
   resource: admin-cli
   credentials:
