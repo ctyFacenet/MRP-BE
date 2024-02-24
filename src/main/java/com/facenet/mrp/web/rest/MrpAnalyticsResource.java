@@ -53,6 +53,7 @@ public class MrpAnalyticsResource {
         this.fileTransferService = fileTransferService;
     }
 
+    //TODO phân tích cơ bản
     @PostMapping("/mrp-analytics")
     @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH')")
     public ResponseEntity mrpAnalysis (@RequestBody MrpAnalyticsInput input) throws ParseException {
@@ -70,6 +71,7 @@ public class MrpAnalyticsResource {
         );
     }
 
+    //TODO phân tích nâng cao
     @PostMapping("/mrp-analytics/advanced-analysis-results")
     @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH')")
     public ResponseEntity advancedMrpAnalytic(@RequestBody AnalyticsPaginatedRequest input) throws ParseException {
