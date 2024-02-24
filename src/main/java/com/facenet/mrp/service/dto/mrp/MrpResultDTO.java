@@ -7,16 +7,16 @@ public class MrpResultDTO {
 
     private String landmark;
     private Double originQuantity;
-    private Double readyQuantity;
-    private Double requiredQuantity;
-    private Double expectedQuantity;
-    private Double inStockQuantity;
-    private Double orderQuantity;
-    private Double poQuantity;
-    private Double deliveringQuantity;
-    private Double sumPoAndDeliveringQuantity;
-    private Double totalOriginQuantity;
-    private Double needQuantity;
+    private Double readyQuantity;// số D = A+B-C
+    private Double requiredQuantity;// số C
+    private Double expectedQuantity;// số lượng PR đã duyệt mang đi mua hàng
+    private Double inStockQuantity;// số A
+    private Double orderQuantity;// số F = E-D
+    private Double poQuantity;// số B1
+    private Double deliveringQuantity;// số B2
+    private Double sumPoAndDeliveringQuantity;// số B
+    private Double totalOriginQuantity;// số E
+    private Double needQuantity;//số G = A-E
 
     public MrpResultDTO() {
     }
