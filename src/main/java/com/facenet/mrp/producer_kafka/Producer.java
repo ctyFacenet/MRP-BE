@@ -24,7 +24,7 @@ public class Producer {
     /**
      * cảnh báo đơn hàng so và fc
      */
-    @Scheduled(fixedDelay = 12*60*60*1000)
+    @Scheduled(cron = "0 0 8 * * ?")
     public void sendMessage(){
         Gson gson = new Gson();
         String topic = "mrp-so";
@@ -39,7 +39,7 @@ public class Producer {
     /**
      * cảnh báo nvl,btp trong đơn hàng so và fc
      */
-    @Scheduled(fixedDelay = 12*60*60*1000)
+    @Scheduled(cron = "0 0 8 * * ?")
     public void sendMessageForItem(){
         Gson gson = new Gson();
         String topic = "mrp-so-item";
