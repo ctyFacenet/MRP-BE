@@ -182,7 +182,7 @@ keycloak:
   credentials:
     secret: mrp_backend
     username: admin
-    password: 'admin'
+    password: 'Rangdong@123'
   approval:
     realm: QLSX
     role: MRP_QL
