@@ -30,7 +30,6 @@ public class MqqPriceService {
     }
 
     public void createMqqPrice (String vendorCode, String itemCode, MqqLeadTimeDTO dto){
-
         LeadTimeEntity leadtimeEntity;
         MqqPriceEntity priceEntity;
 
