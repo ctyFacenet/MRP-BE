@@ -1,5 +1,140 @@
+## ===================================================================
+## Spring Boot configuration for the "prod" profile.
+##
+## This configuration overrides the application.yml file.
+##
+## More information on profiles: https://www.jhipster.tech/profiles/
+## More information on configuration properties: https://www.jhipster.tech/common-application-properties/
+## ===================================================================
+#
+## ===================================================================
+## Standard Spring Boot properties.
+## Full reference is available at:
+## http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+## ===================================================================
+#
+#logging:
+#  level:
+#    ROOT: INFO
+#    tech.jhipster: INFO
+#    com.facenet.mrp: INFO
+#
+#management:
+#  metrics:
+#    export:
+#      prometheus:
+#        enabled: false
+#
+#spring:
+#  kafka:
+#    producer:
+#      bootstrap-servers: 192.168.68.87:9092
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+#  devtools:
+#    restart:
+#      enabled: false
+#    livereload:
+#      enabled: false
+#  datasource:
+#    primary:
+#      type: com.zaxxer.hikari.HikariDataSource
+#      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning_test?useLegacyDatetimeCode=false&serverTimezone=UTC
+#      username: root
+#      password: Facenet@123
+#      hikari:
+#        poolName: Hikari
+#        auto-commit: false
+#        max-lifetime: 300000
+#        data-source-properties:
+#          cachePrepStmts: true
+#          prepStmtCacheSize: 250
+#          prepStmtCacheSqlLimit: 2048
+#          useServerPrepStmts: true
+#    sap:
+#      type: com.zaxxer.hikari.HikariDataSource
+#      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Thang4;encrypt=true;trustServerCertificate=true;
+#      username: read
+#      password: 2022@mesrd
+#  jpa:
+#    properties:
+#      enable_lazy_load_no_trans: true
+#  # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
+#  liquibase:
+#    contexts: prod
+#    enabled: off
+#  thymeleaf:
+#    cache: true
+#
+## ===================================================================
+## To enable TLS in production, generate a certificate using:
+## keytool -genkey -alias mrpservice -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650
+##
+## You can also use Let's Encrypt:
+## See details in topic "Create a Java Keystore (.JKS) from Let's Encrypt Certificates" on https://maximilian-boehm.com/en-gb/blog
+##
+## Then, modify the server.ssl properties so your "server" configuration looks like:
+##
+## server:
+##   port: 443
+##   ssl:
+##     key-store: classpath:config/tls/keystore.p12
+##     key-store-password: password
+##     key-store-type: PKCS12
+##     key-alias: selfsigned
+##     # The ciphers suite enforce the security by deactivating some old and deprecated SSL cipher, this list was tested against SSL Labs (https://www.ssllabs.com/ssltest/)
+##     ciphers: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 ,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,TLS_RSA_WITH_CAMELLIA_128_CBC_SHA
+## ===================================================================
+#server:
+#  port: 8312
+#  shutdown: graceful # see https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-graceful-shutdown
+#  compression:
+#    enabled: true
+#    mime-types: text/html,text/xml,text/plain,text/css,application/javascript,application/json,image/svg+xml
+#    min-response-size: 1024
+#
+## ===================================================================
+## JHipster specific properties
+##
+## Full reference is available at: https://www.jhipster.tech/common-application-properties/
+## ===================================================================
+#
+#jhipster:
+#  http:
+#    cache: # Used by the CachingHttpHeadersFilter
+#      timeToLiveInDays: 1461
+#  cors:
+#    # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
+#    allowed-origins: 'http://192.168.68.87:4200,http://192.168.68.87:4000'
+#    # Enable CORS when running in GitHub Codespaces
+#    allowed-methods: '*'
+#    allowed-headers: '*'
+#    exposed-headers: 'Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params'
+#    allow-credentials: true
+#    max-age: 1800
+#  logging:
+#    use-json-format: false # By default, logs are not in Json format
+#    logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
+#      enabled: false
+#      host: localhost
+#      port: 5000
+#      queue-size: 512
+## ===================================================================
+## Application specific properties
+## Add your own application properties here, see the ApplicationProperties class
+## to have type-safe configuration, like in the JHipsterProperties above
+##
+## More documentation is available at:
+## https://www.jhipster.tech/common-application-properties/
+## ===================================================================
+#
+## application:
+
+
+
+######################################################################
 # ===================================================================
-# Spring Boot configuration for the "prod" profile.
+# Spring Boot configuration for the "dev" profile.
 #
 # This configuration overrides the application.yml file.
 #
@@ -15,37 +150,40 @@
 
 logging:
   level:
-    ROOT: INFO
-    tech.jhipster: INFO
-    com.facenet.mrp: INFO
-
-management:
-  metrics:
-    export:
-      prometheus:
-        enabled: false
+    ROOT: DEBUG
+    tech.jhipster: DEBUG
+    org.hibernate.SQL: DEBUG
+    com.facenet.mrp: DEBUG
 
 spring:
   kafka:
     producer:
-      bootstrap-servers: 192.168.68.87:9092
+      bootstrap-servers: 222.252.25.37:5044
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
   devtools:
     restart:
-      enabled: false
+      enabled: true
+      additional-exclude: static/**
     livereload:
-      enabled: false
+      enabled: false # we use Webpack dev server + BrowserSync for livereload
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
+      indent-output: true
   datasource:
     primary:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
+      jdbc-url: jdbc:mariadb://192.168.1.20:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
       username: root
-      password: Facenet@123
+      password: 171ca9e4eb616be4a8007db9fa1da1091480f211e39c2ed8cc56cd6d6d25b09a
+      #      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
+      #      username: root
+      #      password: Facenet@2023
       hikari:
         poolName: Hikari
         auto-commit: false
-        max-lifetime: 300000
+        max-lifetime: 1800000
         data-source-properties:
           cachePrepStmts: true
           prepStmtCacheSize: 250
@@ -53,45 +191,34 @@ spring:
           useServerPrepStmts: true
     sap:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Thang4;encrypt=true;trustServerCertificate=true;
-      username: read
-      password: 2022@mesrd
-  jpa:
-    properties:
-      enable_lazy_load_no_trans: true
-  # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
-  liquibase:
-    contexts: prod
-    enabled: off
-  thymeleaf:
-    cache: true
+      jdbc-url: jdbc:sqlserver://192.168.1.24:1433;database=Thang4;encrypt=true;trustServerCertificate=true;
+      username: sa
+      password: facenet@70d61c662aab8f49178f33794acac0deb3298c26b1ccb78c1c294ab2889072c4
+  #      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Thang4;encrypt=true;trustServerCertificate=true;
+  #      username: read
+  #      password: 2022@mesrd
 
-# ===================================================================
-# To enable TLS in production, generate a certificate using:
-# keytool -genkey -alias mrpservice -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650
-#
-# You can also use Let's Encrypt:
-# See details in topic "Create a Java Keystore (.JKS) from Let's Encrypt Certificates" on https://maximilian-boehm.com/en-gb/blog
-#
-# Then, modify the server.ssl properties so your "server" configuration looks like:
-#
-# server:
-#   port: 443
-#   ssl:
-#     key-store: classpath:config/tls/keystore.p12
-#     key-store-password: password
-#     key-store-type: PKCS12
-#     key-alias: selfsigned
-#     # The ciphers suite enforce the security by deactivating some old and deprecated SSL cipher, this list was tested against SSL Labs (https://www.ssllabs.com/ssltest/)
-#     ciphers: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 ,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,TLS_RSA_WITH_CAMELLIA_128_CBC_SHA
-# ===================================================================
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        generate_statistics: true
+        order_inserts: true
+        jdbc:
+          batch_size: 100
+        order_updates: true
+      enable_lazy_load_no_trans: true
+
+  liquibase:
+    # Remove 'faker' if you do not want the sample data to be loaded automatically
+    contexts: dev, faker
+    enabled: off
+  messages:
+    cache-duration: PT1S # 1 second, see the ISO 8601 standard
+  thymeleaf:
+    cache: false
 server:
   port: 8312
-  shutdown: graceful # see https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-graceful-shutdown
-  compression:
-    enabled: true
-    mime-types: text/html,text/xml,text/plain,text/css,application/javascript,application/json,image/svg+xml
-    min-response-size: 1024
 
 # ===================================================================
 # JHipster specific properties
@@ -100,13 +227,12 @@ server:
 # ===================================================================
 
 jhipster:
-  http:
-    cache: # Used by the CachingHttpHeadersFilter
-      timeToLiveInDays: 1461
+  # CORS is only enabled by default with the "dev" profile
   cors:
     # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
-    allowed-origins: 'http://192.168.68.87:4200,http://192.168.68.87:4000'
+    allowed-origins: 'http://localhost:8100,https://localhost:8100,http://localhost:9000,https://localhost:9000,http://222.252.25.37:8312,http://localhost:4200,http://222.252.25.37:4200,http://192.168.1.29:4000,http://192.168.1.29:4201'
     # Enable CORS when running in GitHub Codespaces
+    allowed-origin-patterns: 'https://*.githubpreview.dev'
     allowed-methods: '*'
     allowed-headers: '*'
     exposed-headers: 'Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params'
@@ -129,3 +255,4 @@ jhipster:
 # ===================================================================
 
 # application:
+

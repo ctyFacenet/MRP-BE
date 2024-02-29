@@ -432,40 +432,54 @@ public class PurchaseRecommendationService {
 
     private void choosePrice(PurchaseRecommendationDetailEntity item, List<MoqDTO> priceList) {
         if (CollectionUtils.isEmpty(priceList)) return;
+//        ----------------------------
+        Optional<MoqDTO> maxTimeUsedOptional = priceList.stream()
+            .filter(moq -> moq.getTimeUsed() != null)
+            .max(Comparator.comparing(MoqDTO::getTimeUsed));
 
-        int maxTimeUsed = priceList.stream().max(Comparator.comparing(MoqDTO::getTimeUsed)).get().getTimeUsed();
+        int maxTimeUsed = maxTimeUsedOptional.map(MoqDTO::getTimeUsed).orElse(0);
+
+        if (maxTimeUsedOptional.isPresent()) {
+            System.out.println("Max Time Used: " + maxTimeUsed);
+        } else {
+            System.out.println("Không có giá trị thích hợp.");
+        }
+//        ------------------------------------------------------
+//        int maxTimeUsed = priceList.stream().filter(moq -> moq.getTimeUsed() != null).max(Comparator.comparing(MoqDTO::getTimeUsed)).get().getTimeUsed();
         Date maxStartTime = new Date(Long.MIN_VALUE);
         MoqDTO bestPrice = priceList.get(0);
         boolean isFoundSuitableRange = false;
         double minRangeEndDiff = Double.MAX_VALUE;
         for (MoqDTO price : priceList) {
             // Most used
-            if (price.getTimeUsed() == maxTimeUsed) {
-                log.debug("Max timeUsed {} ", maxTimeUsed);
-                Date startTime = price.getTimeStart();
-                if (startTime == null) startTime = new Date(Long.MIN_VALUE);
+            if(price.getTimeUsed() != null){
+                if (price.getTimeUsed() == maxTimeUsed) {
+                    log.debug("Max timeUsed {} ", maxTimeUsed);
+                    Date startTime = price.getTimeStart();
+                    if (startTime == null) startTime = new Date(Long.MIN_VALUE);
 
-                if (startTime.compareTo(maxStartTime) > 0) {
-                    log.debug("Found new closet date {} of most fav vendor", startTime);
-                    maxStartTime = startTime;
-                    bestPrice = price;
+                    if (startTime.compareTo(maxStartTime) > 0) {
+                        log.debug("Found new closet date {} of most fav vendor", startTime);
+                        maxStartTime = startTime;
+                        bestPrice = price;
 
-                    // Reset helper variable to new max date
-                    isFoundSuitableRange = false;
-                    minRangeEndDiff = Double.MAX_VALUE;
-                } else if (startTime.equals(maxStartTime)) {
-                    if (isFoundSuitableRange) continue;
-                    // Found suitable range
-                    if ((price.getRangeStart() == 0 && price.getRangeEnd() == 0) // all range
-                        || (price.getRangeStart() <= item.getQuantity() && item.getQuantity() <= price.getRangeEnd())) {
-                        bestPrice = price;
-                        isFoundSuitableRange = true;
-                    }
-                    // Find min diff of range end and quantity
-                    double rangeEndDiff = Math.abs(item.getQuantity() - price.getRangeEnd());
-                    if (rangeEndDiff < minRangeEndDiff) {
-                        bestPrice = price;
-                        minRangeEndDiff = rangeEndDiff;
+                        // Reset helper variable to new max date
+                        isFoundSuitableRange = false;
+                        minRangeEndDiff = Double.MAX_VALUE;
+                    } else if (startTime.equals(maxStartTime)) {
+                        if (isFoundSuitableRange) continue;
+                        // Found suitable range
+                        if ((price.getRangeStart() == 0 && price.getRangeEnd() == 0) // all range
+                            || (price.getRangeStart() <= item.getQuantity() && item.getQuantity() <= price.getRangeEnd())) {
+                            bestPrice = price;
+                            isFoundSuitableRange = true;
+                        }
+                        // Find min diff of range end and quantity
+                        double rangeEndDiff = Math.abs(item.getQuantity() - price.getRangeEnd());
+                        if (rangeEndDiff < minRangeEndDiff) {
+                            bestPrice = price;
+                            minRangeEndDiff = rangeEndDiff;
+                        }
                     }
                 }
             }

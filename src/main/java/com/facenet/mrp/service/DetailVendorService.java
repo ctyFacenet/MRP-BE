@@ -271,6 +271,7 @@ public class DetailVendorService {
     }
 
     public CommonResponse addItemForVendor(ItemInVendorDTO itemInVendorDTO) {
+        //TODO không thấy lưu ncc cho item ở bảng mqq_price? chưa hiểu nghiệp vụ chỗ này.
         if (!oitmRepository.existsByItemCode(itemInVendorDTO.getItemCode()))
             throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.item", itemInVendorDTO.getItemCode());
 
