@@ -433,19 +433,19 @@ public class PurchaseRecommendationService {
     private void choosePrice(PurchaseRecommendationDetailEntity item, List<MoqDTO> priceList) {
         if (CollectionUtils.isEmpty(priceList)) return;
 //        ----------------------------
-        Optional<MoqDTO> maxTimeUsedOptional = priceList.stream()
-            .filter(moq -> moq.getTimeUsed() != null)
-            .max(Comparator.comparing(MoqDTO::getTimeUsed));
-
-        int maxTimeUsed = maxTimeUsedOptional.map(MoqDTO::getTimeUsed).orElse(0);
-
-        if (maxTimeUsedOptional.isPresent()) {
-            System.out.println("Max Time Used: " + maxTimeUsed);
-        } else {
-            System.out.println("Không có giá trị thích hợp.");
-        }
+//        Optional<MoqDTO> maxTimeUsedOptional = priceList.stream()
+//            .filter(moq -> moq.getTimeUsed() != null)
+//            .max(Comparator.comparing(MoqDTO::getTimeUsed));
+//
+//        int maxTimeUsed = maxTimeUsedOptional.map(MoqDTO::getTimeUsed).orElse(0);
+//
+//        if (maxTimeUsedOptional.isPresent()) {
+//            System.out.println("Max Time Used: " + maxTimeUsed);
+//        } else {
+//            System.out.println("Không có giá trị thích hợp.");
+//        }
 //        ------------------------------------------------------
-//        int maxTimeUsed = priceList.stream().filter(moq -> moq.getTimeUsed() != null).max(Comparator.comparing(MoqDTO::getTimeUsed)).get().getTimeUsed();
+        int maxTimeUsed = priceList.stream().max(Comparator.comparing(MoqDTO::getTimeUsed)).get().getTimeUsed();
         Date maxStartTime = new Date(Long.MIN_VALUE);
         MoqDTO bestPrice = priceList.get(0);
         boolean isFoundSuitableRange = false;
