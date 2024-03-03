@@ -270,8 +270,41 @@ public class DetailVendorService {
         return result.get(0);
     }
 
+    @Transactional
+    public CommonResponse addItemForVendorMulti(List<ItemInVendorDTO> itemInVendorDTOs) {
+        for (ItemInVendorDTO itemInVendorDTO: itemInVendorDTOs){
+            if (!oitmRepository.existsByItemCode(itemInVendorDTO.getItemCode()))
+                throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.item", itemInVendorDTO.getItemCode());
+
+            if (!itemRepository.existsAllByItemCode(itemInVendorDTO.getItemCode())) {
+                ItemEntity itemEntity = new ItemEntity();
+                itemEntity.setItemCode(itemInVendorDTO.getItemCode());
+                itemEntity.setItemName(oitmRepository.getByItemCode(itemInVendorDTO.getItemCode()).getItemName());
+                itemRepository.save(itemEntity);
+            }
+
+            if (!ocrdRepository.existsByCardCode(itemInVendorDTO.getVendorCode()))
+                throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.vendor", itemInVendorDTO.getVendorCode());
+
+            if (!vendorRepository.existsAllByVendorCode(itemInVendorDTO.getVendorCode())) {
+                VendorEntity vendorEntity = new VendorEntity();
+                vendorEntity.setVendorCode(itemInVendorDTO.getVendorCode());
+                vendorEntity.setVendorName(ocrdRepository.getVendor(itemInVendorDTO.getVendorCode()).getCardName());
+                vendorRepository.save(vendorEntity);
+            }
+
+            if (vendorItemRepository.existsByItemCodeAndVendorCode(itemInVendorDTO.getItemCode(), itemInVendorDTO.getVendorCode()))
+                throw new CustomException(HttpStatus.BAD_REQUEST, "exist.item.vendor", vendorItemRepository.findByItemCodeAndVendorCode(itemInVendorDTO.getItemCode(), itemInVendorDTO.getVendorCode()).getItemCode(), vendorItemRepository.findByItemCodeAndVendorCode(itemInVendorDTO.getItemCode(), itemInVendorDTO.getVendorCode()).getVendorCode());
+
+            VendorItemEntity vendorItemEntity = new VendorItemEntity(itemInVendorDTO.getVendorCode(), itemInVendorDTO.getItemCode());
+            vendorItemRepository.save(vendorItemEntity);
+
+        }
+        return new CommonResponse().success();
+    }
+
+    @Transactional
     public CommonResponse addItemForVendor(ItemInVendorDTO itemInVendorDTO) {
-        //TODO không thấy lưu ncc cho item ở bảng mqq_price? chưa hiểu nghiệp vụ chỗ này.
         if (!oitmRepository.existsByItemCode(itemInVendorDTO.getItemCode()))
             throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.item", itemInVendorDTO.getItemCode());
 

@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.List;
 
 /**
  * @author: trần đình thành
@@ -83,6 +84,15 @@ public class VendorResource {
             throw new CustomException(HttpStatus.BAD_REQUEST ,"invalid.param");
         }
         return detailVendorService.addItemForVendor(itemInVendorDTO);
+    }
+
+    @PostMapping(value = "/vendor-information/vendor-detail/new-item-vendor-multi")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'MH')")
+    public CommonResponse addNewItemForVendorMulti(@RequestBody List<ItemInVendorDTO> itemInVendorDTOs){
+        if(itemInVendorDTOs.size() == 0){
+            throw new CustomException(HttpStatus.BAD_REQUEST ,"invalid.param");
+        }
+        return detailVendorService.addItemForVendorMulti(itemInVendorDTOs);
     }
 
     @PostMapping(value = "/vendor-information/vendor-detail/{vendorCode}/new-sale-vendor-manager")
