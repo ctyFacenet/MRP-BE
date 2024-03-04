@@ -173,12 +173,12 @@ spring:
   datasource:
     primary:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:mariadb://192.168.1.20:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
-      username: root
-      password: 171ca9e4eb616be4a8007db9fa1da1091480f211e39c2ed8cc56cd6d6d25b09a
-#      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning_test?useLegacyDatetimeCode=false&serverTimezone=UTC
+#      jdbc-url: jdbc:mariadb://192.168.1.20:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
 #      username: root
-#      password: Facenet@2023
+#      password: 171ca9e4eb616be4a8007db9fa1da1091480f211e39c2ed8cc56cd6d6d25b09a
+      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning_test?useLegacyDatetimeCode=false&serverTimezone=UTC
+      username: root
+      password: Facenet@2023
       hikari:
         poolName: Hikari
         auto-commit: false
@@ -190,12 +190,12 @@ spring:
           useServerPrepStmts: true
     sap:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:sqlserver://192.168.1.24:1433;database=Thang4;encrypt=true;trustServerCertificate=true;
-      username: sa
-      password: facenet@70d61c662aab8f49178f33794acac0deb3298c26b1ccb78c1c294ab2889072c4
-  #      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Thang4;encrypt=true;trustServerCertificate=true;
-  #      username: read
-  #      password: 2022@mesrd
+#      jdbc-url: jdbc:sqlserver://192.168.1.24:1433;database=Thang4;encrypt=true;trustServerCertificate=true;
+#      username: sa
+#      password: facenet@70d61c662aab8f49178f33794acac0deb3298c26b1ccb78c1c294ab2889072c4
+      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Thang4;encrypt=true;trustServerCertificate=true;
+      username: read
+      password: 2022@mesrd
 
   jpa:
     show-sql: true
@@ -229,7 +229,7 @@ jhipster:
   # CORS is only enabled by default with the "dev" profile
   cors:
     # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
-    allowed-origins: 'http://localhost:8100,https://localhost:8100,http://localhost:9000,https://localhost:9000,http://222.252.25.37:8312,http://localhost:4200,http://222.252.25.37:4200,http://192.168.1.29:4000,http://192.168.1.29:4201'
+    allowed-origins: 'http://192.168.68.87:4000,http://localhost:8100,https://localhost:8100,http://localhost:9000,https://localhost:9000,http://222.252.25.37:8312,http://localhost:4200,http://222.252.25.37:4200,http://192.168.1.29:4000,http://192.168.1.29:4201'
     # Enable CORS when running in GitHub Codespaces
     allowed-origin-patterns: 'https://*.githubpreview.dev'
     allowed-methods: '*'
