@@ -169,12 +169,23 @@ public class XlsxExcelHandle {
         donHang.setSaleCode(ExcelUtils.getStringCellValue(row.getCell(9)));
 
         if(row.getCell(10) != null) {
-            //startTime
-            donHang.setStartDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(10))));
+            try{
+                //startTime
+                donHang.setStartDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(10))));
+            }catch (Exception e){
+                //startTime
+                donHang.setStartDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(10))));
+            }
+
         }
         if(row.getCell(11) != null) {
+            Date endTime;
+            try{
+                 endTime = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(11)));
+            }catch (Exception e){
+                endTime = new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(11)));
+            }
             //endTime
-            Date endTime = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(11)));
             if (endTime.compareTo(donHang.getStartDate()) < 0)
                 throw new CustomException("object.must.be.greater.than.at", "thời gian trả hàng", "thời gian phát sinh", String.valueOf(row.getRowNum() + 1));
             donHang.setEndDate(endTime);
@@ -196,12 +207,21 @@ public class XlsxExcelHandle {
             donHang.setPriority(ExcelUtils.getIntegerCellValue(row.getCell(14)));
         donHang.setStatus(1);
         if(row.getCell(15) != null) {
-            donHang.setOrderDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(15))));
+            try{
+                donHang.setOrderDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(15))));
+            }catch (Exception e){
+                donHang.setOrderDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(15))));
+            }
         }else{
             donHang.setOrderDate(new Date());
         }
         if (row.getCell(16) != null) {
-            Date deliverDate = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(16)));
+            Date deliverDate;
+            try{
+                deliverDate = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(16)));
+            }catch (Exception e){
+                deliverDate = new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(16)));
+            }
             if (deliverDate.compareTo(donHang.getOrderDate()) < 0)
                 throw new CustomException("object.must.be.greater.than.other.at", "thời gian trả hàng", "thời gian đặt hàng", String.valueOf(row.getRowNum() + 1));
             donHang.setDeliverDate(deliverDate);
