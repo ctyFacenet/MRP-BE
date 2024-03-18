@@ -9,8 +9,7 @@ import lombok.Setter;
 import java.sql.Date;
 import java.sql.Timestamp;
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class ForecastDTO {
     private Integer id;
     private String fcCode;
@@ -31,6 +30,31 @@ public class ForecastDTO {
     private String result;
     private Integer isActive;
     private ForecastDTO subForecast;
+
+    public ForecastDTO() {
+    }
+
+    public ForecastDTO(Integer id, String fcCode, String fcName, Date timeStart, Date timeEnd, String fcMode, String warehouse, String fcSource, Integer priority, String note, Integer status, String createdBy, Timestamp createdAt, String updatedBy, Timestamp updatedAt, Integer parentFc, String result, Integer isActive, ForecastDTO subForecast) {
+        this.id = id;
+        this.fcCode = fcCode;
+        this.fcName = fcName;
+        this.timeStart = timeStart;
+        this.timeEnd = timeEnd;
+        this.fcMode = fcMode;
+        this.warehouse = warehouse;
+        this.fcSource = fcSource;
+        this.priority = priority;
+        this.note = note;
+        this.status = status;
+        this.createdBy = createdBy;
+        this.createdAt = createdAt;
+        this.updatedBy = updatedBy;
+        this.updatedAt = updatedAt;
+        this.parentFc = parentFc;
+        this.result = result;
+        this.isActive = isActive;
+        this.subForecast = subForecast;
+    }
 
     public ForecastDTO getSubForecast() {
         return subForecast;
