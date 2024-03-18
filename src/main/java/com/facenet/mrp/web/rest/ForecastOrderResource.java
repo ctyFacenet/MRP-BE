@@ -28,7 +28,7 @@ public class ForecastOrderResource {
     }
 
     @PostMapping("")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'QLSX', 'HT', 'K')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'QLSX', 'HT', 'K','PLANITEM')")
     public PageResponse<List<ForecastOrderDTO>> getAllForecastOrder(@RequestBody PageFilterInput<ForecastOrderDTO> input) {
         return forecastOrderService.getAllForecastOrder(input);
     }

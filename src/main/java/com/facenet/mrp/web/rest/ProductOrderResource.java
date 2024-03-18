@@ -45,7 +45,7 @@ public class ProductOrderResource {
     }
 
     @PostMapping("")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'S')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'S', 'SELLORDER')")
     public ResponseEntity<ProductOrderResponse> getAllPoPaging(@RequestBody ProductOrderInput input) throws IOException, org.apache.el.parser.ParseException {
         if (input == null){
             throw new CustomException(HttpStatus.BAD_REQUEST,"invalid.param");

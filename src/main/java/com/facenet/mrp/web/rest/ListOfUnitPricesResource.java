@@ -30,7 +30,7 @@ public class ListOfUnitPricesResource {
     }
 
     @PostMapping("/unit-price-list")
-    @PreAuthorize("hasAnyAuthority('KHDH', 'MH')")
+    @PreAuthorize("hasAnyAuthority('KHDH', 'MH','CATEGORY')")
     public ResponseEntity getAllListOfUnitPrices(@RequestBody RequestInput<ListOfUnitPricesFilter> input){
         Page<ListOfUnitPricesDTO> pageResult = service.getPageListOfUnitPrices(input);
         return ResponseEntity.ok(new PageResponse<List<ListOfUnitPricesDTO>>()

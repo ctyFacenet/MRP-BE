@@ -31,7 +31,7 @@ public class ProductionLineResource {
      * @throws JsonProcessingException
      */
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'HT', 'KTV', 'QLSX')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'HT', 'KTV', 'QLSX','LINE')")
     public PageResponse<List<ProductionLineDTO>> getAllProductionLines(@RequestBody @Valid PageFilterInput<ProductionLineFilter> input) throws JsonProcessingException {
         return productionLineService.getAllProductionLines(input);
     }

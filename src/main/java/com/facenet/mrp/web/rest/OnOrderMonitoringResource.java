@@ -37,14 +37,14 @@ public class OnOrderMonitoringResource {
     MonitoringService monitoringService;
 
     @PostMapping("/list-all")
-    @PreAuthorize("hasAnyAuthority('GSTD-View')")
+    @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPO')")
     public ResponseEntity listAll(@RequestBody PageFilterInput<MonitoringFilter> bodyRequest){
         PageResponse<List<OnOrderMonitoringDTO>> data = monitoringService.monitoringDTOList(bodyRequest);
         return ResponseEntity.ok(data);
     }
 
     @PostMapping("/list-all-pr")
-    @PreAuthorize("hasAnyAuthority('GSTD-View')")
+    @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR')")
     public ResponseEntity listAllPr(@RequestBody PageFilterInput<prMonitorFilter> bodyRequest){
         PageResponse<List<MonitorListPrDTO>> data = monitoringService.prListMonitoring(bodyRequest);
         return ResponseEntity.ok(data);
@@ -132,7 +132,7 @@ public class OnOrderMonitoringResource {
 
 
     @PostMapping("/list-duration-plan")
-    @PreAuthorize("hasAnyAuthority('GSTD-View')")
+    @PreAuthorize("hasAnyAuthority('GSTD-View','REPORTPLAN')")
     public PageResponse insertListItemDuration(@RequestBody PageFilterInput<DurationPlanDTO> input){
         PageResponse result = monitoringService.getAllDurationPlan(input);
         return result;

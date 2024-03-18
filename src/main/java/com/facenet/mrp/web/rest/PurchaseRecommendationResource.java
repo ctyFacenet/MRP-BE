@@ -36,7 +36,7 @@ public class PurchaseRecommendationResource {
     }
 
     @PostMapping("")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'MH', 'HT')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'MH', 'HT', 'RECOMMENDATION')")
     public PageResponse<List<PurchaseRecommendationDTO>> getAllPurchaseRecommendation(@RequestBody @Valid PageFilterInput<PurchaseRecommendationFilter> input) {
         return purchaseRecommendationService.getAllPurchaseRecommendation(input);
     }

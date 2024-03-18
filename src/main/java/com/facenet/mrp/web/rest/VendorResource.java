@@ -44,7 +44,7 @@ public class VendorResource {
     private DetailVendorService detailVendorService;
 
     @PostMapping(value = "/vendor-information/list-vendor")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'MH')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'MH','SUPPLIER')")
     public CommonResponse getAllVendor(@RequestBody PageFilterInput<DataVendorAndSale> vendorAndSaleForm){
         CommonResponse commonResponse = new CommonResponse();
         try{

@@ -34,7 +34,7 @@ public class ProductOrderAnalyticsResource {
     MrpAdvancedAnalysisServiceV3 mrpAdvancedAnalysisServiceV3;
 
     @PostMapping("/list-order-analytics")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX','LISTSCRIPT')")
     public ResponseEntity listOrder(@RequestBody ProductOrderInput input){
         if (input == null){
             throw new CustomException(HttpStatus.BAD_REQUEST,"invalid.param");
