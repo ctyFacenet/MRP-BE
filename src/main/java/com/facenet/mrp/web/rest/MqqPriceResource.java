@@ -45,7 +45,7 @@ public class MqqPriceResource {
     }
 
     @PostMapping("/{vendorCode}/{itemCode}/mqq-price-list")
-    @PreAuthorize("hasAnyAuthority('KHDH', 'MH')")
+    @PreAuthorize("hasAnyAuthority('KHDH', 'MH' ,'CATEGORY', 'VIEW', 'VIEW_S_C')")
     public ResponseEntity getPriceMqqAndLeadTime(
         @PathVariable("vendorCode") String vendorCode,
         @PathVariable("itemCode") String itemCode

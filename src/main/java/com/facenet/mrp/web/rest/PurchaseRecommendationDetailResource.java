@@ -50,7 +50,7 @@ public class PurchaseRecommendationDetailResource {
     }
 
     @PostMapping("/{purchaseRecommendationId}/items/{itemCode}/price")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'MH', 'HT')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'MH', 'HT','VIEW','RECOMMENDATION')")
     public PageResponse<ItemPriceOfVendorListDTO> getAllPriceOfItem(@PathVariable String itemCode, @PathVariable Integer purchaseRecommendationId, @RequestBody PageFilterInput<Double> input) throws JsonProcessingException {
         return purchaseRecommendationDetailService.getAllPriceOfItem(
             itemCode,
@@ -143,7 +143,7 @@ public class PurchaseRecommendationDetailResource {
         return new CommonResponse().success();
     }
     @GetMapping("/purchase-recommendation-plan/all-plans/{soCode}/{mrpSubCode}/{itemCode}")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH','VIEW','RECOMMENDATION')")
     public ResponseEntity getAllRecommendationPlan(
         @PathVariable String soCode,
         @PathVariable String itemCode,

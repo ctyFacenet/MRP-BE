@@ -81,7 +81,7 @@ public class PurchaseRecommendationResource {
     }
 
     @GetMapping("/{purchaseRecommendationId}/items/{itemCode}/mrp-detail")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'MH', 'HT')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'MH', 'HT','VIEW','RECOMMENDATION')")
     public PageResponse<?> getSyntheticByCode(@PathVariable Integer purchaseRecommendationId,@PathVariable String itemCode) throws JsonProcessingException {
         return purchaseRecommendationService.getSyntheticByItemCode(purchaseRecommendationId,itemCode);
     }

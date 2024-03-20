@@ -44,21 +44,21 @@ public class OnOrderMonitoringResource {
     }
 
     @PostMapping("/list-all-pr")
-    @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR')")
+    @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR','VIEW')")
     public ResponseEntity listAllPr(@RequestBody PageFilterInput<prMonitorFilter> bodyRequest){
         PageResponse<List<MonitorListPrDTO>> data = monitoringService.prListMonitoring(bodyRequest);
         return ResponseEntity.ok(data);
     }
 
     @PostMapping("/list-all-detail-in-pr/{prCode}")
-    @PreAuthorize("hasAnyAuthority('GSTD-View')")
+    @PreAuthorize("hasAnyAuthority('GSTD-View','PROGRESSPR','VIEW')")
     public ResponseEntity listAllDetailInPr(@RequestBody PageFilterInput<prMonitorFilter> bodyRequest, @PathVariable String prCode){
         PageResponse<List<ItemListInPrDTO>> data = monitoringService.prListDetailMonitoring(bodyRequest,prCode);
         return ResponseEntity.ok(data);
     }
 
     @PostMapping("/list-all-detail")
-    @PreAuthorize("hasAnyAuthority('GSTD-View')")
+    @PreAuthorize("hasAnyAuthority('GSTD-View','VIEW','PROGRESSPO')")
     public ResponseEntity listAllDetail(@RequestBody PageFilterInput<MonitoringFilter> bodyRequest){
         PageResponse<List<OnOrderWithDurationDetailDTO>> data = monitoringService.monitoringDTOWithDetail(bodyRequest);
         return ResponseEntity.ok(data);
@@ -102,7 +102,7 @@ public class OnOrderMonitoringResource {
     }
 
     @PostMapping("/get-list-item-with-pr")
-    @PreAuthorize("hasAnyAuthority('GSTD-View')")
+    @PreAuthorize("hasAnyAuthority('GSTD-View','VIEW','PROGRESSITEM')")
     public PageResponse getListItemWithPr(@RequestBody String input){
         return monitoringService.getAllItemDurationPlan(input);
     }
@@ -132,7 +132,7 @@ public class OnOrderMonitoringResource {
 
 
     @PostMapping("/list-duration-plan")
-    @PreAuthorize("hasAnyAuthority('GSTD-View','REPORTPLAN')")
+    @PreAuthorize("hasAnyAuthority('GSTD-View','PROGRESSITEM','VIEW')")
     public PageResponse insertListItemDuration(@RequestBody PageFilterInput<DurationPlanDTO> input){
         PageResponse result = monitoringService.getAllDurationPlan(input);
         return result;

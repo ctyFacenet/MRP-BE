@@ -43,7 +43,7 @@ public class ReportResource {
     }
 
     @PostMapping("")
-    @PreAuthorize("hasAnyAuthority('BC','REPORTSYNTHETIC')")
+    @PreAuthorize("hasAnyAuthority('BC','REPORTSYNTHETIC','VIEW','REPORTPERIOD')")
     public ResponseEntity getReport(@RequestBody ReportFilter filter){
 
         return ResponseEntity.ok(new CommonResponse<List<ReportDTO>>()

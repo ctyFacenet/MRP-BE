@@ -53,7 +53,7 @@ public class ForecastOrderResource {
     }
 
     @GetMapping("/get-detail-forecast/{fcCode}")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'TKKT', 'QLSX', 'HT', 'K')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'TKKT', 'QLSX', 'HT', 'K','PLANITEM','VIEW')")
     public ResponseEntity getDetailForecast(@PathVariable String fcCode) throws JsonProcessingException {
         ForecastMaterialDTO forecastMaterialDTO = forecastOrderService.getDetailForecast(fcCode);
         if(forecastMaterialDTO == null){

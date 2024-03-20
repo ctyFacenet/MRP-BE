@@ -60,7 +60,7 @@ public class HistoryMrpSource {
     }
 
     @GetMapping(value = "/order-analytics/view-result-script-mrp/{mrpSubCode}")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'QLSX')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'QLSX','DETAILSCRIPT','VIEW')")
     public ResponseEntity<FileSystemResource> getResultMrp(@PathVariable String mrpSubCode) throws JsonProcessingException {
         return historyMrpService.getMrpResult(mrpSubCode);
     }

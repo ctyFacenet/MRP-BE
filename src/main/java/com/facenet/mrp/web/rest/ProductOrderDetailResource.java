@@ -115,7 +115,7 @@ public class ProductOrderDetailResource {
     }
 
     @PostMapping("product-order-detail/analytics-products/{productOrderCode}/{type}")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX','LISTSCRIPT','VIEW')")
     public ResponseEntity<ProductOrderDetailResponse> getAllAnalyticsPoDetail(
         @PathVariable("productOrderCode")String productOrderCode,
         @RequestBody ProductOrderDetailInput input,
