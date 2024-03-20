@@ -28,7 +28,7 @@ public class BomResource {
      * @return
      */
     @PostMapping("")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX','BOM')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX','BOM','VIEW')")
     public PageResponse<List<BomDTO>> getAllBom(@RequestBody @Valid PageFilterInput<BomFilterInput> input) {
         return bomService.getAllBom(input);
     }

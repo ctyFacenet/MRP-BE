@@ -37,28 +37,28 @@ public class OnOrderMonitoringResource {
     MonitoringService monitoringService;
 
     @PostMapping("/list-all")
-    @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPO')")
+    @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPO', 'VIEW')")
     public ResponseEntity listAll(@RequestBody PageFilterInput<MonitoringFilter> bodyRequest){
         PageResponse<List<OnOrderMonitoringDTO>> data = monitoringService.monitoringDTOList(bodyRequest);
         return ResponseEntity.ok(data);
     }
 
     @PostMapping("/list-all-pr")
-    @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR','VIEW')")
+    @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR', 'VIEW')")
     public ResponseEntity listAllPr(@RequestBody PageFilterInput<prMonitorFilter> bodyRequest){
         PageResponse<List<MonitorListPrDTO>> data = monitoringService.prListMonitoring(bodyRequest);
         return ResponseEntity.ok(data);
     }
 
     @PostMapping("/list-all-detail-in-pr/{prCode}")
-    @PreAuthorize("hasAnyAuthority('GSTD-View','PROGRESSPR','VIEW')")
+    @PreAuthorize("hasAnyAuthority('GSTD-View','PROGRESSPR', 'VIEW')")
     public ResponseEntity listAllDetailInPr(@RequestBody PageFilterInput<prMonitorFilter> bodyRequest, @PathVariable String prCode){
         PageResponse<List<ItemListInPrDTO>> data = monitoringService.prListDetailMonitoring(bodyRequest,prCode);
         return ResponseEntity.ok(data);
     }
 
     @PostMapping("/list-all-detail")
-    @PreAuthorize("hasAnyAuthority('GSTD-View','VIEW','PROGRESSPO')")
+    @PreAuthorize("hasAnyAuthority('GSTD-View', 'VIEW','PROGRESSPO')")
     public ResponseEntity listAllDetail(@RequestBody PageFilterInput<MonitoringFilter> bodyRequest){
         PageResponse<List<OnOrderWithDurationDetailDTO>> data = monitoringService.monitoringDTOWithDetail(bodyRequest);
         return ResponseEntity.ok(data);

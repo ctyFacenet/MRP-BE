@@ -37,10 +37,10 @@ public class OitmResource {
     @PostMapping("/in-stock-products")
     public ResponseEntity getOitm(@RequestBody RequestInput<OitmFilter> requestInput){
         if ("p".equals(requestInput.getFilter().getSapType())) {
-            if (!SecurityUtils.hasCurrentUserAnyOfAuthorities("DHSX", "KHDH", "K", "TK", "TKKT", "HT", "MH", "INVENTORY"))
+            if (!SecurityUtils.hasCurrentUserAnyOfAuthorities("DHSX", "KHDH", "K", "TK", "TKKT", "HT", "MH", "INVENTORY", "VIEW"))
                 throw new CustomException(HttpStatus.UNAUTHORIZED, "access.denied");
         } else {
-            if (!SecurityUtils.hasCurrentUserAnyOfAuthorities("DHSX", "KHDH", "TK", "QLSX", "HT", "MH","INVENTORY"))
+            if (!SecurityUtils.hasCurrentUserAnyOfAuthorities("DHSX", "KHDH", "TK", "QLSX", "HT", "MH","INVENTORY", "VIEW"))
                 throw new CustomException(HttpStatus.UNAUTHORIZED, "access.denied");
         }
         Page<OitmEntity> oitmEntityList = oitmService.getOitmList(requestInput);

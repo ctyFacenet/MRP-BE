@@ -42,7 +42,7 @@ public class HistoryMrpSource {
     private MrpAnalysisCache mrpAnalysisCache;
 
     @GetMapping(value = "/order-analytics/list-scripts-mrp")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'HT', 'QLSX','DETAILSCRIPT')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'HT', 'QLSX','DETAILSCRIPT','VIEW')")
     public PageResponse<?> getAllMrp(Pageable pageable){
         try{
             return historyMrpService.getAllMrp(pageable);

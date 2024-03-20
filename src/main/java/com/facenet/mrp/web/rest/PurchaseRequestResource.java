@@ -21,7 +21,7 @@ public class PurchaseRequestResource {
 
     @PostMapping("/purchase-requests")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX' ,'PRPOGRPO')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX' ,'PRPOGRPO','VIEW')")
     public CommonResponse<?> getPurchaseRequests(@RequestBody @Valid PageFilterInput<PurchaseRequestDTO> input) {
         return purchaseRequestService.getPurchaseRequestsWithPaging(input);
     }
