@@ -20,7 +20,7 @@ public class InvoiceResource {
     }
     @PostMapping("/invoices")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX')")
+    @PreAuthorize("hasAnyAuthority('VIEW','DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX','PRPOGRPO' )")
     public CommonResponse<?> getInvoice(@RequestBody @Valid PageFilterInput<InvoiceDTO> input){
         return invoiceService.getInvoiceWithPaging(input);
     }

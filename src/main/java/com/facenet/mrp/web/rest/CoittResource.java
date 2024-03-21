@@ -56,7 +56,7 @@ public class CoittResource {
     }
 
     @PostMapping("/order-analytics/detail/list-boms")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX','LISTSCRIPT','VIEW')")
     public ResponseEntity getDetailBomVersionByProduct(@RequestBody RequestInput<BomFilterInput> requestInput){
         Page<DetailBomVersionDTO> list = coittService.listBomDetail(requestInput);
         return ResponseEntity.ok(

@@ -23,7 +23,7 @@ public class GrpoSource {
     private GrpoService grpoService;
 
     @PostMapping("/grpos")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX', 'VIEW','PRPOGRPO')")
     public ResponseEntity getAllGrpo(@RequestBody PageFilterInput<GrpoDTO> grpoSearchForm){
         try{
             Pageable page = PageRequest.of(grpoSearchForm.getPageNumber(),grpoSearchForm.getPageSize());

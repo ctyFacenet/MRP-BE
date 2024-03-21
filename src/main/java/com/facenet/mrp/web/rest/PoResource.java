@@ -24,7 +24,7 @@ public class PoResource {
     private PoService poService;
 
     @PostMapping("/purchase-orders")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX' ,'VIEW','PRPOGRPO')")
     public ResponseEntity getPO(@RequestBody RequestInput<PoFilter> requestInput){
         Page<PoDto> dtos = poService.poDtoPage(requestInput);
         return ResponseEntity.ok(new PageResponse<List<PoDto>>()

@@ -17,7 +17,8 @@ public class InvoiceDTO {
     private Double quantity;
     private Double price;
     private String status;
-
+    private String uDocnum;
+    private String uDeclareStat;
     public InvoiceDTO() {
     }
     @QueryProjection
