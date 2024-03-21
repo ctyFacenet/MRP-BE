@@ -40,7 +40,7 @@ public class BomResource {
      * @return
      */
     @GetMapping("/{productCode}/{version}")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX', 'VIEW')")
     public CommonResponse<List<BomItemDetailDTO>> getBomDetail(@PathVariable String productCode, @PathVariable String version) {
         return bomService.getBomDetail(productCode, version);
     }

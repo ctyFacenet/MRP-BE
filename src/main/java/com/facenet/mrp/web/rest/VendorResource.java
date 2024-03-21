@@ -44,7 +44,7 @@ public class VendorResource {
     private DetailVendorService detailVendorService;
 
     @PostMapping(value = "/vendor-information/list-vendor")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'MH','SUPPLIER','VIEW','VIEW_S_C')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'MH','SUPPLIER','VIEW','VIEWSC')")
     public CommonResponse getAllVendor(@RequestBody PageFilterInput<DataVendorAndSale> vendorAndSaleForm){
         CommonResponse commonResponse = new CommonResponse();
         try{
@@ -67,7 +67,7 @@ public class VendorResource {
     }
 
     @PostMapping(value = "/vendor-information/vendor-detail/{vendorCode}")
-    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'MH', 'VIEW', 'VIEW_S_C', 'SUPPLIER')")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'MH', 'VIEW', 'VIEWSC', 'SUPPLIER')")
     public CommonResponse getDetailVendor(@RequestBody PageFilterInput<VendorDetailForm> pageForm, @PathVariable String vendorCode) throws JsonProcessingException {
         Pageable page = PageRequest.of(pageForm.getPageNumber(),pageForm.getPageSize());
         PageResponse<?> list = detailVendorService.getData(pageForm,vendorCode,page);

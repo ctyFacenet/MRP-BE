@@ -30,7 +30,7 @@ public class ProductOrderDetailResource {
     }
 
     @PostMapping("product-order-detail/{productOrderCode}")
-    @PreAuthorize("hasAnyAuthority('DHSX')")
+    @PreAuthorize("hasAnyAuthority('DHSX','VIEW','SELLORDER')")
     public ResponseEntity<ProductOrderDetailResponse> getAllPoDetail(
         @PathVariable("productOrderCode") String productOrderCode,
         @RequestBody ProductOrderDetailInput input
