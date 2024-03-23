@@ -287,24 +287,6 @@ public class PurchaseRecommendationService {
 //            double exchange;
 
             choosePrice(prde, moqPrice.get(item.getItemCode()));
-//            for (MoqDTO m : moqDTOList) {
-//                exchange = rateExchange.get(m.getCurrency()) * m.getPrice();
-//                Calendar cal = Calendar.getInstance();
-//                if (item.getItemCode().equals(m.getItemCode())
-//                    // All range
-//                    && ((m.getRangeStart() == 0 && m.getRangeEnd() == 0)
-//                    // or Between range
-//                    || (m.getRangeStart() <= item.getRequestNumber() && item.getRequestNumber() <= m.getRangeEnd()))
-//                    && exchange < prde.getPrice()
-//                ) {
-//                    prde.setPrice(exchange);
-//                    prde.setMoqPriceId(m.getItemPriceId());
-//                    if (m.getLeadTime() != null) {
-//                        cal.add(Calendar.DAY_OF_MONTH, m.getLeadTime());
-//                    }
-//                }
-//                prde.setReceiveDate(cal.getTime());
-//            }
 
             prde = purchaseRecommendationDetailRepository.save(prde);
 
@@ -330,80 +312,6 @@ public class PurchaseRecommendationService {
                         simpleDateFormat.parse(item.getDetailData().get(i).getLandMark())
                     )
                 );
-                // SL yêu cầu + SL cần mua(C) - SL đã len PR(B)
-//                double warehouseNeed = itemQuantityDetail.getOriginQuantity(); // need
-////                    + itemQuantityDetail.getOriginalRequiredQuantity() // hold
-////                    - itemQuantityDetail.getExpectedQuantity(); // pr
-////                    - itemQuantityDetail.getSumPoAndDeliveringQuantity(); // pr
-//                System.err.println(itemQuantityDetail);
-//                System.err.println("Warehouse need " + warehouseNeed + " item " + item.getItemCode());
-//                log.info("Warehouse need {} item {}", warehouseNeed, item.getItemCode());
-//                if (item.getCurrentWarehouseInventoryList() == null || numberOfOutOfSpaceWarehouse == item.getCurrentWarehouseInventoryList().size()) {
-//                    // Không có tồn ở các kho
-//                    if (itemQuantityDetail.getRequiredQuantity() > 0) {
-//                        itemHoldEntities.add(itemHoldMapper.toItemHoldEntity(item, savedPre,
-////                                itemQuantityDetail.getRequiredQuantity(),
-//                                warehouseNeed,
-//                                null,
-//                                simpleDateFormat.parse(item.getDetailData().get(i).getLandMark())
-//                            )
-//                        );
-//                        System.err.println("Whs out of stock hold need quantity " + itemQuantityDetail.getRequiredQuantity());
-//                        log.info("Whs out of stock hold need quantity {}", itemQuantityDetail.getRequiredQuantity());
-//                    }
-//                } else {
-//                    for (CurrentWarehouseInventory currentWarehouseInventory : item.getCurrentWarehouseInventoryList()) {
-//                        System.err.println((item.getDetailData().get(i).getLandMark()));
-//                        if (warehouseNeed == 0 || currentWarehouseInventory.getCurrentQuantity() == 0) continue;
-//
-////                         PR > Need + Hold
-////                        if (warehouseNeed < 0) {
-////                            warehouseNeed = itemQuantityDetail.getOriginQuantity();
-////                            System.err.println("PR > Need + Hold => new warehouseNeed " + warehouseNeed);
-////                            log.info("PR > Need + Hold => new warehouseNeed {}", warehouseNeed);
-////                        }
-//
-//                        // Lấy trong kho
-//                        if (warehouseNeed > currentWarehouseInventory.getCurrentQuantity()) {
-//                            warehouseNeed -= currentWarehouseInventory.getCurrentQuantity();
-//                            // Lấy tất cả ở kho đang xét
-//                            itemHoldEntities.add(itemHoldMapper.toItemHoldEntity(item, savedPre,
-//                                    currentWarehouseInventory.getCurrentQuantity(),
-//                                    currentWarehouseInventory.getWarehouseCode(),
-//                                    simpleDateFormat.parse(item.getDetailData().get(i).getLandMark())
-//                                )
-//                            );
-//                            System.err.println("Warehouse Need > Warehouse (warehouseNeed: " + warehouseNeed + ") (currentWarehouseQuantity: " + currentWarehouseInventory.getCurrentQuantity() + ")" + " (whsCode: " + currentWarehouseInventory.getWarehouseCode() + ")");
-//                            log.info("Warehouse Need > Warehouse (warehouseNeed: {}) (currentWarehouseQuantity: {}) (whsCode: {})", warehouseNeed, currentWarehouseInventory.getCurrentQuantity(), currentWarehouseInventory.getWarehouseCode());
-//                            currentWarehouseInventory.setCurrentQuantity(0.0);
-//                            numberOfOutOfSpaceWarehouse++;
-//                        } else {
-//                            currentWarehouseInventory.setCurrentQuantity(currentWarehouseInventory.getCurrentQuantity() - warehouseNeed);
-//                            // Lấy 1 phần trong kho đang xét
-//                            itemHoldEntities.add(itemHoldMapper.toItemHoldEntity(item, savedPre,
-//                                warehouseNeed,
-//                                currentWarehouseInventory.getWarehouseCode(),
-//                                simpleDateFormat.parse(item.getDetailData().get(i).getLandMark())
-//                            ));
-//                            System.err.println("Warehouse Need < Warehouse (warehouseNeed: " + warehouseNeed + ") (currentWarehouseQuantity: " + currentWarehouseInventory.getCurrentQuantity() + ")" + " (whsCode: " + currentWarehouseInventory.getWarehouseCode() + ")");
-//                            log.info("Warehouse Need < Warehouse (warehouseNeed: {}) (currentWarehouseQuantity: {}) (whsCode: {})", warehouseNeed, currentWarehouseInventory.getCurrentQuantity(), currentWarehouseInventory.getWarehouseCode());
-//                            warehouseNeed = 0;
-//                        }
-//
-//                        // Hold tiếp số còn lại nếu kho cuối đã hết hàng
-//                        if (numberOfOutOfSpaceWarehouse == item.getCurrentWarehouseInventoryList().size()) {
-//                            System.err.println("All whs out of stock hold remaining " +warehouseNeed);
-//                            log.info("All whs out of stock hold remaining {}", warehouseNeed);
-//                            itemHoldEntities.add(itemHoldMapper.toItemHoldEntity(item, savedPre,
-//                                warehouseNeed,
-////                                itemQuantityDetail.getRequiredQuantity(), // Hold tiếp phần cần phải mua
-//                                null,
-//                                simpleDateFormat.parse(item.getDetailData().get(i).getLandMark())
-//                            ));
-//                            break;
-//                        }
-//                    }
-//                }
 
                 if (itemQuantityDetail.getRequiredQuantity() > 0) {
                     planEntities.add(
@@ -475,6 +383,9 @@ public class PurchaseRecommendationService {
                             isFoundSuitableRange = true;
                         }
                         // Find min diff of range end and quantity
+                        if(item.getQuantity() == null){
+                            item.setQuantity(0.0);
+                        }
                         double rangeEndDiff = Math.abs(item.getQuantity() - price.getRangeEnd());
                         if (rangeEndDiff < minRangeEndDiff) {
                             bestPrice = price;

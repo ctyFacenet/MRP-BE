@@ -4,6 +4,7 @@ import com.facenet.mrp.domain.mrp.*;
 import com.facenet.mrp.repository.mrp.*;
 import com.facenet.mrp.security.SecurityUtils;
 import com.facenet.mrp.service.dto.*;
+import com.facenet.mrp.service.dto.mrp.DetailHoldInMrpDTO;
 import com.facenet.mrp.service.dto.mrp.MrpDTO;
 import com.facenet.mrp.service.dto.mrp.MrpDetailDTO;
 import com.facenet.mrp.service.dto.mrp.MrpResultDTO;
@@ -106,6 +107,50 @@ public class HistoryMrpService {
             .isOk(true)
             .dataCount(listMrpDTOS.size())
             .data(pages);
+    }
+
+    public PageResponse getDetailHold(SyntheticMrpDTO request){
+        List<DetailHoldInMrpDTO> result = new ArrayList<>();
+        List<ItemSyntheticDTO> requestData = request.getResultData();
+        List<String> items = new ArrayList<>();
+        for (ItemSyntheticDTO itemSyntheticDTO:requestData){
+            if(itemSyntheticDTO.getType().equals("NVL")){
+                items.add(itemSyntheticDTO.getItemCode());
+            }
+        }
+        List<ItemHoldDTO> itemHoldDTOS = itemHoldRepository.sumHoldItem(items);
+        for (ItemSyntheticDTO itemSyntheticDTO: requestData){
+            if(itemSyntheticDTO.getType().equals("NVL")){
+                DetailHoldInMrpDTO detailHoldInMrpDTO = new DetailHoldInMrpDTO();
+                detailHoldInMrpDTO.setItemCode(itemSyntheticDTO.getItemCode());
+                detailHoldInMrpDTO.setItemName(itemSyntheticDTO.getItemName());
+                detailHoldInMrpDTO.setRequestQuantity(itemSyntheticDTO.getRequestNumber());
+                detailHoldInMrpDTO.setTotalHoldQuantity(0.0);
+                detailHoldInMrpDTO.setRequestNumber(itemSyntheticDTO.getRequestNumber());
+                detailHoldInMrpDTO.setPrNumber(itemSyntheticDTO.getPrNumber());
+                detailHoldInMrpDTO.setReadyQuantity(itemSyntheticDTO.getReadyQuantity());
+                detailHoldInMrpDTO.setViewBtpTp(itemSyntheticDTO.getViewBtpTp());
+                detailHoldInMrpDTO.setRequiredQuantity(itemSyntheticDTO.getRequiredQuantity());
+                detailHoldInMrpDTO.setBomVersion(itemSyntheticDTO.getBomVersion());
+                detailHoldInMrpDTO.setType(itemSyntheticDTO.getType());
+                detailHoldInMrpDTO.setAltItemCode(itemSyntheticDTO.getAltItemCode());
+                for (ItemHoldDTO itemHoldDTO: itemHoldDTOS){
+                    if(itemHoldDTO.getMrpSubCode().equals(itemSyntheticDTO.getItemCode())){
+
+                        detailHoldInMrpDTO.setTotalHoldQuantity(itemHoldDTO.getQuantity());
+                        break;
+                    }
+                }
+                detailHoldInMrpDTO.setDetailData(itemSyntheticDTO.getDetailData());
+                result.add(detailHoldInMrpDTO);
+            }
+        }
+        return new PageResponse<>()
+            .errorCode("00")
+            .message("Thành công")
+            .isOk(true)
+            .dataCount(result.size())
+            .data(result);
     }
 
     /**

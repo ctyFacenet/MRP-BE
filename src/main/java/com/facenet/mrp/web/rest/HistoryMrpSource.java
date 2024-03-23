@@ -7,6 +7,7 @@ import com.facenet.mrp.service.ListSaleService;
 import com.facenet.mrp.repository.MrpAnalysisCache;
 import com.facenet.mrp.service.dto.AdvancedMrpDTO;
 import com.facenet.mrp.service.dto.SyntheticMrpDTO;
+import com.facenet.mrp.service.dto.mrp.DetailHoldInMrpDTO;
 import com.facenet.mrp.service.dto.mrp.MrpDTO;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
@@ -94,6 +95,19 @@ public class HistoryMrpSource {
         return historyMrpService.deleteHistorySubMrp(mrpCode, mrpSubCode);
     }
 
+    @PostMapping(value = "/order-analytics/detail-hold-1")
+    public PageResponse viewDetailHold1(@RequestBody SyntheticMrpDTO syntheticMrpDTO){
+        return historyMrpService.getDetailHold(syntheticMrpDTO);
+    }
+
+    @PostMapping(value = "/order-analytics/detail-hold-2")
+    public PageResponse viewDetailHold2(@RequestBody MrpDTO mrpDTO){
+        PageResponse<SyntheticMrpDTO> response;
+        response = this.viewSyntheticScriptMrp(mrpAnalysisCache.getMrpResult(mrpDTO.getSessionId()));
+        return historyMrpService.getDetailHold(response.getData());
+    }
+
+    //TODO here phân tích cơ bản
     @PostMapping(value = "/order-analytics/synthetic-mrp-analytics")
     public PageResponse<SyntheticMrpDTO> viewSyntheticScriptMrp(@RequestBody MrpDTO mrpDTO){
         return historyMrpService.viewSynthetic(mrpDTO);
@@ -104,6 +118,7 @@ public class HistoryMrpSource {
      * @param sessionId sessionId (UUID)
      * @return
      */
+    //TODO here phân tích nâng cao
     @GetMapping(value = "/order-analytics/synthetic-mrp-analytics/{sessionId}")
     public PageResponse<SyntheticMrpDTO> viewSyntheticScriptMrp(@PathVariable String sessionId){
         PageResponse<SyntheticMrpDTO> result = this.viewSyntheticScriptMrp(mrpAnalysisCache.getMrpResult(sessionId));

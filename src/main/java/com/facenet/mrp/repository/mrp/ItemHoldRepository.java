@@ -231,6 +231,14 @@ public interface ItemHoldRepository extends JpaRepository<ItemHoldEntity, Intege
         )
     List<ItemHoldDTO> getAllByItemCode(@Param("itemCode") String itemCode);
 
+    @Query("select new com.facenet.mrp.service.dto.ItemHoldDTO(i.mrpSubCode, i.itemCode, SUM(i.quantity), i.warehouseCode, i.holdDate) "+
+        "from ItemHoldEntity i " +
+        "where i.itemCode in :itemCode and i.status = 2 " +
+        "and i.isActive = true " +
+        "group by i.itemCode"
+    )
+    List<ItemHoldDTO> sumHoldItem(@Param("itemCode") List<String> itemCode);
+
     @Query("select new com.facenet.mrp.service.dto.ItemHoldDTO(i.mrpSubCode, i.productOrderCode, i.quantity, i.warehouseCode, i.holdDate) " +
         "from ItemHoldEntity i " +
 //        "left join PurchaseHasRecommendationEntity p on p.purchaseRecommendationId = i.purchaseRecommendationId " +
