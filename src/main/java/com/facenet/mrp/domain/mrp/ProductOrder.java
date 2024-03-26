@@ -53,7 +53,6 @@ public class ProductOrder implements Serializable {
     private String supplyType;
     @Transient
     private Integer priorityProduct;
-
     @Transient
     private String saleCode;
 
@@ -68,7 +67,7 @@ public class ProductOrder implements Serializable {
     private String customerName;
 
     @Size(max = 255)
-    @NotBlank(message = "product_order_type.can.not.empty")
+//    @NotBlank(message = "product_order_type.can.not.empty")
     @Column(name = "product_order_type", nullable = false)
     private String productOrderType;
 

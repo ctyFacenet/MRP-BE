@@ -124,11 +124,11 @@ public class ProductOrderService {
         if (!StringUtils.isEmpty(filter.getPoCode())) {
             booleanBuilder.and(qProductOrder.productOrderCode.containsIgnoreCase(filter.getPoCode()));
         }
-        if (!StringUtils.isEmpty(filter.getCustomerCode())) {
-            booleanBuilder.and(qProductOrder.customerId.containsIgnoreCase(filter.getCustomerCode()));
+        if (!StringUtils.isEmpty(filter.getSaleCode())) {
+            booleanBuilder.and(qProductOrder.saleCode.containsIgnoreCase(filter.getSaleCode()));
         }
-        if (!StringUtils.isEmpty(filter.getCustomerName())) {
-            booleanBuilder.and(qProductOrder.customerName.containsIgnoreCase(filter.getCustomerName()));
+        if (!StringUtils.isEmpty(filter.getSaleName())) {
+            booleanBuilder.and(qProductOrder.saleName.containsIgnoreCase(filter.getSaleName()));
         }
         if (!StringUtils.isEmpty(filter.getPoType())) {
             booleanBuilder.and(qProductOrder.productOrderType.containsIgnoreCase(filter.getPoType()));
@@ -139,11 +139,20 @@ public class ProductOrderService {
         if (filter.getDeliveryTime() != null) {
             booleanBuilder.and(qProductOrder.deliverDate.eq((filter.getDeliveryTime())));
         }
-        if (!StringUtils.isEmpty(filter.getSalesCode())) {
-            booleanBuilder.and(qProductOrder.partCode.containsIgnoreCase(filter.getSalesCode()));
+        if (!StringUtils.isEmpty(filter.getPartCode())) {
+            booleanBuilder.and(qProductOrder.partCode.containsIgnoreCase(filter.getPartCode()));
         }
-        if (!StringUtils.isEmpty(filter.getSalesName())) {
-            booleanBuilder.and(qProductOrder.partName.containsIgnoreCase(filter.getSalesName()));
+        if (!StringUtils.isEmpty(filter.getPartName())) {
+            booleanBuilder.and(qProductOrder.partName.containsIgnoreCase(filter.getPartName()));
+        }
+        if (filter.getStatus() != null) {
+            booleanBuilder.and(qProductOrder.status.eq(filter.getStatus()));
+        }
+        if (filter.getPriority() != null) {
+            booleanBuilder.and(qProductOrder.priority.eq(filter.getPriority()));
+        }
+        if (!StringUtils.isEmpty(filter.getNote())) {
+            booleanBuilder.and(qProductOrder.note.containsIgnoreCase(filter.getNote()));
         }
         query.where(booleanBuilder).orderBy(qProductOrder.createdAt.desc());
         List<ProductOrder> result = query.fetch();
@@ -188,13 +197,13 @@ public class ProductOrderService {
 
         existPo.setProductOrderCode(dto.getPoCode());
         existPo.setProductCode(dto.getPoCode());
-        existPo.setCustomerId(dto.getCustomerCode());
-        existPo.setCustomerName(dto.getCustomerName());
+        existPo.setSaleCode(dto.getSaleCode());
+        existPo.setSaleName(dto.getSaleName());
         existPo.setProductOrderType(dto.getPoType());
         existPo.setOrderDate(dto.getOrderedTime());
         existPo.setDeliverDate(dto.getDeliveryTime());
-        existPo.setPartCode(dto.getSalesCode());
-        existPo.setPartName(dto.getSalesName());
+        existPo.setPartCode(dto.getPartCode());
+        existPo.setPartName(dto.getPartName());
         existPo.setPriority(Integer.valueOf(dto.getPriority()));
         existPo.setNote(dto.getNote());
 
@@ -281,7 +290,6 @@ public class ProductOrderService {
                 orderItem.setSupplyType(order.getSupplyType());
                 orderItem.setItemIndex(itemIndex);
                 orderItem.setProductOrderChild(order.getProductCodeChild());
-                orderItem.setCustomerCode(order.getCustomerId());
                 orderItem.setCustomerName(order.getCustomerName());
                 orderItem.setSaleCode(order.getSaleCode());
                 orderItem.setMaterialChildrenCount(countChildren.getQuantity().intValue());

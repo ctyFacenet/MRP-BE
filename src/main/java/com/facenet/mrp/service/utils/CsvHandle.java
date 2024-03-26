@@ -77,13 +77,10 @@ public class CsvHandle {
         ProductOrder donHang = new ProductOrder();
 
         donHang.setProductOrderCode("RAL-SO-" + csvRecord.get(0).trim());
-        donHang.setCustomerId(csvRecord.get(1).trim());
-        donHang.setCustomerName(csvRecord.get(2).trim());
+        donHang.setSaleCode(csvRecord.get(1).trim());
+        donHang.setSaleName(csvRecord.get(2).trim());
         donHang.setProductOrderType(csvRecord.get(3).trim());
         donHang.setType("Đơn hàng");
-        if(StringUtils.isEmpty(donHang.getCustomerId())){
-            throw new CustomException("customer.id.is.empty",csvRecord.getRecordNumber() + "");
-        }
 
         donHang.setProductCode(csvRecord.get(4));
         donHang.setProductName(csvRecord.get(5));

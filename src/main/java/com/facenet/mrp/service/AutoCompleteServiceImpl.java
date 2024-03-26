@@ -40,17 +40,17 @@ public class AutoCompleteServiceImpl implements AutoCompleteService {
      * @param salesName sales name/tên nhân viên sale
      * @return
      */
-    public ResponseEntity<?> suggestProductOrderFields(String poCode, String customerCode, String customerName, String poType, String salesCode, String salesName) {
-        validateParams(poCode, customerCode, customerName, poType, salesCode, salesName);
+    public ResponseEntity<?> suggestProductOrderFields(String poCode, String partCode, String partName, String poType, String salesCode, String salesName) {
+        validateParams(poCode, partCode, partName, poType, salesCode, salesName);
         Pageable limit = PageRequest.of(0, limitElements);
         try {
             Map<String, List<String>> result = new HashMap<>(1);
             if (poCode != null)
                 result.put("productCode", productOrderRepository.getAllPOCode(poCode, limit));
-            if (customerCode != null)
-                result.put("customerCode", productOrderRepository.getAllCustomerId(customerCode, limit));
-            if (customerName != null)
-                result.put("customerNames", productOrderRepository.getAllCustomerName(customerName, limit));
+            if (partCode != null)
+                result.put("partCode", productOrderRepository.getAllPartCode(partCode, limit));
+            if (partName != null)
+                result.put("partName", productOrderRepository.getAllPartName(partName, limit));
             if (poType != null)
                 result.put("poTypes", productOrderRepository.getAllPOType(poType, limit));
             if (salesCode != null)

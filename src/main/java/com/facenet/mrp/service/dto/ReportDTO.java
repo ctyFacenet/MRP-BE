@@ -5,12 +5,13 @@ import java.util.Date;
 public class ReportDTO {
 
     private String soCode;
-    private String customerCode;
-    private String customerName;
+    private String partCode;
+    private String partName;
     private String saleCode;
     private Date orderDate;
     private Date deliveryDate;
     private long totalProductCount;
+    private String saleName;
     private long totalSuppliesCount;
     private long totalPrCount;
     private int remainingQuantity;
@@ -36,20 +37,28 @@ public class ReportDTO {
         this.soCode = soCode;
     }
 
-    public String getCustomerCode() {
-        return customerCode;
+    public String getPartCode() {
+        return partCode;
     }
 
-    public void setCustomerCode(String customerCode) {
-        this.customerCode = customerCode;
+    public void setPartCode(String partCode) {
+        this.partCode = partCode;
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public String getPartName() {
+        return partName;
     }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
+    public void setPartName(String partName) {
+        this.partName = partName;
+    }
+
+    public String getSaleName() {
+        return saleName;
+    }
+
+    public void setSaleName(String saleName) {
+        this.saleName = saleName;
     }
 
     public String getSaleCode() {

@@ -144,8 +144,8 @@ public class XlsxExcelHandle {
 
     public ProductOrder excelToDonHang(Row row) throws ParseException {
         //TODO: optimize code
-        ExcelUtils.validateRow(row, 0, 11);
-        ExcelUtils.validateRow(row, 15, 18);
+        ExcelUtils.validateRow(row, 0, 7);
+        ExcelUtils.validateRow(row, 11, 16);
 
         ProductOrder donHang = new ProductOrder();
 //        donHang.setId(UUID.randomUUID());
@@ -159,31 +159,28 @@ public class XlsxExcelHandle {
         donHang.setProductName(row.getCell(4).getStringCellValue().trim());
         donHang.setBomVersion(row.getCell(5).getStringCellValue().trim());
         donHang.setQuantity(ExcelUtils.getIntegerCellValue(row.getCell(6)));
-        donHang.setCustomerId(ExcelUtils.getStringCellValue(row.getCell(7)));
+        donHang.set(ExcelUtils.getStringCellValue(row.getCell(7)));
 
         if(StringUtils.isEmpty(donHang.getCustomerId())){
             throw new CustomException("customer.id.is.empty",row.getRowNum() + "");
         }
 
-        donHang.setCustomerName(ExcelUtils.getStringCellValue(row.getCell(8)));
-        donHang.setSaleCode(ExcelUtils.getStringCellValue(row.getCell(9)));
-
-        if(row.getCell(10) != null) {
+        if(row.getCell(13) != null) {
             try{
                 //startTime
-                donHang.setStartDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(10))));
+                donHang.setStartDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(13))));
             }catch (Exception e){
                 //startTime
-                donHang.setStartDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(10))));
+                donHang.setStartDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(13))));
             }
 
         }
-        if(row.getCell(11) != null) {
+        if(row.getCell(14) != null) {
             Date endTime;
             try{
-                 endTime = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(11)));
+                 endTime = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(14)));
             }catch (Exception e){
-                endTime = new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(11)));
+                endTime = new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(14)));
             }
             //endTime
             if (endTime.compareTo(donHang.getStartDate()) < 0)
@@ -191,58 +188,33 @@ public class XlsxExcelHandle {
             donHang.setEndDate(endTime);
         }
 
-        if (row.getCell(12).getCellType() == CellType.BLANK)
-            donHang.setSupplyType("MRP");
-        else
-            donHang.setSupplyType(ExcelUtils.getStringCellValue(row.getCell(12)));
-
-        if (row.getCell(13).getCellType() == CellType.BLANK)
-            donHang.setPriorityProduct(1);
-        else
-            donHang.setPriorityProduct(ExcelUtils.getIntegerCellValue(row.getCell(13)));
-
-        if (row.getCell(14).getCellType() == CellType.BLANK)
-            donHang.setPriority(1);
-        else
-            donHang.setPriority(ExcelUtils.getIntegerCellValue(row.getCell(14)));
-        donHang.setStatus(1);
-        if(row.getCell(15) != null) {
+        if(row.getCell(11) != null) {
+            Date orderDate;
             try{
-                donHang.setOrderDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(15))));
+                orderDate = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(11)));
             }catch (Exception e){
-                donHang.setOrderDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(15))));
+                orderDate = new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(11)));
             }
-        }else{
-            donHang.setOrderDate(new Date());
+            donHang.setOrderDate(orderDate);
         }
-        if (row.getCell(16) != null) {
+
+        if (row.getCell(12) != null) {
             Date deliverDate;
             try{
-                deliverDate = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(16)));
+                deliverDate = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(12)));
             }catch (Exception e){
-                deliverDate = new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(16)));
+                deliverDate = new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(12)));
             }
             if (deliverDate.compareTo(donHang.getOrderDate()) < 0)
                 throw new CustomException("object.must.be.greater.than.other.at", "thời gian trả hàng", "thời gian đặt hàng", String.valueOf(row.getRowNum() + 1));
             donHang.setDeliverDate(deliverDate);
         }
 
-//        if(row.getCell(13) != null) {
-//            //startTime
-//            donHang.setStartDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(13))));
-//        }
-//        if(row.getCell(14) != null) {
-//            //endTime
-//            Date endTime = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(14)));
-//            if (endTime.compareTo(donHang.getStartDate()) < 0)
-//                throw new CustomException("object.must.be.greater.than.at", "thời gian trả hàng", "thời gian phát sinh", String.valueOf(row.getRowNum() + 1));
-//            donHang.setEndDate(endTime);
-//        }
-        donHang.setPartCode(ExcelUtils.getStringCellValue(row.getCell(17)));
-        donHang.setPartName(ExcelUtils.getStringCellValue(row.getCell(18)));
+        donHang.setPartCode(ExcelUtils.getStringCellValue(row.getCell(15)));
+        donHang.setPartName(ExcelUtils.getStringCellValue(row.getCell(16)));
+        //TODO chưa có trường saleName
         donHang.setCreatedAt(Instant.now());
-
-//        String po_id = donHang.getCustomerId() + "-" + new SimpleDateFormat("yyyyMMdd").format(donHang.getOrderDate());
+        donHang.setStatus(1);
         String po_id = donHang.getProductOrderCode();
         donHang.setMrpPoId(po_id);
         return donHang;

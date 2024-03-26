@@ -6,13 +6,16 @@ import java.util.Date;
 public class ProductOrderFilter {
 
     private String poCode;
-    private String customerCode;
-    private String customerName;
+    private String partCode;
+    private String partName;
     private String poType;
     private Date orderedTime;
     private Date deliveryTime;
-    private String salesCode;
-    private String salesName;
+    private String saleCode;
+    private String saleName;
+    private Integer priority;
+    private Integer status;
+    private String note;
 
     public String getPoCode() {
         return poCode;
@@ -22,21 +25,6 @@ public class ProductOrderFilter {
         this.poCode = poCode;
     }
 
-    public String getCustomerCode() {
-        return customerCode;
-    }
-
-    public void setCustomerCode(String customerCode) {
-        this.customerCode = customerCode;
-    }
-
-    public String getCustomerName() {
-        return customerName;
-    }
-
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
 
     public String getPoType() {
         return poType;
@@ -62,19 +50,59 @@ public class ProductOrderFilter {
         this.deliveryTime = deliveryTime;
     }
 
-    public String getSalesCode() {
-        return salesCode;
+    public String getPartCode() {
+        return partCode;
     }
 
-    public void setSalesCode(String salesCode) {
-        this.salesCode = salesCode;
+    public void setPartCode(String partCode) {
+        this.partCode = partCode;
     }
 
-    public String getSalesName() {
-        return salesName;
+    public String getPartName() {
+        return partName;
     }
 
-    public void setSalesName(String salesName) {
-        this.salesName = salesName;
+    public void setPartName(String partName) {
+        this.partName = partName;
+    }
+
+    public String getSaleCode() {
+        return saleCode;
+    }
+
+    public void setSaleCode(String saleCode) {
+        this.saleCode = saleCode;
+    }
+
+    public String getSaleName() {
+        return saleName;
+    }
+
+    public void setSaleName(String saleName) {
+        this.saleName = saleName;
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
     }
 }

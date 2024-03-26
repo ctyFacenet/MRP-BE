@@ -83,10 +83,11 @@ public class ReportService {
                 //**************************************
                 dto = new ReportDTO();
                 dto.setSoCode(item.getProductOrderCode());
-                dto.setCustomerCode(item.getCustomerId());
-                dto.setCustomerName(item.getCustomerName());
+                dto.setPartCode(item.getPartCode());
+                dto.setPartName(item.getPartName());
                 dto.setSaleCode(item.getPartCode());
                 dto.setOrderDate(item.getOrderDate());
+                dto.setSaleName(item.getSaleName());
                 dto.setDeliveryDate(item.getDeliverDate());
                 dto.setStatus(item.getStatus());
 

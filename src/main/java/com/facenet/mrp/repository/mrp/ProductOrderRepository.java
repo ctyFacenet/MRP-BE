@@ -16,13 +16,13 @@ public interface ProductOrderRepository  extends PagingAndSortingRepository<Prod
 
     @Query(value = "SELECT p FROM ProductOrder p where p.isActive = 1 " +
         "AND (:pocode IS NULL OR p.productOrderCode like %:pocode%) " +
-        "AND (:customerCode IS NULL OR p.customerId like %:customerCode%) " +
-        "AND (:customerName IS NULL OR p.customerName like %:customerName%) " +
+        "AND (:customerCode IS NULL OR p.partCode like %:customerCode%) " +
+        "AND (:customerName IS NULL OR p.partName like %:customerName%) " +
         "AND (:poType IS NULL OR p.productOrderType like %:poType%) " +
         "AND (:orderedTime IS NULL OR p.orderDate >= :orderedTime) " +
         "AND (:deliveryTime IS NULL OR p.deliverDate <= :deliveryTime) " +
-        "AND (:salesCode IS NULL OR p.partCode like %:salesCode%) " +
-        "AND (:salesName IS NULL OR p.partName like %:salesName%) "+
+        "AND (:salesCode IS NULL OR p.saleCode like %:salesCode%) " +
+        "AND (:salesName IS NULL OR p.saleName like %:salesName%) "+
         "ORDER BY p.createdAt desc "
     )
     Page<ProductOrder> getAllProductOrder(Pageable pageable,
@@ -78,19 +78,19 @@ public interface ProductOrderRepository  extends PagingAndSortingRepository<Prod
     @Query("select distinct po.productOrderCode from ProductOrder po where po.isActive = 1 and po.productOrderCode like :input%")
     List<String> getAllPOCode(@Param("input") String input, Pageable pageable);
 
-    @Query("select distinct po.customerId from ProductOrder po where po.isActive = 1 and po.customerId like :input%")
-    List<String> getAllCustomerId(@Param("input") String input, Pageable pageable);
+    @Query("select distinct po.partCode from ProductOrder po where po.isActive = 1 and po.partCode like :input%")
+    List<String> getAllPartCode(@Param("input") String input, Pageable pageable);
 
-    @Query("select distinct po.customerName from ProductOrder po where po.isActive = 1 and po.customerName like :input%")
-    List<String> getAllCustomerName(@Param("input") String customerName, Pageable pageable);
+    @Query("select distinct po.partName from ProductOrder po where po.isActive = 1 and po.partName like :input%")
+    List<String> getAllPartName(@Param("input") String partName, Pageable pageable);
 
     @Query("select distinct po.productOrderType from ProductOrder po where po.isActive = 1 and po.productOrderType like :input%")
     List<String> getAllPOType(@Param("input") String poType, Pageable pageable);
 
-    @Query("select distinct po.partCode from ProductOrder po where po.isActive = 1 and po.partCode like :input%")
+    @Query("select distinct po.saleCode from ProductOrder po where po.isActive = 1 and po.saleCode like :input%")
     List<String> getAllSalesCode(@Param("input") String salesCode, Pageable pageable);
 
-    @Query("select distinct po.partName from ProductOrder po where po.isActive = 1 and po.partName like :input%")
+    @Query("select distinct po.saleName from ProductOrder po where po.isActive = 1 and po.saleName like :input%")
     List<String> getAllSalesName(@Param("input") String salesName, Pageable pageable);
 
     @Query(value = "select count(f) from ProductOrder f where f.type = 'Forecast' ")

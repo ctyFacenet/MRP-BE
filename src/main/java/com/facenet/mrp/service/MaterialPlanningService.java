@@ -442,7 +442,7 @@ public class MaterialPlanningService {
         forecastOrder.setForecastLandMark(objectMapper.writeValueAsString(forecastMaterialDTO.getLandMark()));
         forecastOrder.setIsActive((byte) 1);
         forecastOrder.setProductOrderType("Forecast");
-        forecastOrder.setCustomerId("RAL");
+//        forecastOrder.setCustomerId("RAL");
         forecastOrder.setCustomerName("Rang Dong");
         forecastOrder.setType("Forecast");
         forecastOrder.setStatus(forecastMaterialDTO.getForecastOrderStatus());

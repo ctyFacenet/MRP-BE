@@ -7,13 +7,13 @@ public class ProductOrderDto implements Serializable {
 
     private int id;
     private String poCode;
-    private String customerCode;
-    private String customerName;
+    private String partCode;
+    private String partName;
     private String poType;
     private Date orderedTime;
     private Date deliveryTime;
-    private String salesCode;
-    private String salesName;
+    private String saleCode;
+    private String saleName;
     private String priority;
     private Byte status;
     private String note;
@@ -55,20 +55,36 @@ public class ProductOrderDto implements Serializable {
         this.poCode = poCode;
     }
 
-    public String getCustomerCode() {
-        return customerCode;
+    public String getPartCode() {
+        return partCode;
     }
 
-    public void setCustomerCode(String customerCode) {
-        this.customerCode = customerCode;
+    public void setPartCode(String partCode) {
+        this.partCode = partCode;
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public String getPartName() {
+        return partName;
     }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
+    public void setPartName(String partName) {
+        this.partName = partName;
+    }
+
+    public String getSaleCode() {
+        return saleCode;
+    }
+
+    public void setSaleCode(String saleCode) {
+        this.saleCode = saleCode;
+    }
+
+    public String getSaleName() {
+        return saleName;
+    }
+
+    public void setSaleName(String saleName) {
+        this.saleName = saleName;
     }
 
     public String getPoType() {
@@ -93,22 +109,6 @@ public class ProductOrderDto implements Serializable {
 
     public void setDeliveryTime(Date deliveryTime) {
         this.deliveryTime = deliveryTime;
-    }
-
-    public String getSalesCode() {
-        return salesCode;
-    }
-
-    public void setSalesCode(String salesCode) {
-        this.salesCode = salesCode;
-    }
-
-    public String getSalesName() {
-        return salesName;
-    }
-
-    public void setSalesName(String salesName) {
-        this.salesName = salesName;
     }
 
     public String getPriority() {

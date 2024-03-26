@@ -138,8 +138,10 @@ public class ProductOrderAnalyticService {
         ProductOrderDTOAPS productOrderDTOAPS = new ProductOrderDTOAPS();
         ProductOrder productOrder = productOrderRepository.findByProductOrderCode(input.getSoCode());
         productOrderDTOAPS.setProductOrderId(productOrder.getProductOrderCode());
-        productOrderDTOAPS.setCustomerCode(productOrder.getCustomerId());
-        productOrderDTOAPS.setCustomerName(productOrder.getCustomerName());
+        productOrderDTOAPS.setPartCode(productOrder.getPartCode());
+        productOrderDTOAPS.setPartName(productOrder.getPartName());
+        productOrderDTOAPS.setSaleCode(productOrder.getSaleCode());
+        productOrderDTOAPS.setSaleName(productOrder.getSaleName());
         productOrderDTOAPS.setProductOrderType(productOrder.getProductOrderType());
         productOrderDTOAPS.setOrderDate(productOrder.getOrderDate());
         productOrderDTOAPS.setCompleteDate(productOrder.getDeliverDate());

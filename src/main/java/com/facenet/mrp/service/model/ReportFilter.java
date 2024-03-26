@@ -4,11 +4,36 @@ import java.util.Date;
 
 public class ReportFilter {
     private String soCode;
-    private String customerCode;
-    private String customerName;
+    private String partCode;
+    private String partName;
     private String saleCode;
+    private String saleName;
     private Date orderDate;
     private Date deliveryDate;
+
+    public String getPartCode() {
+        return partCode;
+    }
+
+    public void setPartCode(String partCode) {
+        this.partCode = partCode;
+    }
+
+    public String getPartName() {
+        return partName;
+    }
+
+    public void setPartName(String partName) {
+        this.partName = partName;
+    }
+
+    public String getSaleName() {
+        return saleName;
+    }
+
+    public void setSaleName(String saleName) {
+        this.saleName = saleName;
+    }
 
     public String getSoCode() {
         return soCode;
@@ -16,22 +41,6 @@ public class ReportFilter {
 
     public void setSoCode(String soCode) {
         this.soCode = soCode;
-    }
-
-    public String getCustomerCode() {
-        return customerCode;
-    }
-
-    public void setCustomerCode(String customerCode) {
-        this.customerCode = customerCode;
-    }
-
-    public String getCustomerName() {
-        return customerName;
-    }
-
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
     }
 
     public String getSaleCode() {

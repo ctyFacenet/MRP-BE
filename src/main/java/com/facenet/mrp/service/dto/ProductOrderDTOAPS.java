@@ -10,6 +10,10 @@ public class ProductOrderDTOAPS {
 
     private String customerCode;
     private String customerName;
+    private String saleCode;
+    private String saleName;
+    private String partCode;
+    private String partName;
     private String productOrderType;
     private Date orderDate;
     private Date completeDate;
@@ -99,6 +103,38 @@ public class ProductOrderDTOAPS {
 
     public void setPlanner(String planner) {
         this.planner = planner;
+    }
+
+    public String getSaleCode() {
+        return saleCode;
+    }
+
+    public void setSaleCode(String saleCode) {
+        this.saleCode = saleCode;
+    }
+
+    public String getSaleName() {
+        return saleName;
+    }
+
+    public void setSaleName(String saleName) {
+        this.saleName = saleName;
+    }
+
+    public String getPartCode() {
+        return partCode;
+    }
+
+    public void setPartCode(String partCode) {
+        this.partCode = partCode;
+    }
+
+    public String getPartName() {
+        return partName;
+    }
+
+    public void setPartName(String partName) {
+        this.partName = partName;
     }
 
     public String getPlanningMode() {

@@ -214,7 +214,7 @@ public class ForecastOrderDetailService {
         forecastOrder.setUpdatedAt(new Date().toInstant());
         forecastOrder.setUpdatedBy(SecurityUtils.getCurrentUserLogin().orElse(""));
         forecastOrder.setProductOrderType("Forecast");
-        forecastOrder.setCustomerId("RAL");
+//        forecastOrder.setCustomerId("RAL");
         forecastOrder.setCustomerName("Rang Dong");
         forecastOrder.setType("Forecast");
         forecastOrder.setStatus(2);
