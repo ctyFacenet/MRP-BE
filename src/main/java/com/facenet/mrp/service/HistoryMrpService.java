@@ -135,8 +135,7 @@ public class HistoryMrpService {
                 detailHoldInMrpDTO.setType(itemSyntheticDTO.getType());
                 detailHoldInMrpDTO.setAltItemCode(itemSyntheticDTO.getAltItemCode());
                 for (ItemHoldDTO itemHoldDTO: itemHoldDTOS){
-                    if(itemHoldDTO.getMrpSubCode().equals(itemSyntheticDTO.getItemCode())){
-
+                    if(itemHoldDTO.getSoCode().equals(itemSyntheticDTO.getItemCode())){
                         detailHoldInMrpDTO.setTotalHoldQuantity(itemHoldDTO.getQuantity());
                         break;
                     }
