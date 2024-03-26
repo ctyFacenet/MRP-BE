@@ -157,7 +157,7 @@ public class XlsxExcelHandle {
         donHang.setProductCodeChild(ExcelUtils.getStringCellValue(row.getCell(2)));
         donHang.setProductCode(ExcelUtils.getStringCellValue(row.getCell(3)));
         donHang.setProductName(row.getCell(4).getStringCellValue().trim());
-        donHang.setBomVersion(row.getCell(5).getStringCellValue().trim());
+        donHang.setBomVersion(ExcelUtils.getStringCellValue(row.getCell(5)));
         donHang.setQuantity(ExcelUtils.getIntegerCellValue(row.getCell(6)));
         donHang.setCustomerId(ExcelUtils.getStringCellValue(row.getCell(7)));
 
