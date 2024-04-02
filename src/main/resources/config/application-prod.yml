@@ -28,7 +28,7 @@ management:
 spring:
   kafka:
     producer:
-      bootstrap-servers: 192.168.68.87:9092
+      bootstrap-servers: 192.168.68.76:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
   devtools:

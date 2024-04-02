@@ -318,6 +318,7 @@ public class ProductOrderService {
     }
 
     public void createNewProductOrder(List<ProductOrder> productOrders) {
+        //TODO gọi api planning
         ItemQuantity countChildren;
         List<MrpDetailDTO> detailDTOS;
 

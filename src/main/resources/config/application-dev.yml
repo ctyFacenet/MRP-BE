@@ -255,3 +255,15 @@ jhipster:
 
 # application:
 
+keycloak_planning:
+  baseUrl: https://sso.xfactory.vn/auth
+  realm: QLSX
+  clientId: planning_backend
+  clientSecret: AMmEOEbqtPIskkErXNx94vt8c0bvF7Jd
+  username: dongdo
+  password: 12345678
+#username=admin
+#password=Facenet@2023
+planning:
+  api:
+    syncPo: http://192.168.68.87:7999/services/api/order/sync-product-order-mrp
