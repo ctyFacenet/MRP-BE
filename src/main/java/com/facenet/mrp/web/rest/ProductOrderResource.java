@@ -5,10 +5,7 @@ import com.facenet.mrp.repository.mrp.MrpRepository;
 import com.facenet.mrp.repository.mrp.MrpSubRepository;
 import com.facenet.mrp.security.SecurityUtils;
 import com.facenet.mrp.service.ProductOrderService;
-import com.facenet.mrp.service.dto.AdvancedMrpDTO;
-import com.facenet.mrp.service.dto.ProductOrderDTOAPS;
-import com.facenet.mrp.service.dto.ProductOrderDto;
-import com.facenet.mrp.service.dto.WorkOrder;
+import com.facenet.mrp.service.dto.*;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.model.PageFilterInput;
@@ -93,6 +90,10 @@ public class ProductOrderResource {
                 .message("Thêm đơn hàng thành công"));
     }
 
+    @PostMapping("/create-work-order")
+    public String createWorkOrder(@RequestBody List<CreateWoFromMrp> createWoFromMrpsc) {
+        return productOrderService.createWorkOrder(createWoFromMrpsc);
+    }
     @GetMapping("/get-work-order/{po}")
     public List<WorkOrder> getWorkOrder(@PathVariable String po) {
         return productOrderService.getListWO(po);

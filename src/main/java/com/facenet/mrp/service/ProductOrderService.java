@@ -391,6 +391,9 @@ public class ProductOrderService {
         }
     }
 
+    public String createWorkOrder(List<CreateWoFromMrp> createWoFromMrps){
+        return planningService.callApiCreateWorkOrder(createWoFromMrps);
+    }
 
     private List<PlanningProductionOrder> mapToPlanning(ProductOrder productOrder) throws ParseException {
         List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
@@ -550,10 +553,6 @@ public class ProductOrderService {
         return itemList;
     }
 
-    public List<WorkOrder> callWO(String wo){
-        String param = "{\"conditions\":[{\"property\":\"productOrder\",\"operator\":\"contains\",\"value\":\"RD00677-20240301-test\"},{\"property\":\"workOrderType\",\"operator\":\"=\",\"value\":\"WO\"}]}";
-        return planningService.callApiPlanningWorkOrder(param);
-    }
 
     public void getChildrenCountOfProduct(ItemQuantity countChildren, List<MrpDetailDTO> detailDTOS) {
         List<MrpDetailDTO> childrenDetail = new ArrayList<>();
