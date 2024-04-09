@@ -8,8 +8,10 @@ import com.facenet.mrp.service.ProductOrderService;
 import com.facenet.mrp.service.dto.AdvancedMrpDTO;
 import com.facenet.mrp.service.dto.ProductOrderDTOAPS;
 import com.facenet.mrp.service.dto.ProductOrderDto;
+import com.facenet.mrp.service.dto.WorkOrder;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.exception.CustomException;
+import com.facenet.mrp.service.model.PageFilterInput;
 import com.facenet.mrp.service.model.ProductOrderInput;
 import com.facenet.mrp.service.model.ProductOrderResponse;
 import org.slf4j.Logger;
@@ -82,13 +84,18 @@ public class ProductOrderResource {
 
      @PostMapping("/new-product-order")
      @PreAuthorize("hasAnyAuthority('DHSX')")
-    public ResponseEntity createNewProductOrder(@Valid @RequestBody List<ProductOrder> productOrder){
+    public ResponseEntity createNewProductOrder(@Valid @RequestBody List<ProductOrder> productOrder) throws ParseException {
         productOrderService.createNewProductOrder(productOrder);
         return ResponseEntity.ok(
             new CommonResponse<>()
                 .isOk(true)
                 .errorCode("00")
                 .message("Thêm đơn hàng thành công"));
+    }
+
+    @GetMapping("/get-work-order/{po}")
+    public List<WorkOrder> getWorkOrder(@PathVariable String po) {
+        return productOrderService.getListWO(po);
     }
 
     @PutMapping("/new-status/{productOrderCode}/{status}")

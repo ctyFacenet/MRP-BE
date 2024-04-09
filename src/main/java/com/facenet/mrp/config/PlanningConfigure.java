@@ -29,6 +29,7 @@ public class PlanningConfigure {
             .realm(realm)
             .grantType(OAuth2Constants.PASSWORD)
             .clientId(clientId)
+            .clientSecret(clientSecret)
             .username(username)
             .password(password)
             .build()

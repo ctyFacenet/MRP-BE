@@ -9,23 +9,20 @@ import com.facenet.mrp.repository.MrpAnalysisCache;
 import com.facenet.mrp.repository.mrp.*;
 import com.facenet.mrp.repository.sap.CoittRepository;
 import com.facenet.mrp.security.SecurityUtils;
-import com.facenet.mrp.service.dto.AdvancedMrpDTO;
-import com.facenet.mrp.service.dto.ProductOrderDTOAPS;
-import com.facenet.mrp.service.dto.ProductOrderDetailDTOAPS;
-import com.facenet.mrp.service.dto.ProductOrderDto;
+import com.facenet.mrp.service.dto.*;
 import com.facenet.mrp.service.dto.mrp.ItemQuantity;
 import com.facenet.mrp.service.dto.mrp.MrpDetailDTO;
+import com.facenet.mrp.service.dto.mrp.PlanningProductionOrder;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.mapper.ProductOrderMapper;
-import com.facenet.mrp.service.model.ProductOrderFilter;
-import com.facenet.mrp.service.model.ProductOrderInput;
-import com.facenet.mrp.service.model.ProductOrderResponse;
-import com.facenet.mrp.service.model.ResultCode;
+import com.facenet.mrp.service.model.*;
 import com.facenet.mrp.service.utils.Constants;
 import com.facenet.mrp.service.utils.CsvHandle;
+import com.facenet.mrp.service.utils.Utils;
 import com.facenet.mrp.service.utils.XlsxExcelHandle;
+import com.facenet.mrp.thread.CloneBomService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -44,6 +41,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -80,6 +78,12 @@ public class ProductOrderService {
 
     @Autowired
     MrpAdvancedAnalysisServiceV3 mrpAdvancedAnalysisServiceV3;
+
+    @Autowired
+    planningService planningService;
+
+    @Autowired
+    CloneBomService bomService;
 
 
     public ProductOrderService(ProductOrderRepository productOrderRepository, @Qualifier("mrpEntityManager") EntityManager entityManager, ProductOrderMapper productOrderMapper, ForecastOrderDetailRepository forecastOrderDetailRepository) {
@@ -317,19 +321,20 @@ public class ProductOrderService {
         }
     }
 
-    public void createNewProductOrder(List<ProductOrder> productOrders) {
-        //TODO gọi api planning
+    @Transactional
+    public void createNewProductOrder(List<ProductOrder> productOrders) throws ParseException {
+        List<PlanningProductionOrder> donHangArrayList = new ArrayList<>();
         ItemQuantity countChildren;
         List<MrpDetailDTO> detailDTOS;
 
         logger.info("start create new product order");
         for (ProductOrder productOrder : productOrders) {
+            //add BTP TP vào list
+            donHangArrayList.addAll(mapToPlanning(productOrder));
             Set<String> productCodes = new HashSet<>();
             if (productOrder.getProductOrderDetails() == null || productOrder.getProductOrderDetails().isEmpty()) {
                 throw new CustomException("order.detail.is.must.not.empty");
             }
-
-//            String po_id = productOrder.getCustomerId() + "-" + new SimpleDateFormat("yyyyMMdd").format(productOrder.getOrderDate());
             String po_id = "RAL-SO-" + productOrder.getProductOrderCode();
             logger.info("po_id = {} ", po_id);
             ProductOrder tmpOrder = productOrderRepository.findProductOrderByProductOrderCodeAndIsActive(po_id, (byte) 1);
@@ -337,8 +342,6 @@ public class ProductOrderService {
                 logger.info(" poId " + po_id + " is exists in database");
                 throw new CustomException("product.order.code.exist", po_id);
             }
-
-//            String mrpPoId = productOrder.getCustomerId() + "-" + new SimpleDateFormat("yyyyMMdd").format(productOrder.getOrderDate());
             String mrpPoId = po_id;
             tmpOrder = productOrderRepository.findProductOrderByMrpPoIdAndIsActive(mrpPoId, (byte) 1);
             if (tmpOrder != null) {
@@ -353,7 +356,6 @@ public class ProductOrderService {
                 productOrderDetail.setProductOrderCode(productOrder);
                 productOrderDetail.setStatus(Constants.ProductOrder.STATUS_NEW);
             });
-
             // Check trùng mã sản phẩm
             // Lay tung san pham de tim so luong NVl ben trong theo bomversion
             for (ProductOrderDetail product : productOrder.getProductOrderDetails()) {
@@ -371,20 +373,190 @@ public class ProductOrderService {
 
                 //Cho vào hàm đệ quy để tìm các NVl/BTp con trong TP
                 getChildrenCountOfProduct(countChildren, detailDTOS);
-
-                System.err.println("countChildren dff: " + countChildren.getQuantity());
-
                 product.setMaterialChildrenCount(countChildren.getQuantity().intValue());
             }
-
-
         }
         productOrderRepository.saveAll(productOrders);
+        if(donHangArrayList.size() > 0){
+            System.out.println("----------------------------danh sách đơn hàng 1: "+donHangArrayList.get(0));
+            syncToPlanning(donHangArrayList);
+        }
+    }
+
+    //hàm gọi api planning và đồng bộ
+    private void syncToPlanning(List<PlanningProductionOrder> donHangArrayList){
+        Integer check = planningService.callApiPlanning(donHangArrayList);
+        if(check == 0){
+            throw new CustomException("Đồng bộ planning thất bại");
+        }
+    }
+
+
+    private List<PlanningProductionOrder> mapToPlanning(ProductOrder productOrder) throws ParseException {
+        List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
+        for (ProductOrderDetail productOrderDetails: productOrder.getProductOrderDetails()){
+            PlanningProductionOrder donHang = new PlanningProductionOrder();
+            donHang.setId(UUID.randomUUID());
+            donHang.setProductOrderId(productOrder.getProductOrderCode());
+            donHang.setProductOrderType(productOrder.getProductOrderType());
+            donHang.setPartCode(productOrder.getPartCode());
+            donHang.setPartName(productOrder.getPartName());
+            donHang.setPriority(String.valueOf(productOrder.getPriority()));
+            donHang.setBranchCode(productOrder.getPartCode());
+
+            donHang.setExternalPoId(productOrderDetails.getProductOrderChild());
+            donHang.setCustomerCode(productOrderDetails.getCustomerCode());
+            donHang.setCustomerName(productOrderDetails.getCustomerName());
+            donHang.setBomVersion(productOrderDetails.getBomVersion());
+            donHang.setProductCode(productOrderDetails.getProductCode());
+            donHang.setProductName(productOrderDetails.getProductName());
+            donHang.setQuantity(productOrderDetails.getQuantity());
+            donHang.setProductType(0);
+            donHang.setState("CREATED");
+            donHang.setStatus("active");
+            donHang.setEmployeeCode(productOrderDetails.getSaleCode());//nv sale
+            donHang.setItemPriority(productOrderDetails.getPriority());
+            donHang.setClassify(1);
+//            donHang.setCreatedDate(new Date());
+            donHang.setOriginal("MRP");
+            if (productOrder.getOrderDate() != null) {
+                donHang.setOrderDate(convert(productOrder.getOrderDate().toString()));
+            } else {
+                donHang.setOrderDate(null);
+            }
+
+            if (productOrder.getDeliverDate()  != null) {
+                donHang.setCompleteDate(convert(productOrder.getDeliverDate().toString()));
+            }else {
+                donHang.setCompleteDate(null);
+            }
+
+            if (productOrder.getStartDate()  != null) {
+                donHang.setStartDate(convert(productOrder.getStartDate().toString()));
+            }else {
+                donHang.setStartDate(null);
+            }
+
+            if (productOrder.getEndDate()  != null) {
+                //endTime
+                donHang.setEndDate( convert(productOrder.getEndDate().toString()));
+            }else {
+                donHang.setEndDate(null);
+            }
+            productionOrderList.addAll(callBomForPo(productOrder,productOrderDetails));
+            productionOrderList.add(donHang);
+            System.out.println("----------------------------danh sách đơn hàng 2: "+productionOrderList.toString());
+        }
+        return productionOrderList;
+    }
+
+    public Date convert(String input) {
+        String dateFormat = "EEE MMM dd HH:mm:ss zzz yyyy";
+
+        try {
+            SimpleDateFormat doiFormat = new SimpleDateFormat(dateFormat);
+            Date date = doiFormat.parse(input);
+
+            SimpleDateFormat desiredFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String formattedDate = desiredFormat.format(date);
+            Date output = new SimpleDateFormat("yyyy-mm-dd").parse(formattedDate);
+            return output;
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<WorkOrder> getListWO(String po){
+        return planningService.callApiFindPlanningWorkOrder(po);
+    }
+
+    //lấy danh sách btp của product code và đồng bộ cùng thành phẩm sang planning
+    private List<PlanningProductionOrder> callBomForPo(ProductOrder productOrder, ProductOrderDetail productOrderDetails) throws ParseException {
+        List<MrpDetailDTO> mrpDetailDTOS = getListBtp(productOrderDetails.getProductCode(),productOrderDetails.getBomVersion());
+        System.out.println("----------------------------danh sách bom type btp: "+mrpDetailDTOS.size());
+        List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
+        for(MrpDetailDTO mrpDetailDTO: mrpDetailDTOS){
+            PlanningProductionOrder donHang = new PlanningProductionOrder();
+            donHang.setId(UUID.randomUUID());
+            donHang.setProductOrderId(productOrder.getProductOrderCode());
+            donHang.setProductOrderType(productOrder.getProductOrderType());
+            donHang.setPartCode(productOrder.getPartCode());
+            donHang.setPartName(productOrder.getPartName());
+            donHang.setPriority(String.valueOf(productOrder.getPriority()));
+            donHang.setBranchCode(productOrder.getPartCode());
+
+            donHang.setCustomerCode(productOrderDetails.getCustomerCode());
+            donHang.setExternalPoId(productOrderDetails.getProductOrderChild());
+            donHang.setCustomerName(productOrderDetails.getCustomerName());
+            donHang.setBomVersion(mrpDetailDTO.getBomVersion());
+            donHang.setProductCode(mrpDetailDTO.getItemCode());
+            donHang.setProductName(mrpDetailDTO.getItemName());
+            donHang.setQuantity(mrpDetailDTO.getRequiredQuantity().intValue());
+            donHang.setProductType(0);
+            donHang.setState("CREATED");
+            donHang.setStatus("active");
+            donHang.setEmployeeCode(productOrderDetails.getSaleCode());//nv sale
+            donHang.setItemPriority(productOrderDetails.getPriority());
+            donHang.setClassify(1);
+//            donHang.setCreatedDate(new Date());
+            donHang.setOriginal("MRP");
+            if (productOrder.getOrderDate() != null) {
+                donHang.setOrderDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(productOrder.getOrderDate())));
+            } else {
+                donHang.setOrderDate(new Date());
+            }
+
+            if (productOrder.getDeliverDate()  != null) {
+                donHang.setCompleteDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(productOrder.getDeliverDate())));
+            }else {
+                donHang.setCompleteDate(new Date());
+            }
+
+            if (productOrder.getStartDate()  != null) {
+                //startTime
+                donHang.setStartDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(productOrder.getStartDate())));
+            }else {
+                donHang.setStartDate(new Date());
+            }
+
+            if (productOrder.getEndDate()  != null) {
+                //endTime
+                donHang.setEndDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(productOrder.getEndDate())));
+            }else {
+                donHang.setEndDate(new Date());
+            }
+            productionOrderList.add(donHang);
+        }
+        System.out.println("----------------------------danh sách đơn hàng 3: "+productionOrderList.size());
+        return productionOrderList;
+    }
+
+    //hàm đệ quy lấy tất cả btp
+    private  List<MrpDetailDTO> getListBtp(String code, String version){
+        List<MrpDetailDTO> bomItems = bomService.getBomTree().get(Utils.toItemKey(code, version));
+        System.out.println("-------------------lấy bom:"+bomItems);
+        List<MrpDetailDTO> itemList = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(bomItems)) {
+            for (MrpDetailDTO bomItem : bomItems) {
+                if (bomItem.getGroupItemInt() != Constants.TP && bomItem.getGroupItemInt() != Constants.BTP) {
+                    itemList.add(new MrpDetailDTO(bomItem));
+                    if(bomItem.getBomVersion() != null){
+                        getListBtp(bomItem.getItemCode(),bomItem.getBomVersion());
+                    }
+                }
+            }
+        }
+        return itemList;
+    }
+
+    public List<WorkOrder> callWO(String wo){
+        String param = "{\"conditions\":[{\"property\":\"productOrder\",\"operator\":\"contains\",\"value\":\"RD00677-20240301-test\"},{\"property\":\"workOrderType\",\"operator\":\"=\",\"value\":\"WO\"}]}";
+        return planningService.callApiPlanningWorkOrder(param);
     }
 
     public void getChildrenCountOfProduct(ItemQuantity countChildren, List<MrpDetailDTO> detailDTOS) {
         List<MrpDetailDTO> childrenDetail = new ArrayList<>();
-        System.err.println("*********************************************************");
         System.err.println("countChildren truoc khi for: " + countChildren.getQuantity().intValue());
 
         for (MrpDetailDTO mrpDetailDTO : detailDTOS) {

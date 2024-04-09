@@ -490,7 +490,7 @@ public class MrpAdvancedAnalysisServiceV3 {
                 parentPathBtp
             );
         }
-
+        //TODO lấy bm ở đây
         //query lấy children mức NVL của sản phẩm
         List<MrpDetailDTO> bomItems = bomService.getBomTree().get(Utils.toItemKey(mrpDetailDTO.getItemCode(), mrpDetailDTO.getBomVersion()));
         List<MrpDetailDTO> itemList = new ArrayList<>();
