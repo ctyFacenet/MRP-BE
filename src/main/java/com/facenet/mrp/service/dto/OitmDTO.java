@@ -1,6 +1,7 @@
 package com.facenet.mrp.service.dto;
 
 import com.facenet.mrp.domain.sap.OitmEntity;
+import com.querydsl.core.annotations.QueryProjection;
 
 public class OitmDTO {
 

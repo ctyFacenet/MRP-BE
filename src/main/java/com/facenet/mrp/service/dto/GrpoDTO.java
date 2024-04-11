@@ -45,6 +45,7 @@ public class GrpoDTO {
     private long moneyBill;
 
     private long price;
+    private String currency;
     private Integer lineNumber;
 
     private java.sql.Date createdAt;
@@ -212,12 +213,20 @@ public class GrpoDTO {
         this.vendorCode = vendorCode;
     }
 
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
     public GrpoDTO(){
 
     }
 
     @QueryProjection
-    public GrpoDTO(String receiptId,
+    public GrpoDTO(String currency,String receiptId,
                    String soId,
                    String poId,
                    String prId,
@@ -232,6 +241,7 @@ public class GrpoDTO {
                    Date wareHouseDate,
                    String taxType, String tax, long deliveredNum, long moneyBill, long price,
                    Integer lineNumber) {
+        this.currency = currency;
         this.receiptId = receiptId;
         this.soId = soId;
         this.poId = poId;

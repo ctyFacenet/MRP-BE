@@ -278,9 +278,10 @@ public class MrpAdvancedAnalysisServiceV3 {
                 double poQuantity = 0.0;
                 for (List<MrpResultDTO> mrpResult : mrpResults) {
                     for (int i = 1; i < mrpResult.size(); i++) {
-                        if (mrpResult.get(i).getDeliveringQuantity() > 0.0
-                            || mrpResult.get(i).getPoQuantity() > 0.0
-                            || mrpResult.get(i).getOriginQuantity() > 0.0) {
+//                        if (mrpResult.get(i).getDeliveringQuantity() > 0.0
+//                            || mrpResult.get(i).getPoQuantity() > 0.0
+//                            || mrpResult.get(i).getOriginQuantity() > 0.0) {
+                        if (mrpResult.get(i).getIsStart()) {
                             Date currentResultDate = simpleDateFormat.parse(mrpResult.get(i).getLandmark());
                             if (minDate.compareTo(currentResultDate) >= 0) {
                                 minDate = currentResultDate;
@@ -686,6 +687,7 @@ public class MrpAdvancedAnalysisServiceV3 {
             MrpAnalysisUtil.setAnalysisDetailV2(currentItem, itemResult, beforeDate, totalCheckStartTime, itemOnOrderQuantityMap, simpleDateFormat);
             if (!isPassFirstDate && parentIte.getLandmark().equals(itemStartDate)) {
                 isStart = true;
+                itemResult.setIsStart(true);
                 MrpAnalysisUtil.setPrPoQuantityV3(currentItem.getItemCode(), itemResult, prQuantity, poQuantity);
             }
 

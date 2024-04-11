@@ -62,7 +62,17 @@ public class ProductionLineService {
         HttpEntity<String> header = getHeader(restTemplate);
 
         if (StringUtils.isEmpty(input.getFilter().getProductionLineName())) input.getFilter().setProductionLineName("");
-        String assetsUrl = String.format(baseAssetsUrl, input.getPageSize(), input.getPageNumber(), input.getFilter().getProductionLineName());
+        if (StringUtils.isEmpty(input.getFilter().getComputingProductivity())) input.getFilter().setComputingProductivity("");
+        if (StringUtils.isEmpty(input.getFilter().getAssetType())) input.getFilter().setAssetType("");
+        if (StringUtils.isEmpty(input.getFilter().getGroup())) input.getFilter().setGroup("");
+        if (StringUtils.isEmpty(input.getFilter().getCycleTime())) input.getFilter().setCycleTime("");
+        if (StringUtils.isEmpty(input.getFilter().getLabel())) input.getFilter().setLabel("");
+        String assetsUrl = String.format(baseAssetsUrl, input.getPageSize(), input.getPageNumber(), input.getFilter().getProductionLineName(),
+            input.getFilter().getAssetType(),
+            input.getFilter().getLabel(),
+            input.getFilter().getComputingProductivity(),
+            input.getFilter().getCycleTime(),
+            input.getFilter().getGroup());
 
         logger.info("Get all assets at {}", assetsUrl);
         ResponseEntity<AssetList> allAsset = restTemplate.exchange(

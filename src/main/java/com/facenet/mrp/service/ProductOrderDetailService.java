@@ -12,6 +12,7 @@ import com.facenet.mrp.service.dto.ProductOrderDetailDto;
 import com.facenet.mrp.service.dto.mrp.CurrentInventory;
 import com.facenet.mrp.service.dto.mrp.ItemQuantity;
 import com.facenet.mrp.service.dto.mrp.MrpDetailDTO;
+import com.facenet.mrp.service.dto.request.SendAnalysisRequest;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.mapper.ForrecastOrderMapper;
 import com.facenet.mrp.service.mapper.ProductOrderDetailMapper;
@@ -333,6 +334,42 @@ public class ProductOrderDetailService {
             logger.error("Lỗi cập nhật trạng thái sản phẩm", e);
             throw e;
         }
+    }
+
+    @Transactional
+    public Integer updateStatusListProductInPO(List<SendAnalysisRequest> requestList) {
+        for (SendAnalysisRequest item: requestList){
+            try {
+                if (item.getStatus() < 1 || item.getStatus() > 6 || StringUtils.isEmpty(item.getProductCode())) {
+                    return -1;
+                }
+                ProductOrderDetail productOrderDetail = detailRepository.findByProductCode(item.getProductCode(), item.getPoCode());
+                if (productOrderDetail == null) {
+                    return -2;
+                }
+                detailRepository.updateStatusProductInPO(item.getStatus(), item.getProductCode(), item.getPoCode());
+                if (item.getStatus() == Constants.ProductOrder.CLOSED) {
+                    List<ProductOrderDetail> productOrderDetails = detailRepository.getAllBySO(item.getPoCode());
+                    if (productOrderDetails.size() == 0) {
+                        productOrderRepository.updateStatusPO(
+                            Constants.ProductOrder.CLOSED,
+                            item.getPoCode(),
+                            SecurityUtils.getCurrentUserLogin().orElse("system"));
+                    }
+                } else if (item.getStatus() == Constants.ProductOrder.STATUS_ORDER_ANALYTICS_FULL) {
+                    int newItemCount = detailRepository.countByItemOfSOAndStatusIn(
+                        item.getPoCode(),
+                        List.of(Constants.ProductOrder.STATUS_NEW, Constants.ProductOrder.STATUS_ORDER_ANALYTICS)
+                    );
+                    if (newItemCount == 0)
+                        productOrderRepository.updateStatusPO(Constants.ProductOrder.STATUS_ORDER_ANALYTICS_FULL, item.getPoCode(), SecurityUtils.getCurrentUserLogin().orElse("system"));
+                }
+            } catch (Exception e) {
+                logger.error("Lỗi cập nhật trạng thái sản phẩm", e);
+                throw e;
+            }
+        }
+        return 1;
     }
 
     public Integer deleteProductInPO(String productOrderCode, String productCode) {

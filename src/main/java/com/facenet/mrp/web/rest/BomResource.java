@@ -44,4 +44,9 @@ public class BomResource {
     public CommonResponse<List<BomItemDetailDTO>> getBomDetail(@PathVariable String productCode, @PathVariable String version) {
         return bomService.getBomDetail(productCode, version);
     }
+
+    @GetMapping("/get-list-bom/{productCode}")
+    public List<String> getListBom(@PathVariable String productCode) {
+        return bomService.getListBom(productCode);
+    }
 }

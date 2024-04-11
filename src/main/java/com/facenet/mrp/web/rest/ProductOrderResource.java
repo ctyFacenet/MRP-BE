@@ -6,6 +6,7 @@ import com.facenet.mrp.repository.mrp.MrpSubRepository;
 import com.facenet.mrp.security.SecurityUtils;
 import com.facenet.mrp.service.ProductOrderService;
 import com.facenet.mrp.service.dto.*;
+import com.facenet.mrp.service.dto.request.SendAnalysisRequest;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.model.PageFilterInput;
@@ -124,6 +125,18 @@ public class ProductOrderResource {
     @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH')")
     public ResponseEntity sendAnalysisPO(@PathVariable String productOrderCode,@PathVariable String productCode){
         Integer in = productOrderService.sendAnalysisProductInPO(productOrderCode,productCode);
+        if(in == -1 || in == -2){
+            return ResponseEntity.ok(
+                new CommonResponse<>().isOk(false).message("yêu cầu không hợp lệ").errorCode("400"));
+        }
+        return ResponseEntity.ok(
+            new CommonResponse<>().isOk(true).message("Gửi phân tích thành công").errorCode("00"));
+    }
+
+    @PutMapping("/sendAnalysisListProductInPO")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH')")
+    public ResponseEntity sendListAnalysisPO(@RequestBody List<SendAnalysisRequest> request){
+        Integer in = productOrderService.sendAnalysisListProductInPO(request);
         if(in == -1 || in == -2){
             return ResponseEntity.ok(
                 new CommonResponse<>().isOk(false).message("yêu cầu không hợp lệ").errorCode("400"));

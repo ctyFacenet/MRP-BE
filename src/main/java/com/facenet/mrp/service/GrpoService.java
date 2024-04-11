@@ -46,6 +46,7 @@ public class GrpoService {
         JPAQuery<GrpoDTO> query = new JPAQueryFactory(entityManager)
             .select(
                 new QGrpoDTO(
+                    qPdn1Entity.currency,
                     qOpdnEntity.uInvCode,
                     qPdn1Entity.uSo,
                     qPor1Entity.docEntry.stringValue().trim(),

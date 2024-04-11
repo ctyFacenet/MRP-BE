@@ -13,6 +13,7 @@ import com.facenet.mrp.service.dto.*;
 import com.facenet.mrp.service.dto.mrp.ItemQuantity;
 import com.facenet.mrp.service.dto.mrp.MrpDetailDTO;
 import com.facenet.mrp.service.dto.mrp.PlanningProductionOrder;
+import com.facenet.mrp.service.dto.request.SendAnalysisRequest;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
@@ -639,6 +640,19 @@ public class ProductOrderService {
         Integer in = productOrderRepository.sendAnalysisPO(productOrderCode, SecurityUtils.getCurrentUserLogin().get());
         Integer detail = productOrderRepository.sendAnalysisProductInPO(productOrder.getMrpPoId(), productCode, SecurityUtils.getCurrentUserLogin().get());
         return in + detail;
+    }
+
+    @Transactional
+    public Integer sendAnalysisListProductInPO(List<SendAnalysisRequest> request) {
+        for (SendAnalysisRequest analysisRequest:request){
+            ProductOrder productOrder = productOrderRepository.findByProductOrderCode(analysisRequest.getPoCode());
+            if (productOrder == null) {
+                return -2;
+            }
+            Integer in = productOrderRepository.sendAnalysisPO(analysisRequest.getPoCode(), SecurityUtils.getCurrentUserLogin().get());
+            Integer detail = productOrderRepository.sendAnalysisProductInPO(productOrder.getMrpPoId(), analysisRequest.getProductCode(), SecurityUtils.getCurrentUserLogin().get());
+        }
+        return 2;
     }
 
     @Transactional

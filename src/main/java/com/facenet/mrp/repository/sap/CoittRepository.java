@@ -130,4 +130,6 @@ public interface CoittRepository extends JpaRepository<CoittEntity,Integer> {
         "and co.uActive = '1' ")
     List<CloneBomDTO> cloneAllMrpProductBom();
 
+    @Query(value = "select a from CoittEntity a where a.uProNo = :productCode")
+    List<CoittEntity> getList(@Param("productCode") String productCode);
 }

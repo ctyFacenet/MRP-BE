@@ -3,6 +3,7 @@ package com.facenet.mrp.web.rest;
 import com.facenet.mrp.service.ProductOrderDetailService;
 import com.facenet.mrp.service.ProductOrderService;
 import com.facenet.mrp.service.dto.ProductOrderDetailDto;
+import com.facenet.mrp.service.dto.request.SendAnalysisRequest;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.model.ProductOrderDetailInput;
@@ -16,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -86,6 +88,22 @@ public class ProductOrderDetailResource {
     @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'S')")
     public ResponseEntity updateStatusProductInPO(@PathVariable String productOrderCode,@PathVariable String productCode,@PathVariable Byte status){
         Integer in = productOrderDetailService.updateStatusProductInPO(productCode,status,productOrderCode);
+        if(in == -1){
+            return ResponseEntity.ok(
+                new CommonResponse<>().isOk(false).message("yêu cầu không hợp lệ").errorCode("400"));
+        }
+        if(in == -2){
+            return ResponseEntity.ok(
+                new CommonResponse<>().isOk(false).message("không có sản phẩm này").errorCode("404"));
+        }
+        return ResponseEntity.ok(
+            new CommonResponse<>().isOk(true).message("chuyển trạng thái thành công").errorCode("00"));
+    }
+
+    @PutMapping("/product-orders/product-order-detail/new-status/list")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'S')")
+    public ResponseEntity updateStatusListProductInPO(@RequestBody List<SendAnalysisRequest> requestList){
+        Integer in = productOrderDetailService.updateStatusListProductInPO(requestList);
         if(in == -1){
             return ResponseEntity.ok(
                 new CommonResponse<>().isOk(false).message("yêu cầu không hợp lệ").errorCode("400"));

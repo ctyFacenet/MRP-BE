@@ -70,6 +70,7 @@ public class PoRepositoryImpl implements PoCustomRepository {
                 qOporEntity.docDueDate,
                 qPor1Entity.quantity,
                 qPor1Entity.price,
+                qPor1Entity.currency,
                 qPor1Entity.lineStatus,
                 qPor1Entity.openQty,
                 qPor1Entity.lineNum

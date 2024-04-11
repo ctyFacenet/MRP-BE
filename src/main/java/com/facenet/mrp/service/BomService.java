@@ -1,5 +1,6 @@
 package com.facenet.mrp.service;
 
+import com.facenet.mrp.domain.sap.CoittEntity;
 import com.facenet.mrp.domain.sap.QCoittEntity;
 import com.facenet.mrp.domain.sap.QOitmEntity;
 import com.facenet.mrp.repository.sap.CoittRepository;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -136,5 +138,17 @@ public class BomService {
                 dfs(item.getChildren());
             }
         }
+    }
+
+    public List<String> getListBom(String productCode){
+        List<String> versions = new ArrayList<>();
+        List<CoittEntity> coittEntityList = coittRepository.getList(productCode);
+        for (CoittEntity coittEntity: coittEntityList){
+            if(coittEntity.getuVersions() != null &&
+            !coittEntity.getuVersions().isEmpty()){
+                versions.add(coittEntity.getuVersions());
+            }
+        }
+        return versions;
     }
 }

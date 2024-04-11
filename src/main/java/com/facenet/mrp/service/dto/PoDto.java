@@ -23,6 +23,7 @@ public class PoDto {
     private String personInCharge;
     private long quantity;
     private long price;
+    private String currency;
     private String status;
     private Double po_grpo;
     private Long grpo;
@@ -86,7 +87,7 @@ public class PoDto {
                  String personInCharge,
                  Date createdAt,
                  Date receivedDate,
-                 long quantity, long price, String status, Double po_grpo,
+                 long quantity, long price, String currency, String status, Double po_grpo,
                  Integer lineNumber) {
         this.prCode = prCode;
         this.poCode = poCode;
@@ -106,9 +107,18 @@ public class PoDto {
         this.personInCharge = personInCharge;
         this.quantity = quantity;
         this.price = price;
+        this.currency = currency;
         this.status = status;
         this.po_grpo = po_grpo;
         this.lineNumber = lineNumber;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 
     public String getPrCode() {

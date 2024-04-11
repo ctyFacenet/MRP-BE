@@ -16,13 +16,15 @@ public class InvoiceDTO {
     private String invCode;
     private Double quantity;
     private Double price;
+    private String currency;
     private String status;
     private String uDocnum;
     private String uDeclareStat;
     public InvoiceDTO() {
     }
     @QueryProjection
-    public InvoiceDTO(String soCode, String mrpId, String poId, String grpoId, String invoiceId, String productId, String description, String vendorCode, String vendor, String createdAt, String invCode, Double quantity, Double price, String status) {
+    public InvoiceDTO(String currency,String soCode, String mrpId, String poId, String grpoId, String invoiceId, String productId, String description, String vendorCode, String vendor, String createdAt, String invCode, Double quantity, Double price, String status) {
+        this.currency = currency;
         this.soCode = soCode;
         this.mrpId = mrpId;
         this.poId = poId;
@@ -37,6 +39,14 @@ public class InvoiceDTO {
         this.quantity = quantity;
         this.price = price;
         this.status = status;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 
     public String getSoCode() {

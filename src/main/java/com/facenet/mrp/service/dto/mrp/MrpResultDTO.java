@@ -1,5 +1,6 @@
 package com.facenet.mrp.service.dto.mrp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -17,6 +18,8 @@ public class MrpResultDTO {
     private Double sumPoAndDeliveringQuantity;
     private Double totalOriginQuantity;
     private Double needQuantity;
+    @JsonIgnore
+    private boolean isStart = false;
 
     public MrpResultDTO() {
     }
@@ -123,5 +126,13 @@ public class MrpResultDTO {
 
     public void setNeedQuantity(Double needQuantity) {
         this.needQuantity = needQuantity;
+    }
+
+    public boolean getIsStart() {
+        return isStart;
+    }
+
+    public void setIsStart(boolean start) {
+        isStart = start;
     }
 }

@@ -2,7 +2,6 @@ package com.facenet.mrp.service;
 
 import com.facenet.mrp.domain.sap.*;
 import com.facenet.mrp.service.dto.InvoiceDTO;
-import com.facenet.mrp.service.dto.PurchaseRequestDTO;
 import com.facenet.mrp.service.dto.QInvoiceDTO;
 import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
@@ -51,6 +50,7 @@ public class InvoiceService {
         JPAQuery<InvoiceDTO> query = new JPAQueryFactory(entityManager)
             .select(
                 new QInvoiceDTO(
+                    qPch1Entity.currency,
                     qPch1Entity.uSo,
                     qPch1Entity.uMCode,
                     qPor1Entity.docEntry.stringValue(),
