@@ -8,10 +8,7 @@ import com.facenet.mrp.service.dto.ReportDetailDTO;
 import com.facenet.mrp.service.dto.mrp.AnalysisDetailReportFilter;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
-import com.facenet.mrp.service.model.ComparisonReportFilter;
-import com.facenet.mrp.service.model.ComparisonReportService;
-import com.facenet.mrp.service.model.PageFilterInput;
-import com.facenet.mrp.service.model.ReportFilter;
+import com.facenet.mrp.service.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
@@ -78,5 +75,10 @@ public class ReportResource {
     @PreAuthorize("hasAnyAuthority('BC')")
     public CommonResponse<ReportComparisonDTO> getComparisonReport(@RequestBody ComparisonReportFilter filter){
         return comparisonReportService.getComparisonReport(filter);
+    }
+
+    @PostMapping("/report-item")
+    public CommonResponse reportItemPO(@RequestBody PageFilterInput<ItemFilter> filterInput){
+        return reportService.getAllItemReport(filterInput);
     }
 }

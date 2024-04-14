@@ -285,15 +285,15 @@ public class MonitoringService {
             }
 
             //số lượng mua thêm = sl yeu cau - sl da ve - sl sap ve
-            order.setPurchaseQuantity(Math.max(
-                order.getQuantity()
-                    - order.getWarehouseQuantity()
-                    - order.getComingQuantity(), 0.0));
-            if (order.getQuantity() == 0.0) {
-                order.setPercentRate(0.0);
-            } else {
-                order.setPercentRate((order.getWarehouseQuantity() / order.getQuantity()) * 100);
-            }
+//            order.setPurchaseQuantity(Math.max(
+//                order.getQuantity()
+//                    - order.getWarehouseQuantity()
+//                    - order.getComingQuantity(), 0.0));
+//            if (order.getQuantity() == 0.0) {
+//                order.setPercentRate(0.0);
+//            } else {
+//                order.setPercentRate((order.getWarehouseQuantity() / order.getQuantity()) * 100);
+//            }
             onOrderWithDurationDetailDTOS.add(order);
         }
 
@@ -473,43 +473,47 @@ public class MonitoringService {
             SapOnOrderSummary tmp = repository.findSapOnOrderSummaryByPoCodeAndItemCodeAndType(
                 item.getPoCode(), item.getItemCode(), Constants.PO_TYPE);
             if (tmp != null) {
-                List<MonitoringDetailDTO> list = item.getDurationDetail();
-                for (MonitoringDetailDTO mdd : list
-                ) {
-                    //chỉ cập nhật các bản ghi có id khác null
-                    if (mdd.getId() != null) {
-                        if (mdd.getDueDate() == null && mdd.getQuantity() == null) {
+                if(item.getDurationDetail() != null){
+                    List<MonitoringDetailDTO> list = item.getDurationDetail();
+                    for (MonitoringDetailDTO mdd : list
+                    ) {
+                        //chỉ cập nhật các bản ghi có id khác null
+                        if (mdd.getId() != null) {
+                            if (mdd.getDueDate() == null && mdd.getQuantity() == null) {
+                                SapOnOrderDurationDetail entity = new SapOnOrderDurationDetail();
+                                entity.setSapOnOrderSummary(tmp);
+                                entity.setId(mdd.getId());
+                                entity.setDueDate(mdd.getDueDate());
+                                entity.setQuantity(mdd.getQuantity());
+                                entity.setNote(mdd.getNote());
+                                entity.setIsActive(false);
+                                listEntity.add(entity);
+                            } else {
+                                SapOnOrderDurationDetail entity = new SapOnOrderDurationDetail();
+                                entity.setSapOnOrderSummary(tmp);
+                                entity.setId(mdd.getId());
+                                entity.setDueDate(mdd.getDueDate());
+                                entity.setQuantity(mdd.getQuantity());
+                                entity.setNote(mdd.getNote());
+                                entity.setIsActive(true);
+                                listCheck.add(entity);
+                                listEntity.add(entity);
+                            }
+                            //chỉ insert các bản ghi có id bang null và note khac sap
+                        } else if ((mdd.getId() == null) && (mdd.getQuantity() != null) && (mdd.getDueDate() != null)) {
                             SapOnOrderDurationDetail entity = new SapOnOrderDurationDetail();
                             entity.setSapOnOrderSummary(tmp);
-                            entity.setId(mdd.getId());
-                            entity.setDueDate(mdd.getDueDate());
-                            entity.setQuantity(mdd.getQuantity());
-                            entity.setNote(mdd.getNote());
-                            entity.setIsActive(false);
-                            listEntity.add(entity);
-                        } else {
-                            SapOnOrderDurationDetail entity = new SapOnOrderDurationDetail();
-                            entity.setSapOnOrderSummary(tmp);
-                            entity.setId(mdd.getId());
                             entity.setDueDate(mdd.getDueDate());
                             entity.setQuantity(mdd.getQuantity());
                             entity.setNote(mdd.getNote());
                             entity.setIsActive(true);
-                            listCheck.add(entity);
                             listEntity.add(entity);
+                            listCheck.add(entity);
+                            System.out.println("--------------------------------"+entity.getDueDate());
                         }
-                        //chỉ insert các bản ghi có id bang null và note khac sap
-                    } else if ((mdd.getId() == null) && (mdd.getQuantity() != null) && (mdd.getDueDate() != null)) {
-                        SapOnOrderDurationDetail entity = new SapOnOrderDurationDetail();
-                        entity.setSapOnOrderSummary(tmp);
-                        entity.setDueDate(mdd.getDueDate());
-                        entity.setQuantity(mdd.getQuantity());
-                        entity.setNote(mdd.getNote());
-                        entity.setIsActive(true);
-                        listEntity.add(entity);
-                        listCheck.add(entity);
                     }
                 }
+
             }
             Boolean check = checkDate(listCheck);
             if (check == true) {

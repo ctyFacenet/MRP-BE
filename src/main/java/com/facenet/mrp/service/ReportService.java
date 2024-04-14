@@ -1,21 +1,29 @@
 package com.facenet.mrp.service;
 
-import com.facenet.mrp.domain.mrp.ProductOrder;
+import com.facenet.mrp.domain.mrp.*;
 import com.facenet.mrp.repository.mrp.*;
 import com.facenet.mrp.repository.sap.CoittRepository;
 import com.facenet.mrp.repository.sap.OcrdRepository;
-import com.facenet.mrp.service.dto.ReportDTO;
-import com.facenet.mrp.service.dto.ProductDetail;
-import com.facenet.mrp.service.dto.ReportDetailDTO;
+import com.facenet.mrp.service.dto.*;
 import com.facenet.mrp.service.dto.mrp.*;
+import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
+import com.facenet.mrp.service.model.ItemFilter;
+import com.facenet.mrp.service.model.PageFilterInput;
 import com.facenet.mrp.service.model.ReportFilter;
 import com.facenet.mrp.service.utils.Constants;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import javax.persistence.EntityManager;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -34,10 +42,25 @@ public class ReportService {
     private final OcrdRepository ocrdRepository;
     private final MrpRequiredQuantityRepository mrpRequiredQuantityRepository;
     private final SapOnOrderSummaryRepository sapOnOrderSummaryRepository;
-
+    private final EntityManager entityManager;
+    private final SapOnOrderDurationDetailRepository sapOnOrderDurationDetailRepository;
+    private final PurchaseRecommendationPlanRepository planRepository;
     private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    public ReportService(ProductOrderRepository productOrderRepository, ForecastOrderDetailRepository forecastOrderDetailRepository, ProductOrderDetailRepository productOrderDetailRepository, CoittRepository coittRepository, SapOnOrderDurationDetailRepository durationDetailRepository, PurchaseRecommendationPlanRepository purchaseRecommendationPlanRepository, PurchaseRecommendationDetailRepository purchaseRecommendationDetailRepository, MrpBomDetailRepository mrpBomDetailRepository, OcrdRepository ocrdRepository, MrpRequiredQuantityRepository mrpRequiredQuantityRepository, SapOnOrderSummaryRepository sapOnOrderSummaryRepository) {
+    public ReportService(ProductOrderRepository productOrderRepository,
+                         PurchaseRecommendationRepository purchaseRecommendationRepository,
+                         ForecastOrderDetailRepository forecastOrderDetailRepository,
+                         ProductOrderDetailRepository productOrderDetailRepository,
+                         CoittRepository coittRepository,
+                         SapOnOrderDurationDetailRepository durationDetailRepository,
+                         PurchaseRecommendationPlanRepository purchaseRecommendationPlanRepository,
+                         PurchaseRecommendationDetailRepository purchaseRecommendationDetailRepository,
+                         MrpBomDetailRepository mrpBomDetailRepository, OcrdRepository ocrdRepository,
+                         MrpRequiredQuantityRepository mrpRequiredQuantityRepository,
+                         SapOnOrderSummaryRepository sapOnOrderSummaryRepository,
+                         PurchaseRecommendationPlanRepository planRepository,
+                         EntityManager entityManager,
+                         SapOnOrderDurationDetailRepository sapOnOrderDurationDetailRepository) {
         this.productOrderRepository = productOrderRepository;
         this.forecastOrderDetailRepository = forecastOrderDetailRepository;
         this.productOrderDetailRepository = productOrderDetailRepository;
@@ -49,6 +72,9 @@ public class ReportService {
         this.ocrdRepository = ocrdRepository;
         this.mrpRequiredQuantityRepository = mrpRequiredQuantityRepository;
         this.sapOnOrderSummaryRepository = sapOnOrderSummaryRepository;
+        this.sapOnOrderDurationDetailRepository = sapOnOrderDurationDetailRepository;
+        this.planRepository = planRepository;
+        this.entityManager = entityManager;
     }
 
     public List<ReportDTO> getReport(ReportFilter filter){
@@ -403,7 +429,6 @@ public class ReportService {
         }
         reportDetailDTO.setResultMrp(AnalysisDetailReportByTimeModelList);
     }
-
     public void getDetailReportByWeek(ReportDetailDTO reportDetailDTO,
                                       List<OnOrderDurationReport> durationReportList,
                                       Calendar startTime,
@@ -540,4 +565,109 @@ public class ReportService {
 
     }
 
+    public PageResponse<List<ReportItemDTO>> getAllItemReport(PageFilterInput<ItemFilter> input) {
+        ItemFilter filter = input.getFilter();
+        JPAQuery<ReportItemDTO> query = buildQueryGetItemHasRecommendation(filter);
+        List<ReportItemDTO> resultList = query.fetch();
+        long count = query.fetchCount();
+        Double po = 0.0;
+        Double pr = 0.0;
+        List<String> stringList = new ArrayList<>();
+        for (ReportItemDTO result : resultList) {
+            if(!stringList.contains(result.getMrpCode())){
+                stringList.add(result.getMrpCode());
+            }
+        }
+        List<SapOnOrderSummary> onOrderSummaryList = sapOnOrderDurationDetailRepository.catchSapOnOrderSummary(stringList);
+        for (ReportItemDTO result : resultList) {
+            for (SapOnOrderSummary onOrderSummary: onOrderSummaryList){
+                if(onOrderSummary.getMrpCode().equals(result.getMrpCode()) && onOrderSummary.getItemCode().equals(result.getItemCode())){
+                    if(onOrderSummary.getType().equals("PO")){
+                        po += onOrderSummary.getQuantity() ;
+                    } else {
+                        pr += onOrderSummary.getQuantity();
+                    }
+                }
+            }
+            result.setPoQuantity(po);
+            result.setSumPrQuantity(pr);
+            if(pr > 0.0){
+                result.setPercent((po/pr)*100);
+            }else {
+                result.setPercent(0.0);
+            }
+            po = 0.0;
+            pr = 0.0;
+            result.setMrpQuantity(sapOnOrderDurationDetailRepository.getSum(result.getItemCode(),result.getMrpCode()));
+//            result.setSumPrQuantity(planRepository.sumPrQuantity(result.getItemCode(), result.getPurchaseRecommendationId()));
+            result.setSumRequestQuantity(planRepository.sumRequestQuantity(result.getItemCode(), result.getPurchaseRecommendationId()));
+        }
+
+        return new PageResponse<List<ReportItemDTO>>()
+            .result("00", "Thành công", true)
+            .data(resultList)
+            .dataCount(count);
+    }
+
+    private JPAQuery<ReportItemDTO> buildQueryGetItemHasRecommendation( ItemFilter filter) {
+        QPurchaseRecommendationBatch qPurchaseRecommendationBatch = QPurchaseRecommendationBatch.purchaseRecommendationBatch;
+        QPurchaseRecommendationDetailEntity qPurchaseRecommendationDetail = QPurchaseRecommendationDetailEntity.purchaseRecommendationDetailEntity;
+        QVendorEntity qVendorEntity = QVendorEntity.vendorEntity;
+        QMqqPriceEntity qMqqPriceEntity = QMqqPriceEntity.mqqPriceEntity;
+        QProductOrder qProductOrder = QProductOrder.productOrder;
+        QPurchaseRecommendationEntity qPurchaseRecommendation = QPurchaseRecommendationEntity.purchaseRecommendationEntity;
+        JPAQuery<ReportItemDTO> query = new JPAQueryFactory(entityManager)
+            .select(new QReportItemDTO(
+                qPurchaseRecommendationBatch.itemCode,
+                qPurchaseRecommendationBatch.itemDescription,
+                qPurchaseRecommendationBatch.quantity,
+                qPurchaseRecommendationBatch.receiveDate,
+                qMqqPriceEntity.vendorCode,
+                qVendorEntity.vendorName,
+                qMqqPriceEntity.price,
+                qMqqPriceEntity.currency,
+                qMqqPriceEntity.isPromotion,
+                qMqqPriceEntity.timeEnd,
+                qPurchaseRecommendationBatch.status,
+                qPurchaseRecommendationBatch.note,
+                qPurchaseRecommendationBatch.createdAt,
+                qProductOrder.productOrderCode,
+                qPurchaseRecommendation.mrpSubCode,
+                qPurchaseRecommendation.purchaseRecommendationId
+            )).from(qPurchaseRecommendation)
+            .leftJoin(qProductOrder).on(qPurchaseRecommendation.mrpPoId.eq(qProductOrder.productOrderCode))
+            .leftJoin(qPurchaseRecommendationDetail).on(qPurchaseRecommendationDetail.purchaseRecommendationId.eq(qPurchaseRecommendation.purchaseRecommendationId))
+            .leftJoin(qPurchaseRecommendationBatch).on(qPurchaseRecommendationBatch.purchaseRecommendationDetailId.eq(qPurchaseRecommendationDetail.purchaseRecommendationDetailId))
+            .leftJoin(qMqqPriceEntity).on(qPurchaseRecommendationBatch.moqPriceId.eq(qMqqPriceEntity.itemPriceId))
+            .leftJoin(qVendorEntity).on(qMqqPriceEntity.vendorCode.eq(qVendorEntity.vendorCode));
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        if (filter.getStart() != null && filter.getEnd() != null) {
+            booleanBuilder.and(qPurchaseRecommendation.startTime.after(filter.getStart()).and(qPurchaseRecommendation.startTime.before(filter.getEnd())));
+            booleanBuilder.or(qPurchaseRecommendation.endTime.after(filter.getStart()).and(qPurchaseRecommendation.endTime.before(filter.getEnd())));
+        }
+        if (!StringUtils.isEmpty(filter.getItemCode())) {
+            booleanBuilder.and(qPurchaseRecommendationBatch.itemCode.containsIgnoreCase(filter.getItemCode()));
+        }
+        if (!StringUtils.isEmpty(filter.getItemDescription())) {
+            booleanBuilder.and(qPurchaseRecommendationBatch.itemDescription.containsIgnoreCase(filter.getItemDescription()));
+        }
+        if (!StringUtils.isEmpty(filter.getMrpCode())) {
+            booleanBuilder.and(qPurchaseRecommendation.mrpSubCode.eq(filter.getMrpCode()));
+        }
+        if (!StringUtils.isEmpty(filter.getSoCode())) {
+            booleanBuilder.and(qProductOrder.productOrderCode.eq(filter.getSoCode()));
+        }
+        if (!CollectionUtils.isEmpty(filter.getStatus())) {
+            booleanBuilder.and(qPurchaseRecommendationBatch.status.in(filter.getStatus()));
+        }
+        if (!StringUtils.isEmpty(filter.getSupplierCode())) {
+            booleanBuilder.and(qVendorEntity.vendorCode.eq(filter.getSupplierCode()));
+        }
+        if (!StringUtils.isEmpty(filter.getSoCode())) {
+            booleanBuilder.and(qVendorEntity.vendorName.eq(filter.getSupplierName()));
+        }
+        booleanBuilder.and(qPurchaseRecommendationBatch.status.eq(3));
+        query.where(booleanBuilder);
+        return query;
+    }
 }

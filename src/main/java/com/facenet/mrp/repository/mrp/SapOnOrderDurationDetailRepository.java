@@ -69,4 +69,11 @@ public interface SapOnOrderDurationDetailRepository extends JpaRepository<SapOnO
         "order by d.dueDate")
     List<OnOrderDurationReport> getAllDurationBySoCode(@Param("soCode")String soCode);
 
+    @Query("select sum(y.quantity) from SapOnOrderSummary a join SapOnOrderDurationDetail y on a.id = y.fkId where a.itemCode = :itemCode and a.mrpCode = :mrpCode")
+    Double getSum(@Param("itemCode") String itemCode,  @Param("mrpCode") String mrpCode);
+    @Query("select a from SapOnOrderSummary a where a.itemCode = :itemCode and a.mrpCode = :mrpCode and a.type in ('PO','PR')")
+    List<SapOnOrderSummary> findSapOnOrderSummary(@Param("itemCode") String itemCode,  @Param("mrpCode") String mrpCode);
+
+    @Query("select a from SapOnOrderSummary a where a.mrpCode in :listMrpCode and a.type in ('PO','PR')")
+    List<SapOnOrderSummary> catchSapOnOrderSummary(  @Param("listMrpCode") List<String> listMrpCode);
 }
