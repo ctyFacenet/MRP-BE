@@ -39,9 +39,10 @@ spring:
   datasource:
     primary:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning_test?useLegacyDatetimeCode=false&serverTimezone=UTC
+#      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning_test?useLegacyDatetimeCode=false&serverTimezone=UTC
+      jdbc-url: jdbc:mariadb://222.252.25.37:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
       username: root
-      password: Facenet@123
+      password: 171ca9e4eb616be4a8007db9fa1da1091480f211e39c2ed8cc56cd6d6d25b09a
       hikari:
         poolName: Hikari
         auto-commit: false
@@ -53,9 +54,12 @@ spring:
           useServerPrepStmts: true
     sap:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Thang4;encrypt=true;trustServerCertificate=true;
-      username: read
-      password: 2022@mesrd
+      jdbc-url: jdbc:sqlserver://222.252.25.37:8081;database=Thang4;encrypt=true;trustServerCertificate=true;
+      username: sa
+      password: facenet@70d61c662aab8f49178f33794acac0deb3298c26b1ccb78c1c294ab2889072c4
+#      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Thang4;encrypt=true;trustServerCertificate=true;
+#      username: read
+#      password: 2022@mesrd
   jpa:
     properties:
       enable_lazy_load_no_trans: true

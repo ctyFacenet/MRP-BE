@@ -9,6 +9,7 @@ import com.facenet.mrp.domain.mrp.*;
 import com.facenet.mrp.repository.mrp.LeadTimeRepository;
 import com.facenet.mrp.repository.mrp.MqqPriceRepository;
 import com.facenet.mrp.repository.mrp.ParamRepository;
+import com.facenet.mrp.service.dto.KeyDictionaryDTO;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.model.MqqPriceExcelModel;
 import org.apache.commons.collections4.MultiValuedMap;
@@ -18,6 +19,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -32,6 +34,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
+
+import static com.facenet.mrp.service.utils.ExcelUtils.getStringCellValue;
+import static org.apache.poi.ss.usermodel.CellType.STRING;
 
 @Component
 public class XlsxExcelHandle {
@@ -54,6 +59,150 @@ public class XlsxExcelHandle {
         style.setFont(font);
         return style;
     }
+
+    public List<KeyDictionaryDTO> readColumnFromExcel(InputStream file, String entityType) throws IOException, ParseException {
+        XSSFWorkbook workbook = new XSSFWorkbook(file);
+        // Lấy ra sheet đầu tiên từ workbook
+        Sheet sheet = workbook.getSheetAt(0);
+        List<KeyDictionaryDTO> result = new ArrayList<>();
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) continue;
+            Cell firstCell = row.getCell(0);
+            //            if (firstCell == null || firstCell.getCellType() == CellType.BLANK) continue;
+            for (int i = 1; i <= 4; i++) {
+                if (ExcelUtils.isEmpty(row.getCell(i))) throw new CustomException(
+                    HttpStatus.BAD_REQUEST,
+                    "cell.must.not.empty",
+                    String.valueOf(i + 1),
+                    String.valueOf(row.getRowNum() + 1)
+                );
+            }
+            //            for (int i = 1; i <= 4; i++) {
+            //                Utils.validateSpecialCharacters(ExcelUtils.getStringCellValue(row.getCell(i)));
+            //            }
+
+            KeyDictionaryDTO keyDictionaryDTO = new KeyDictionaryDTO();
+            // số thứ tự
+            if (StringUtils.isEmpty(getStringCellValue(row.getCell(0))) || getStringCellValue(row.getCell(0)) == null) {
+                keyDictionaryDTO.setEntryIndex(null);
+            } else if (row.getCell(0).getCellType() == CellType.NUMERIC) {
+                keyDictionaryDTO.setEntryIndex(ExcelUtils.getIntegerCellValue(row.getCell(0)));
+            } else {
+                throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.datatype", getStringCellValue(row.getCell(0)));
+            }
+            // tên cột
+            if (
+                StringUtils.isEmpty(getStringCellValue(row.getCell(1))) ||
+                    getStringCellValue(row.getCell(1)) == null ||
+                    row.getCell(1).getCellType() != STRING
+            ) {
+                throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.datatype", getStringCellValue(row.getCell(1)));
+            } else {
+                keyDictionaryDTO.setKeyTitle(getStringCellValue(row.getCell(1)));
+            }
+            // loại dữ liệu
+            if (row.getCell(2).getCellType() != STRING) throw new CustomException(
+                HttpStatus.BAD_REQUEST,
+                "invalid.datatype",
+                getStringCellValue(row.getCell(2))
+            );
+            switch (getStringCellValue(row.getCell(2)).toLowerCase()) {
+                case "integer":
+                    keyDictionaryDTO.setDataType(1);
+                    break;
+                case "float":
+                    keyDictionaryDTO.setDataType(2);
+                    break;
+                case "string":
+                    keyDictionaryDTO.setDataType(3);
+                    break;
+                case "json":
+                    keyDictionaryDTO.setDataType(4);
+                    break;
+                case "date":
+                    keyDictionaryDTO.setDataType(5);
+                    break;
+                case "boolean":
+                    keyDictionaryDTO.setDataType(6);
+                    break;
+                default:
+                    throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.datatype", getStringCellValue(row.getCell(2)));
+            }
+            // bắt buộc
+            if (row.getCell(3).getCellType() != STRING) throw new CustomException(
+                HttpStatus.BAD_REQUEST,
+                "invalid.datatype",
+                getStringCellValue(row.getCell(3))
+            );
+            if (getStringCellValue(row.getCell(3)).trim().toLowerCase().equalsIgnoreCase("Bắt buộc".trim())) {
+                keyDictionaryDTO.setIsRequired(true);
+            } else if (getStringCellValue(row.getCell(3)).trim().toLowerCase().equalsIgnoreCase("Không bắt buộc".trim())) {
+                keyDictionaryDTO.setIsRequired(false);
+            } else {
+                throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.datatype", getStringCellValue(row.getCell(3)));
+            }
+            // trạng thái
+            if (row.getCell(4).getCellType() != STRING) throw new CustomException(
+                HttpStatus.BAD_REQUEST,
+                "invalid.datatype",
+                getStringCellValue(row.getCell(4))
+            );
+            System.err.println(getStringCellValue(row.getCell(4)).trim().toLowerCase());
+            if (getStringCellValue(row.getCell(4)).trim().toLowerCase().equalsIgnoreCase("Hiển thị".trim())) {
+                keyDictionaryDTO.setCheck(true);
+            } else if (getStringCellValue(row.getCell(4)).trim().toLowerCase().equalsIgnoreCase("Không hiển thị".trim())) {
+                keyDictionaryDTO.setCheck(false);
+            } else {
+                throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.datatype", getStringCellValue(row.getCell(4)));
+            }
+            //keyName
+            keyDictionaryDTO.setKeyName(String.valueOf(UUID.randomUUID()));
+            //entityType
+            switch (entityType.toLowerCase().trim()) {
+                case "production-stage":
+                    keyDictionaryDTO.setEntityType(Constants.EntityType.PRODUCTIONSTAGE);
+                    break;
+                case "vendor":
+                    keyDictionaryDTO.setEntityType(Constants.EntityType.VENDOR);
+                    break;
+                case "job":
+                    keyDictionaryDTO.setEntityType(Constants.EntityType.JOB);
+                    break;
+                case "error":
+                    keyDictionaryDTO.setEntityType(Constants.EntityType.ERROR);
+                    break;
+                case "error-group":
+                    keyDictionaryDTO.setEntityType(Constants.EntityType.ERRORGROUP);
+                    break;
+                case "machine":
+                    keyDictionaryDTO.setEntityType(Constants.EntityType.MACHINE);
+                    break;
+                case "production-line":
+                    keyDictionaryDTO.setEntityType(Constants.EntityType.PRODUCTION_LINE);
+                    break;
+                case "btp":
+                    keyDictionaryDTO.setEntityType(Constants.EntityType.BTP);
+                    break;
+                case "tp":
+                    keyDictionaryDTO.setEntityType(Constants.EntityType.TP);
+                    break;
+                case "nvl":
+                    keyDictionaryDTO.setEntityType(Constants.EntityType.NVL);
+                    break;
+                case "employee":
+                    keyDictionaryDTO.setEntityType(Constants.EntityType.EMPLOYEE);
+                    break;
+                case "team-group":
+                    keyDictionaryDTO.setEntityType(Constants.EntityType.TEAM_GROUP);
+                    break;
+                default:
+                    throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.datatype", entityType);
+            }
+            result.add(keyDictionaryDTO);
+        }
+        return result;
+    }
+
 
     public HashMap<String,List<ProductOrder>> readDonHangExcel(InputStream fis) throws IOException, ParseException {
         XSSFWorkbook workbook = new XSSFWorkbook(fis);
@@ -149,24 +298,24 @@ public class XlsxExcelHandle {
 
         ProductOrder donHang = new ProductOrder();
 //        donHang.setId(UUID.randomUUID());
-        donHang.setProductOrderCode("RAL-SO-"+ExcelUtils.getStringCellValue(row.getCell(0)));
+        donHang.setProductOrderCode("RAL-SO-"+ getStringCellValue(row.getCell(0)));
 //        donHang.setCustomerId(ExcelUtils.getStringCellValue(row.getCell(1)));
 //        donHang.setCustomerName(ExcelUtils.getStringCellValue(row.getCell(2)));
-        donHang.setProductOrderType(ExcelUtils.getStringCellValue(row.getCell(1)));
+        donHang.setProductOrderType(getStringCellValue(row.getCell(1)));
         donHang.setType("Đơn hàng");
-        donHang.setProductCodeChild(ExcelUtils.getStringCellValue(row.getCell(2)));
-        donHang.setProductCode(ExcelUtils.getStringCellValue(row.getCell(3)));
+        donHang.setProductCodeChild(getStringCellValue(row.getCell(2)));
+        donHang.setProductCode(getStringCellValue(row.getCell(3)));
         donHang.setProductName(row.getCell(4).getStringCellValue().trim());
-        donHang.setBomVersion(ExcelUtils.getStringCellValue(row.getCell(5)));
+        donHang.setBomVersion(getStringCellValue(row.getCell(5)));
         donHang.setQuantity(ExcelUtils.getIntegerCellValue(row.getCell(6)));
-        donHang.setCustomerId(ExcelUtils.getStringCellValue(row.getCell(7)));
+        donHang.setCustomerId(getStringCellValue(row.getCell(7)));
 
         if(StringUtils.isEmpty(donHang.getCustomerId())){
             throw new CustomException("customer.id.is.empty",row.getRowNum() + "");
         }
 
-        donHang.setCustomerName(ExcelUtils.getStringCellValue(row.getCell(8)));
-        donHang.setSaleCode(ExcelUtils.getStringCellValue(row.getCell(9)));
+        donHang.setCustomerName(getStringCellValue(row.getCell(8)));
+        donHang.setSaleCode(getStringCellValue(row.getCell(9)));
 
         if(row.getCell(10) != null) {
             try{
@@ -194,7 +343,7 @@ public class XlsxExcelHandle {
         if (row.getCell(12).getCellType() == CellType.BLANK)
             donHang.setSupplyType("MRP");
         else
-            donHang.setSupplyType(ExcelUtils.getStringCellValue(row.getCell(12)));
+            donHang.setSupplyType(getStringCellValue(row.getCell(12)));
 
         if (row.getCell(13).getCellType() == CellType.BLANK)
             donHang.setPriorityProduct(1);
@@ -238,8 +387,8 @@ public class XlsxExcelHandle {
 //                throw new CustomException("object.must.be.greater.than.at", "thời gian trả hàng", "thời gian phát sinh", String.valueOf(row.getRowNum() + 1));
 //            donHang.setEndDate(endTime);
 //        }
-        donHang.setPartCode(ExcelUtils.getStringCellValue(row.getCell(17)));
-        donHang.setPartName(ExcelUtils.getStringCellValue(row.getCell(18)));
+        donHang.setPartCode(getStringCellValue(row.getCell(17)));
+        donHang.setPartName(getStringCellValue(row.getCell(18)));
         donHang.setCreatedAt(Instant.now());
 
 //        String po_id = donHang.getCustomerId() + "-" + new SimpleDateFormat("yyyyMMdd").format(donHang.getOrderDate());
@@ -272,13 +421,13 @@ public class XlsxExcelHandle {
         ExcelUtils.validateRow(row, 4, 5);
         ExcelUtils.validateRow(row, 8, 11);
         MqqPriceEntity mqqPriceEntity = new MqqPriceEntity();
-        String vendorCode = ExcelUtils.getStringCellValue(row.getCell(0));
-        String itemCode = ExcelUtils.getStringCellValue(row.getCell(4));
+        String vendorCode = getStringCellValue(row.getCell(0));
+        String itemCode = getStringCellValue(row.getCell(4));
         // Add new vendor for insert/update to VendorEntity
         if (!result.getVendorCodes().contains(vendorCode)) {
             VendorEntity vendorEntity = new VendorEntity();
             vendorEntity.setVendorCode(vendorCode);
-            vendorEntity.setVendorName(ExcelUtils.getStringCellValue(row.getCell(1)));
+            vendorEntity.setVendorName(getStringCellValue(row.getCell(1)));
             result.getVendorEntities().add(vendorEntity);
         }
 
@@ -297,7 +446,7 @@ public class XlsxExcelHandle {
 //        } catch (Exception e) {
 //            throw new CustomException(HttpStatus.BAD_REQUEST, "unparsable.date");
 //        }
-        if (ExcelUtils.getStringCellValue(row.getCell(7)) != null){
+        if (getStringCellValue(row.getCell(7)) != null){
             mqqPriceEntity.setTimeEnd(row.getCell(7).getDateCellValue());
         }
 
@@ -307,10 +456,10 @@ public class XlsxExcelHandle {
         mqqPriceEntity.setRangeStart(rangeStart);
         mqqPriceEntity.setRangeEnd(rangeEnd);
         mqqPriceEntity.setPrice(ExcelUtils.getNumberCellValue(row.getCell(10)));
-        String currency = ExcelUtils.getStringCellValue(row.getCell(11));
+        String currency = getStringCellValue(row.getCell(11));
         if (!currencies.contains(currency))
             throw new CustomException(HttpStatus.BAD_REQUEST, "unknown.currency", currency);
-        mqqPriceEntity.setCurrency(ExcelUtils.getStringCellValue(row.getCell(11)));
+        mqqPriceEntity.setCurrency(getStringCellValue(row.getCell(11)));
         result.getMqqPriceEntities().add(mqqPriceEntity);
 
         if (itemVendorMap.containsMapping(itemCode, vendorCode)) return;
@@ -323,24 +472,24 @@ public class XlsxExcelHandle {
             leadTimeEntity.setVendorCode(vendorCode);
             leadTimeEntity.setItemCode(itemCode);
         }
-        if (ExcelUtils.getStringCellValue(row.getCell(6)) != null){
+        if (getStringCellValue(row.getCell(6)) != null){
             leadTimeEntity.setLeadTime(ExcelUtils.getIntegerCellValue(row.getCell(6)));
         }
-        leadTimeEntity.setNote(ExcelUtils.getStringCellValue(row.getCell(12)));
+        leadTimeEntity.setNote(getStringCellValue(row.getCell(12)));
 
         result.getLeadTimeEntities().add(leadTimeEntity);
 
         result.getSaleEntityMap().putIfAbsent(vendorCode,
             new SaleEntity(
                 vendorCode,
-                ExcelUtils.getStringCellValue(row.getCell(2)),
-                ExcelUtils.getStringCellValue(row.getCell(3))
+                getStringCellValue(row.getCell(2)),
+                getStringCellValue(row.getCell(3))
             )
         );
         if (!itemVendorMap.containsKey(itemCode)) {
             ItemEntity itemEntity = new ItemEntity();
             itemEntity.setItemCode(itemCode);
-            itemEntity.setItemName(ExcelUtils.getStringCellValue(row.getCell(5)));
+            itemEntity.setItemName(getStringCellValue(row.getCell(5)));
             result.getItemEntities().add(itemEntity);
         }
 

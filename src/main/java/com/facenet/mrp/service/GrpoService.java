@@ -109,6 +109,7 @@ public class GrpoService {
         if (!StringUtils.isEmpty(filter.getVendor())) {
             booleanBuilder.and(qOpdnEntity.cardName.containsIgnoreCase(filter.getVendor()));
         }
+
         if (!StringUtils.isEmpty(filter.getSoId())) {
             booleanBuilder.and(qPdn1Entity.uSo.containsIgnoreCase(filter.getSoId()));
         }

@@ -1,8 +1,11 @@
 package com.facenet.mrp.service.model;
 
+import com.querydsl.core.types.Order;
+
 import javax.validation.constraints.NotNull;
 
 public class PageFilterInput<T> {
+
     @NotNull(message = "pageNumber must not be null")
     private Integer pageNumber;
 
@@ -12,14 +15,11 @@ public class PageFilterInput<T> {
     @NotNull(message = "filter must not be null")
     private T filter;
 
-    public PageFilterInput() {
-    }
+    private String common;
 
-    public PageFilterInput(Integer pageNumber, Integer pageSize, T filter) {
-        this.pageNumber = pageNumber;
-        this.pageSize = pageSize;
-        this.filter = filter;
-    }
+    private String sortProperty;
+
+    private Order sortOrder;
 
     public Integer getPageNumber() {
         return pageNumber;
@@ -43,5 +43,29 @@ public class PageFilterInput<T> {
 
     public void setFilter(T filter) {
         this.filter = filter;
+    }
+
+    public String getCommon() {
+        return common;
+    }
+
+    public void setCommon(String common) {
+        this.common = common;
+    }
+
+    public String getSortProperty() {
+        return sortProperty;
+    }
+
+    public void setSortProperty(String sortProperty) {
+        this.sortProperty = sortProperty;
+    }
+
+    public Order getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(Order sortOrder) {
+        this.sortOrder = sortOrder;
     }
 }

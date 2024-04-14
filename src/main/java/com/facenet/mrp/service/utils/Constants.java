@@ -1,6 +1,14 @@
 package com.facenet.mrp.service.utils;
 
 public class Constants {
+    public static final int INT_VALUE = 1;
+    public static final int FLOAT_VALUE = 2;
+    public static final int STRING_VALUE = 3;
+    public static final int JSON_VALUE = 4;
+    public static final int DATE_VALUE = 5;
+    public static final int BOOLEAN_VALUE = 6;
+    public static final int TP = 104;
+    public static final int BTP = 101;
     public interface ProductOrder{
         int STATUS_NEW = 1;
         int STATUS_ORDER_ANALYTICS = 2;
@@ -30,6 +38,38 @@ public class Constants {
         int REJECTED = 4;
         int COMPLETED = 5;
         int CLOSED = 6;
+    }
+
+    public interface EntityType {
+        Integer PRODUCTIONSTAGE = 1;
+        Integer VENDOR = 2;
+        Integer JOB = 3;
+
+        Integer ERROR = 4;
+        Integer ERRORGROUP = 5;
+        int MACHINE = 6;
+        int PRODUCTION_LINE = 7;
+        int BTP = 8;
+        int TP = 9;
+        int NVL = 10;
+        int EMPLOYEE = 11;
+        int TEAM_GROUP = 12;
+
+        int MERCHANDISE_GROUP = 13;
+
+        int MERCHANDISE = 14;
+        int CUSTOMER = 15;
+
+        int SELL_ORDER = 16;
+        int OUTSOURCE_SELL_ORDER = 17;
+        int DESIGN_FILE = 18;
+        int SELL_ORDER_PRODUCT = 19;
+        int PROFILE = 21;
+
+        int TECH_FORM = 22;
+        // int SELL_ORDER = 101;
+        // int OUTSOURCE_SELL_ORDER = 102;
+        // int DESIGN_FILE = 103;
     }
 
     public interface Mrp {
@@ -80,9 +120,6 @@ public class Constants {
     public static final String PO_TYPE = "PO";
     public static final String PR_TYPE = "PR";
     public static final String GRPO_TYPE = "GRPO";
-
-    public static final int TP = 104;
-    public static final int BTP = 101;
 
     public static final int DAY_MODE = 0;
     public static final int WEEK_MODE = 1;
