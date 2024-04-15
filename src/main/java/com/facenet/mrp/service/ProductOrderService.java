@@ -377,11 +377,11 @@ public class ProductOrderService {
                 product.setMaterialChildrenCount(countChildren.getQuantity().intValue());
             }
         }
-        productOrderRepository.saveAll(productOrders);
         if(donHangArrayList.size() > 0){
             System.out.println("----------------------------danh sách đơn hàng 1: "+donHangArrayList.get(0));
             syncToPlanning(donHangArrayList);
         }
+        productOrderRepository.saveAll(productOrders);
     }
 
     //hàm gọi api planning và đồng bộ
@@ -496,7 +496,10 @@ public class ProductOrderService {
             donHang.setBomVersion(mrpDetailDTO.getBomVersion());
             donHang.setProductCode(mrpDetailDTO.getItemCode());
             donHang.setProductName(mrpDetailDTO.getItemName());
-            donHang.setQuantity(mrpDetailDTO.getRequiredQuantity().intValue());
+
+            if(mrpDetailDTO.getQuota() != null && productOrderDetails.getQuantity() != null){
+                donHang.setQuantity((int) (productOrderDetails.getQuantity()*mrpDetailDTO.getQuota()));
+            }
             donHang.setProductType(0);
             donHang.setState("CREATED");
             donHang.setStatus("active");
@@ -506,27 +509,27 @@ public class ProductOrderService {
 //            donHang.setCreatedDate(new Date());
             donHang.setOriginal("MRP");
             if (productOrder.getOrderDate() != null) {
-                donHang.setOrderDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(productOrder.getOrderDate())));
+                donHang.setOrderDate(productOrder.getOrderDate());
             } else {
                 donHang.setOrderDate(new Date());
             }
 
             if (productOrder.getDeliverDate()  != null) {
-                donHang.setCompleteDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(productOrder.getDeliverDate())));
+                donHang.setCompleteDate(productOrder.getDeliverDate());
             }else {
                 donHang.setCompleteDate(new Date());
             }
 
             if (productOrder.getStartDate()  != null) {
                 //startTime
-                donHang.setStartDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(productOrder.getStartDate())));
+                donHang.setStartDate(productOrder.getStartDate());
             }else {
                 donHang.setStartDate(new Date());
             }
 
             if (productOrder.getEndDate()  != null) {
                 //endTime
-                donHang.setEndDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(productOrder.getEndDate())));
+                donHang.setEndDate(productOrder.getEndDate());
             }else {
                 donHang.setEndDate(new Date());
             }
@@ -537,13 +540,14 @@ public class ProductOrderService {
     }
 
     //hàm đệ quy lấy tất cả btp
+    static List<MrpDetailDTO> itemList = new ArrayList<>();
     private  List<MrpDetailDTO> getListBtp(String code, String version){
-        List<MrpDetailDTO> bomItems = bomService.getBomTree().get(Utils.toItemKey(code, version));
-        System.out.println("-------------------lấy bom:"+bomItems);
-        List<MrpDetailDTO> itemList = new ArrayList<>();
+        //TODO sua lai
+        List<MrpDetailDTO> bomItems = coittRepository.getAllMrpProductBomList(code,version);
         if (!CollectionUtils.isEmpty(bomItems)) {
             for (MrpDetailDTO bomItem : bomItems) {
-                if (bomItem.getGroupItemInt() != Constants.TP && bomItem.getGroupItemInt() != Constants.BTP) {
+                if (bomItem.getGroupItemInt()== Constants.TP || bomItem.getGroupItemInt() == Constants.BTP) {
+                    System.out.println("===========================1: "+bomItem.getQuota());
                     itemList.add(new MrpDetailDTO(bomItem));
                     if(bomItem.getBomVersion() != null){
                         getListBtp(bomItem.getItemCode(),bomItem.getBomVersion());
@@ -551,6 +555,7 @@ public class ProductOrderService {
                 }
             }
         }
+        System.out.println("-------------------lấy bom:"+itemList);
         return itemList;
     }
 
