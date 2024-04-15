@@ -3,6 +3,7 @@ package com.facenet.mrp.web.rest;
 import com.facenet.mrp.service.MrpAdvancedAnalysisServiceV3;
 import com.facenet.mrp.service.MrpBomDetailService;
 import com.facenet.mrp.service.ProductOrderAnalyticService;
+import com.facenet.mrp.service.ReportService;
 import com.facenet.mrp.service.dto.ProductOrderDTOAPS;
 import com.facenet.mrp.service.dto.ProductOrderDto;
 import com.facenet.mrp.service.dto.ProductOrderItemsDTO;
@@ -29,7 +30,8 @@ public class ProductOrderAnalyticsResource {
     ProductOrderAnalyticService productOrderAnalyticService;
     @Autowired
     private MrpBomDetailService mrpBomDetailService;
-
+    @Autowired
+    private ReportService reportService;
     @Autowired
     MrpAdvancedAnalysisServiceV3 mrpAdvancedAnalysisServiceV3;
 
@@ -81,5 +83,10 @@ public class ProductOrderAnalyticsResource {
     @PostMapping("/services/api/order/create-po-mrp/{ssId}/{mrpCode}")
     public CommonResponse<ProductOrderDTOAPS> sendPlaningForAPS(@PathVariable("ssId") String ssId, @PathVariable("mrpCode") String mrpCode){
         return productOrderAnalyticService.sendPlaningForAPS(ssId, mrpCode);
+    }
+
+    @GetMapping("/branch-group")
+    public CommonResponse findBranch(){
+        return reportService.getBranch();
     }
 }

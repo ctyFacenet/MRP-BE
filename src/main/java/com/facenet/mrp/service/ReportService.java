@@ -1,11 +1,14 @@
 package com.facenet.mrp.service;
 
 import com.facenet.mrp.domain.mrp.*;
+import com.facenet.mrp.domain.sap.SapBranchGroupEntity;
 import com.facenet.mrp.repository.mrp.*;
+import com.facenet.mrp.repository.sap.BranchGroupRepository;
 import com.facenet.mrp.repository.sap.CoittRepository;
 import com.facenet.mrp.repository.sap.OcrdRepository;
 import com.facenet.mrp.service.dto.*;
 import com.facenet.mrp.service.dto.mrp.*;
+import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.model.ItemFilter;
@@ -45,6 +48,7 @@ public class ReportService {
     private final EntityManager entityManager;
     private final SapOnOrderDurationDetailRepository sapOnOrderDurationDetailRepository;
     private final PurchaseRecommendationPlanRepository planRepository;
+    private final BranchGroupRepository branchGroupRepository;
     private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     public ReportService(ProductOrderRepository productOrderRepository,
@@ -60,7 +64,8 @@ public class ReportService {
                          SapOnOrderSummaryRepository sapOnOrderSummaryRepository,
                          PurchaseRecommendationPlanRepository planRepository,
                          EntityManager entityManager,
-                         SapOnOrderDurationDetailRepository sapOnOrderDurationDetailRepository) {
+                         SapOnOrderDurationDetailRepository sapOnOrderDurationDetailRepository,
+                         BranchGroupRepository branchGroupRepository) {
         this.productOrderRepository = productOrderRepository;
         this.forecastOrderDetailRepository = forecastOrderDetailRepository;
         this.productOrderDetailRepository = productOrderDetailRepository;
@@ -75,6 +80,7 @@ public class ReportService {
         this.sapOnOrderDurationDetailRepository = sapOnOrderDurationDetailRepository;
         this.planRepository = planRepository;
         this.entityManager = entityManager;
+        this.branchGroupRepository = branchGroupRepository;
     }
 
     public List<ReportDTO> getReport(ReportFilter filter){
@@ -669,5 +675,28 @@ public class ReportService {
         booleanBuilder.and(qPurchaseRecommendationBatch.status.eq(3));
         query.where(booleanBuilder);
         return query;
+    }
+
+    public CommonResponse getBranch(){
+
+        List<String> sapBranchGroupEntities = branchGroupRepository.getDistinctBranchCodes();
+        List<BranchGroupDTO> branchGroupDTOS = new ArrayList<>();
+        for (String sapBranchGroup: sapBranchGroupEntities){
+            BranchGroupDTO branchGroupDTO = new BranchGroupDTO();
+            branchGroupDTO.setuBranchCode(sapBranchGroup);
+            branchGroupDTO.setGroupDTOList(new ArrayList<>());
+            List<SapBranchGroupEntity> sapGroupEntities = branchGroupRepository.getSapGroupEntities(sapBranchGroup);
+            for (SapBranchGroupEntity sapGroup: sapGroupEntities){
+                GroupDTO groupDTO = new GroupDTO();
+
+                groupDTO.setuGroupName(sapGroup.getuGroupName());
+                groupDTO.setuGroupCode(sapGroup.getuGroupCode());
+                branchGroupDTO.getGroupDTOList().add(groupDTO);
+            }
+            branchGroupDTOS.add(branchGroupDTO);
+        }
+        return new PageResponse<List<BranchGroupDTO>>()
+            .result("00", "Thành công", true)
+            .data(branchGroupDTOS);
     }
 }
