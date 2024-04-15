@@ -140,7 +140,7 @@ public class BomService {
         }
     }
 
-    public List<String> getListBom(String productCode){
+    public CommonResponse<List<String>> getListBom(String productCode){
         List<String> versions = new ArrayList<>();
         List<CoittEntity> coittEntityList = coittRepository.getList(productCode);
         for (CoittEntity coittEntity: coittEntityList){
@@ -149,6 +149,6 @@ public class BomService {
                 versions.add(coittEntity.getuVersions());
             }
         }
-        return versions;
+        return new CommonResponse<List<String>>().result("00","Success",true).data(versions);
     }
 }
