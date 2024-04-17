@@ -39,6 +39,11 @@ public class PurchaseRecommendationDetailResource {
         return purchaseRecommendationDetailService.getAllItemsHasRecommendation(purchaseRecommendationId,batch, input);
     }
 
+    @GetMapping("/get-all-recommand/{purchaseRecommendationId}")
+    public PageResponse<List<String>> getItemsOfPurchaseHasRecommendation(@PathVariable String purchaseRecommendationId) {
+        return purchaseRecommendationDetailService.getItemsHasRecommendation(purchaseRecommendationId);
+    }
+
     @PutMapping("/{purchaseRecommendationId}")
     @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH')")
     public CommonResponse updatePurchaseRecommendation(@RequestBody Map<String,List<UpdatePurchaseRecommendationForm>> updateForm, @PathVariable Integer purchaseRecommendationId) {

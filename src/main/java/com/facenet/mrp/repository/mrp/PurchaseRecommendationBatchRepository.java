@@ -45,4 +45,9 @@ public interface PurchaseRecommendationBatchRepository extends JpaRepository<Pur
 
     @Query(value = "select count(p) from PurchaseRecommendationBatch p join PurchaseRecommendationDetailEntity pd on p.purchaseRecommendationDetailId = pd.purchaseRecommendationDetailId where p.isActive = true and pd.isActive = true and pd.purchaseRecommendation.purchaseRecommendationId = :purchaseRecommenId and p.batch = :batch and p.status = 2")
      Integer countBatchNotApproval(@Param("purchaseRecommenId") Integer purchaseRecommenId,@Param("batch") Integer batch);
+
+    @Query(value = "select p.itemCode from PurchaseRecommendationEntity a join PurchaseRecommendationDetailEntity b on " +
+        "a.purchaseRecommendationId = b.purchaseRecommendationId join PurchaseRecommendationBatch p on " +
+        "b.purchaseRecommendationDetailId = p.purchaseRecommendationDetailId where a.mrpSubCode = :mrpCode and a.isActive = true and b.isActive = true and p.isActive = true ")
+    List<String> getAllItemHasSend(@Param("mrpCode") String mrpCode);
 }

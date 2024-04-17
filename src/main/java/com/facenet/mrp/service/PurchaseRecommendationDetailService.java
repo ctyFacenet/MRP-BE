@@ -146,6 +146,12 @@ public class PurchaseRecommendationDetailService {
             .dataCount(count);
     }
 
+    public PageResponse<List<String>> getItemsHasRecommendation(String purchaseRecommendationId) {
+        return new PageResponse<List<String>>()
+            .result("00", "Thành công", true)
+            .data(purchaseRecommendationBatchRepository.getAllItemHasSend(purchaseRecommendationId));
+    }
+
     public PageResponse<ItemPriceOfVendorListDTO> getAllPriceOfItem(String itemCode, Integer purchaseRecommendationId, PageFilterInput<Double> input) throws JsonProcessingException {
         PurchaseRecommendationDetailEntity purchaseRecommendationDetailEntity = purchaseRecommendationDetailRepository.findByPRIdAndItemCode(purchaseRecommendationId, itemCode);
         if (purchaseRecommendationDetailEntity == null)
