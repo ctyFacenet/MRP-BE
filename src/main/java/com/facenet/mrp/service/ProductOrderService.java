@@ -480,15 +480,8 @@ public class ProductOrderService {
         List<MrpDetailDTO> mrpDetailDTOS = getListBtp(productOrderDetails.getProductCode(),productOrderDetails.getBomVersion());
         System.out.println("----------------------------danh sách bom type btp: "+mrpDetailDTOS.size());
 
-        List<String> itemList = new ArrayList<>();
-        List<MrpDetailDTO> mrpDetailDTOList = new ArrayList<>();
-        for (MrpDetailDTO mrpDetailDTO: mrpDetailDTOS){
-            if(!itemList.contains(mrpDetailDTO.getItemCode())){
-                mrpDetailDTOList.add(mrpDetailDTO);
-            }
-        }
         List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
-        for(MrpDetailDTO mrpDetailDTO: mrpDetailDTOList){
+        for(MrpDetailDTO mrpDetailDTO: mrpDetailDTOS){
             PlanningProductionOrder donHang = new PlanningProductionOrder();
             donHang.setId(UUID.randomUUID());
             donHang.setProductOrderId(productOrder.getProductOrderCode());
@@ -552,10 +545,14 @@ public class ProductOrderService {
     private  List<MrpDetailDTO> getListBtp(String code, String version){
         //TODO sua lai
         List<MrpDetailDTO> bomItems = coittRepository.getAllMrpProductBomList(code,version);
+        List<String> list = new ArrayList<>();
         if (!CollectionUtils.isEmpty(bomItems)) {
             for (MrpDetailDTO bomItem : bomItems) {
                 if (bomItem.getGroupItemInt()== Constants.TP || bomItem.getGroupItemInt() == Constants.BTP) {
-                    itemList.add(new MrpDetailDTO(bomItem));
+                    if(!list.contains(bomItem.getItemCode())){
+                        itemList.add(new MrpDetailDTO(bomItem));
+                        list.add(bomItem.getItemCode());
+                    }
                     if(bomItem.getBomVersion() != null){
                         getListBtp(bomItem.getItemCode(),bomItem.getBomVersion());
                     }
