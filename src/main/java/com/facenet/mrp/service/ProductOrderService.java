@@ -483,7 +483,7 @@ public class ProductOrderService {
         List<String> itemList = new ArrayList<>();
         List<MrpDetailDTO> mrpDetailDTOList = new ArrayList<>();
         for (MrpDetailDTO mrpDetailDTO: mrpDetailDTOS){
-            if(itemList.contains(mrpDetailDTO.getItemCode())){
+            if(!itemList.contains(mrpDetailDTO.getItemCode())){
                 mrpDetailDTOList.add(mrpDetailDTO);
             }
         }
