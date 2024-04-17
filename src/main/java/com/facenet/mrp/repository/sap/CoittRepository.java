@@ -62,6 +62,18 @@ public interface CoittRepository extends JpaRepository<CoittEntity,Integer> {
         @Param("bomVersion")String bomVersion
     );
 
+    @Query(value = "select distinct new com.facenet.mrp.service.dto.mrp.MrpDetailDTO(ci.uItemCode, ci.uItemName, ci.uAlter, ci.uQuantity, ci.uVersions, oi.itmsGrpCod.itmsGrpCode) " +
+        "from CoittEntity co " +
+        "join Citt1Entity ci on co.docEntry = ci.docEntry " +
+        "join OitmEntity oi on oi.itemCode = ci.uItemCode " +
+        "and co.uActive = '1' " +
+        "and co.uProNo = :itemCode " +
+        "and co.uVersions = :bomVersion")
+    List<MrpDetailDTO> getAllMrpProductBomList(
+        @Param("itemCode")String itemCode,
+        @Param("bomVersion")String bomVersion
+    );
+
     @Query(value = "select new com.facenet.mrp.service.dto.mrp.MrpDetailDTO(ci.uItemCode, ci.uItemName, ci.uAlter, ci.uQuantity, ci.uVersions, oi.itmsGrpCod.itmsGrpCode) " +
         "from CoittEntity co join Citt1Entity ci on co.docEntry = ci.docEntry " +
         "join OitmEntity oi on oi.itemCode = ci.uItemCode " +

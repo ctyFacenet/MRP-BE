@@ -18,7 +18,17 @@ public class BomItemDetailDTO {
     private String vendor;
     private String version;
     private String remark;
-    public BomItemDetailDTO(Integer materialGroup, String materialCode,String materialDescription, String technicalName, String controlLevel, String partNumber, String alternativeMaterial, String location, Double quantity, String unit, String warehouse, String issueMethod, String vendor, String version, String remark) {
+    private Integer level;
+
+    public Integer getLevel() {
+        return level;
+    }
+
+    public void setLevel(Integer level) {
+        this.level = level;
+    }
+
+    public BomItemDetailDTO(Integer materialGroup, String materialCode, String materialDescription, String technicalName, String controlLevel, String partNumber, String alternativeMaterial, String location, Double quantity, String unit, String warehouse, String issueMethod, String vendor, String version, String remark) {
         this.materialGroup = materialGroup;
         this.materialCode = materialCode;
         this.materialDescription = materialDescription;
