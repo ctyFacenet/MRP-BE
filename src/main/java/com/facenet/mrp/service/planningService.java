@@ -90,8 +90,11 @@ public class planningService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(accessToken);
         HttpEntity<String> httpEntity = new HttpEntity<>(headers);
+        String chuoiCanXoa = "RAL-SO-";
 
-        String callWo = apiListWo+productOrder;
+        // Sử dụng phương thức replace() để xóa chuỗi con
+        String newProductOrder = productOrder.replace(chuoiCanXoa, "");
+        String callWo = apiListWo+newProductOrder;
         ResponseEntity<List<WorkOrder>> response = restTemplate.exchange(
             callWo,
             HttpMethod.GET,
