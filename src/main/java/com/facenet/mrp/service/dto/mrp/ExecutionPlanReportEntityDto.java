@@ -1,8 +1,11 @@
 package com.facenet.mrp.service.dto.mrp;
 
 import com.facenet.mrp.domain.mrp.ExecutionPlanReportEntity;
+import com.facenet.mrp.service.dto.BaseDynamicDTO;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.Value;
 
 import javax.validation.constraints.Size;
@@ -14,7 +17,10 @@ import java.time.Instant;
  */
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExecutionPlanReportEntityDto implements Serializable {
+@Getter
+@Setter
+public class ExecutionPlanReportEntityDto extends BaseDynamicDTO implements Serializable {
+    Boolean isActive;
     Long id;
     @Size(max = 50)
     String nameCompare;

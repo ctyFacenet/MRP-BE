@@ -699,15 +699,22 @@ public class MrpAdvancedAnalysisServiceV3 {
                 holdBeforeDate.setTime(currentDate.getTime());
             }
 
+            // isPassFirstDate Kỳ đầu tiên
             if (isPassFirstDate) {
                 itemResult.setSumPoAndDeliveringQuantity(
                     Math.max(
-                        currentItem.getDetailResult().get(i-1).getReadyQuantity()
-                        - currentItem.getDetailResult().get(i-1).getOriginQuantity(), 0.0
+                        currentItem.getDetailResult().get(i-1).getReadyQuantity() - currentItem.getDetailResult().get(i-1).getOriginQuantity(), 0.0
                     )
                 );
             }
-            if (parentIte.getLandmark().equals(itemStartDate)) isPassFirstDate = true;
+
+            if (parentIte.getLandmark().equals(itemStartDate)) {
+                isPassFirstDate = true;
+
+            }
+
+
+
 
             itemResult.setInStockQuantity(lastInStockQuantity);
             itemResult.setReadyQuantity(

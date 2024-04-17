@@ -67,6 +67,8 @@ public class Constants {
         int PROFILE = 21;
 
         int TECH_FORM = 22;
+        int EXECUTION_PLAN_REPORT = 30;
+        int EXECUTION_PLAN_REPORT_DETAIL = 31;
         // int SELL_ORDER = 101;
         // int OUTSOURCE_SELL_ORDER = 102;
         // int DESIGN_FILE = 103;
