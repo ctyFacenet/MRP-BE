@@ -17,12 +17,21 @@ public class BomDTO {
     private String status;
     private Long quantity;
     private String warehouse;
+    private Double quota;
+
+    public Double getQuota() {
+        return quota;
+    }
+
+    public void setQuota(Double quota) {
+        this.quota = quota;
+    }
 
     public BomDTO() {
     }
 
     @QueryProjection
-    public BomDTO(String productCode, String description, String version, String speciality, String remark, String docUrl, Date fromDate, Date toDate, Date createTime, String status, Long quantity, String warehouse) {
+    public BomDTO(Double quota,String productCode, String description, String version, String speciality, String remark, String docUrl, Date fromDate, Date toDate, Date createTime, String status, Long quantity, String warehouse) {
         this.productCode = productCode;
         this.description = description;
         this.version = version;
@@ -35,6 +44,7 @@ public class BomDTO {
         this.status = status;
         this.quantity = quantity;
         this.warehouse = warehouse;
+        this.quota = quota;
     }
 
     public String getProductCode() {

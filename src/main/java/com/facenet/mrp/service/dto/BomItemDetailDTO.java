@@ -19,6 +19,7 @@ public class BomItemDetailDTO {
     private String version;
     private String remark;
     private Integer level;
+    private String rootMaterial;
 
     public Integer getLevel() {
         return level;
@@ -28,6 +29,9 @@ public class BomItemDetailDTO {
         this.level = level;
     }
 
+    public BomItemDetailDTO(){
+
+    }
     public BomItemDetailDTO(Integer materialGroup, String materialCode, String materialDescription, String technicalName, String controlLevel, String partNumber, String alternativeMaterial, String location, Double quantity, String unit, String warehouse, String issueMethod, String vendor, String version, String remark) {
         this.materialGroup = materialGroup;
         this.materialCode = materialCode;
@@ -169,5 +173,13 @@ public class BomItemDetailDTO {
 
     public void setMaterialCode(String materialCode) {
         this.materialCode = materialCode;
+    }
+
+    public String getRootMaterial() {
+        return rootMaterial;
+    }
+
+    public void setRootMaterial(String rootMaterial) {
+        this.rootMaterial = rootMaterial;
     }
 }

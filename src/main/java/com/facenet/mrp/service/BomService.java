@@ -49,6 +49,7 @@ public class BomService {
         QOitmEntity qOitmEntity = QOitmEntity.oitmEntity;
         JPAQuery<BomDTO> query = new JPAQueryFactory(entityManager)
             .select(new QBomDTO(
+                qCoittEntity.uQuantity,
                 qCoittEntity.uProNo,
                 qCoittEntity.uProNam,
                 qCoittEntity.uVersions,
@@ -118,14 +119,14 @@ public class BomService {
 
     public CommonResponse<List<BomItemDetailDTO>> getBomDetailV2(String productCode, String version) {
         List<BomItemDetailDTO> list = new ArrayList<>();
-        dequy(list,1,productCode, version);
+        dequy(new BomItemDetailDTO(),list,1,productCode, version);
         if (list == null || list.isEmpty()) throw new CustomException("record.notfound");
         return new CommonResponse<List<BomItemDetailDTO>>()
             .result("00", "Thành công", true)
             .data(list);
     }
 
-    private List<BomItemDetailDTO> dequy(List<BomItemDetailDTO> resultList,Integer count,String productCode, String version){
+    private List<BomItemDetailDTO> dequy(BomItemDetailDTO bomItemDetailDTO,List<BomItemDetailDTO> resultList,Integer count,String productCode, String version){
         List<String> itemList = new ArrayList<>();
         List<BomItemDetailDTO> list = new ArrayList<>();
         List<BomItemDetailDTO> result = coittRepository.getAllItemsOfBom(productCode, version);
@@ -133,6 +134,9 @@ public class BomService {
             if(!itemList.contains(item.getMaterialCode())){
                 itemList.add(item.getMaterialCode());
                 item.setLevel(count);
+                if(bomItemDetailDTO.getMaterialCode() != null){
+                    item.setRootMaterial(bomItemDetailDTO.getMaterialCode());
+                }
                 list.add(item);
             }
         }
@@ -140,7 +144,7 @@ public class BomService {
         for(BomItemDetailDTO item: list){
             if(item.getMaterialGroup().equals("BTP")){
                 count ++;
-                dequy(resultList,count,item.getMaterialCode(), item.getVersion());
+                dequy(item,resultList,count,item.getMaterialCode(), item.getVersion());
             }
         }
         return resultList;

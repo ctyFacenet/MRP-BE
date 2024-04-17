@@ -479,8 +479,16 @@ public class ProductOrderService {
     private List<PlanningProductionOrder> callBomForPo(ProductOrder productOrder, ProductOrderDetail productOrderDetails) throws ParseException {
         List<MrpDetailDTO> mrpDetailDTOS = getListBtp(productOrderDetails.getProductCode(),productOrderDetails.getBomVersion());
         System.out.println("----------------------------danh sách bom type btp: "+mrpDetailDTOS.size());
+
+        List<String> itemList = new ArrayList<>();
+        List<MrpDetailDTO> mrpDetailDTOList = new ArrayList<>();
+        for (MrpDetailDTO mrpDetailDTO: mrpDetailDTOS){
+            if(itemList.contains(mrpDetailDTO.getItemCode())){
+                mrpDetailDTOList.add(mrpDetailDTO);
+            }
+        }
         List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
-        for(MrpDetailDTO mrpDetailDTO: mrpDetailDTOS){
+        for(MrpDetailDTO mrpDetailDTO: mrpDetailDTOList){
             PlanningProductionOrder donHang = new PlanningProductionOrder();
             donHang.setId(UUID.randomUUID());
             donHang.setProductOrderId(productOrder.getProductOrderCode());
@@ -547,7 +555,6 @@ public class ProductOrderService {
         if (!CollectionUtils.isEmpty(bomItems)) {
             for (MrpDetailDTO bomItem : bomItems) {
                 if (bomItem.getGroupItemInt()== Constants.TP || bomItem.getGroupItemInt() == Constants.BTP) {
-                    System.out.println("===========================1: "+bomItem.getQuota());
                     itemList.add(new MrpDetailDTO(bomItem));
                     if(bomItem.getBomVersion() != null){
                         getListBtp(bomItem.getItemCode(),bomItem.getBomVersion());
@@ -555,6 +562,7 @@ public class ProductOrderService {
                 }
             }
         }
+
         System.out.println("-------------------lấy bom:"+itemList);
         return itemList;
     }
