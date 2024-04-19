@@ -1,9 +1,5 @@
 package com.facenet.mrp.service;
 
-import com.facenet.mrp.domain.mrp.MrpOrderQuantityEntity;
-import com.facenet.mrp.domain.mrp.ProductOrder;
-import com.facenet.mrp.domain.mrp.ProductOrderDetail;
-import com.facenet.mrp.domain.mrp.ResultMrpJsonEntity;
 import com.facenet.mrp.repository.MrpAnalysisCache;
 import com.facenet.mrp.repository.mrp.ItemHoldRepository;
 import com.facenet.mrp.repository.mrp.MrpBomDetailRepository;
@@ -13,10 +9,11 @@ import com.facenet.mrp.repository.sap.OitwRepository;
 import com.facenet.mrp.repository.sap.Por1Repository;
 import com.facenet.mrp.repository.sap.Prq1Repository;
 import com.facenet.mrp.service.dto.AdvancedMrpDTO;
-import com.facenet.mrp.service.dto.ProductOrderDTOAPS;
-import com.facenet.mrp.service.dto.ProductOrderDetailDTOAPS;
-import com.facenet.mrp.service.dto.mrp.*;
-
+import com.facenet.mrp.service.dto.mrp.CurrentInventory;
+import com.facenet.mrp.service.dto.mrp.CurrentWarehouseInventory;
+import com.facenet.mrp.service.dto.mrp.ItemQuantityWithDate;
+import com.facenet.mrp.service.dto.mrp.MrpDetailDTO;
+import com.facenet.mrp.service.dto.mrp.MrpResultDTO;
 import com.facenet.mrp.service.dto.request.AnalyticsSearchRequest;
 import com.facenet.mrp.service.utils.Constants;
 import com.facenet.mrp.service.utils.MrpAnalysisUtil;
@@ -25,16 +22,19 @@ import com.facenet.mrp.thread.CloneBomService;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.io.File;
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,8 +52,7 @@ public class MrpAdvancedAnalysisServiceV3 {
     private final MrpOrderQuantityRepository mrpOrderQuantityRepository;
 
 
-    public MrpAdvancedAnalysisServiceV3(CloneBomService bomService, MrpAnalysisCache mrpAnalysisCache, ItemHoldRepository itemHoldRepository, OitwRepository oitwRepository, MrpBomDetailRepository mrpBomDetailRepository, PurchaseRecommendationPlanRepository purchaseRecommendationPlanRepository, Prq1Repository prq1Repository, Por1Repository por1Repository,
-                                        MrpOrderQuantityRepository mrpOrderQuantityRepository) {
+    public MrpAdvancedAnalysisServiceV3(CloneBomService bomService, MrpAnalysisCache mrpAnalysisCache, ItemHoldRepository itemHoldRepository, OitwRepository oitwRepository, MrpBomDetailRepository mrpBomDetailRepository, PurchaseRecommendationPlanRepository purchaseRecommendationPlanRepository, Prq1Repository prq1Repository, Por1Repository por1Repository, MrpOrderQuantityRepository mrpOrderQuantityRepository) {
         this.bomService = bomService;
         this.mrpAnalysisCache = mrpAnalysisCache;
         this.itemHoldRepository = itemHoldRepository;
@@ -136,14 +135,12 @@ public class MrpAdvancedAnalysisServiceV3 {
                 }
             }
         } else if (filter.getProductName() != null && filter.getProductCode() != null) {
-            if (firstDto.getItemName().contains(filter.getProductName())
-                && firstDto.getItemCode().contains(filter.getProductCode())) {
+            if (firstDto.getItemName().contains(filter.getProductName()) && firstDto.getItemCode().contains(filter.getProductCode())) {
 
                 listDetailSearch.add(firstDto);
             } else {
                 for (MrpDetailDTO child : childDto.getChildren()) {
-                    if (child.getItemName().contains(filter.getProductName())
-                        && child.getItemCode().contains(filter.getProductCode())) {
+                    if (child.getItemName().contains(filter.getProductName()) && child.getItemCode().contains(filter.getProductCode())) {
                         listDetailSearch.add(firstDto);
                         break;
                     }
@@ -204,17 +201,9 @@ public class MrpAdvancedAnalysisServiceV3 {
 //            );
         if (advancedMrpDTO.getAnalysisType() == Constants.AnalysisType.NEW) {
             if (isFirstTime) {
-                itemHoldQuantity = itemHoldRepository.getAllHoldQuantityItemMap(
-                    advancedMrpDTO.getWarehouseAnalysis(),
-                    DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH),
-                    totalEndTime.getTime()
-                );
+                itemHoldQuantity = itemHoldRepository.getAllHoldQuantityItemMap(advancedMrpDTO.getWarehouseAnalysis(), DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH), totalEndTime.getTime());
             } else {
-                itemHoldQuantity = itemHoldRepository.getAllHoldQuantityItemMapExceptMrpCode(
-                    DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH),
-                    totalEndTime.getTime(),
-                    advancedMrpDTO.getMrpCode()
-                );
+                itemHoldQuantity = itemHoldRepository.getAllHoldQuantityItemMapExceptMrpCode(DateUtils.truncate(new Date(), Calendar.DAY_OF_MONTH), totalEndTime.getTime(), advancedMrpDTO.getMrpCode());
             }
         }
 
@@ -240,25 +229,7 @@ public class MrpAdvancedAnalysisServiceV3 {
         for (MrpDetailDTO detailDTO : advancedMrpDTO.getResultData()) {
             parentPath = "_" + detailDTO.getItemCode();
             long startTime = System.currentTimeMillis();
-            analysisSingleProduct(
-                detailDTO,
-                itemOnDuplicateMap,
-                additionalItemInBomMap,
-                inStockQuantityMap,
-                inStockQuantityMapWithWhsCode,
-                prQuantityMap,
-                poQuantityMap,
-                itemHoldQuantity,
-                itemHoldQuantityByWhs,
-                itemOnOrderQuantityMap,
-                allTime,
-                totalStartTime,
-                totalEndTime,
-                advancedMrpDTO.getAnalysisPeriod(),
-                advancedMrpDTO.getSoCode(),
-                1,
-                parentPath
-            );
+            analysisSingleProduct(detailDTO, itemOnDuplicateMap, additionalItemInBomMap, inStockQuantityMap, inStockQuantityMapWithWhsCode, prQuantityMap, poQuantityMap, itemHoldQuantity, itemHoldQuantityByWhs, itemOnOrderQuantityMap, allTime, totalStartTime, totalEndTime, advancedMrpDTO.getAnalysisPeriod(), advancedMrpDTO.getSoCode(), 1, parentPath);
 //            System.err.println("Time to analysis " + detailDTO.getItemCode() + ": " + (System.currentTimeMillis() - startTime) + "ms");
             log.info("Time to analysis " + detailDTO.getItemCode() + ": " + (System.currentTimeMillis() - startTime) + "ms");
         }
@@ -292,7 +263,7 @@ public class MrpAdvancedAnalysisServiceV3 {
                     }
                 }
                 boolean isPassMinDate = false;
-
+                boolean isZero = false;
                 double lastInStockQuantity = result.get(0).getOriginQuantity();
                 for (int i = 1; i < result.size(); i++) {
                     // Calculate sum of origin quantity
@@ -310,13 +281,15 @@ public class MrpAdvancedAnalysisServiceV3 {
                     if (currentDate.equals(minDate)) {
                         mrpResultDTO.setDeliveringQuantity(deliveringQuantity);
                         mrpResultDTO.setPoQuantity(poQuantity);
+                        if (mrpResultDTO.getSumPoAndDeliveringQuantity() == 0.0) {
+                            isZero = true;
+                        }
                     } else if (currentDate.compareTo(minDate) > 0) {
-                        mrpResultDTO.setSumPoAndDeliveringQuantity(
-                            Math.max(
-                                result.get(i-1).getReadyQuantity()
-                                - result.get(i-1).getTotalOriginQuantity(), 0
-                            )
-                        );
+                        if (!isZero) {
+                            mrpResultDTO.setSumPoAndDeliveringQuantity(Math.max(result.get(i - 1).getReadyQuantity() - result.get(i - 1).getTotalOriginQuantity(), 0));
+                        } else {
+                            mrpResultDTO.setSumPoAndDeliveringQuantity(0.0);
+                        }
                     }
 
                     Date lastDate = new Date();
@@ -357,8 +330,7 @@ public class MrpAdvancedAnalysisServiceV3 {
 //                    }
 
                     mrpResultDTO.setInStockQuantity(lastInStockQuantity);
-                    mrpResultDTO.setReadyQuantity(
-                        mrpResultDTO.getInStockQuantity() // Warehouse
+                    mrpResultDTO.setReadyQuantity(mrpResultDTO.getInStockQuantity() // Warehouse
 //                            + mrpResultDTO.getExpectedQuantity() // PR
                             + mrpResultDTO.getSumPoAndDeliveringQuantity() // PR
                             - mrpResultDTO.getRequiredQuantity() // Hold quantity
@@ -376,21 +348,15 @@ public class MrpAdvancedAnalysisServiceV3 {
 //                        lastInStockQuantity = 0.0;
 //                    }
 
-                    lastInStockQuantity = Math.max(lastInStockQuantity
-                        - mrpResultDTO.getTotalOriginQuantity()
-                        - mrpResultDTO.getRequiredQuantity(), 0
-                    );
+                    lastInStockQuantity = Math.max(lastInStockQuantity - mrpResultDTO.getTotalOriginQuantity() - mrpResultDTO.getRequiredQuantity(), 0);
 
                     if (lastResult != null) {
-                        lastResult.setOrderQuantity(
-                            Math.min(mrpResultDTO.getReadyQuantity() - mrpResultDTO.getTotalOriginQuantity(), 0)
-                        );
+                        lastResult.setOrderQuantity(Math.min(mrpResultDTO.getReadyQuantity() - mrpResultDTO.getTotalOriginQuantity(), 0));
 
                         if (result.get(i).getSumPoAndDeliveringQuantity() > 0) {
                             lastResult.setNeedQuantity(
                                 // Always < 0, ignore > 0
-                                Math.min(mrpResultDTO.getInStockQuantity() - mrpResultDTO.getTotalOriginQuantity(), 0)
-                            );
+                                Math.min(mrpResultDTO.getInStockQuantity() - mrpResultDTO.getTotalOriginQuantity(), 0));
                         }
                     }
                 }
@@ -419,25 +385,7 @@ public class MrpAdvancedAnalysisServiceV3 {
         return advancedMrpDTO;
     }
 
-    public void analysisSingleProduct(
-        MrpDetailDTO mrpDetailDTO,
-        Map<String, List<List<MrpResultDTO>>> itemOnDuplicateMap,
-        Map<String, List<MrpDetailDTO>> additionalItemInBomMap,
-        Map<String, Double> inStockQuantityMap,
-        Map<String, List<CurrentWarehouseInventory>> inStockQuantityMapWithWhsCode,
-        Map<String, Double> prQuantityMap,
-        Map<String, Double> poQuantityMap,
-        Map<String, List<ItemQuantityWithDate>> itemHoldQuantity,
-        Map<String, List<ItemQuantityWithDate>> itemHoldQuantityByWhs,
-        Map<String, List<ItemQuantityWithDate>> itemOnOrderQuantityMap,
-        List<Date> allTime,
-        Calendar totalStartTime,
-        Calendar totalEndTime,
-        String analysisPeriod,
-        String soCode,
-        Integer countLevel,
-        String parentPath
-    ) throws ParseException {
+    public void analysisSingleProduct(MrpDetailDTO mrpDetailDTO, Map<String, List<List<MrpResultDTO>>> itemOnDuplicateMap, Map<String, List<MrpDetailDTO>> additionalItemInBomMap, Map<String, Double> inStockQuantityMap, Map<String, List<CurrentWarehouseInventory>> inStockQuantityMapWithWhsCode, Map<String, Double> prQuantityMap, Map<String, Double> poQuantityMap, Map<String, List<ItemQuantityWithDate>> itemHoldQuantity, Map<String, List<ItemQuantityWithDate>> itemHoldQuantityByWhs, Map<String, List<ItemQuantityWithDate>> itemOnOrderQuantityMap, List<Date> allTime, Calendar totalStartTime, Calendar totalEndTime, String analysisPeriod, String soCode, Integer countLevel, String parentPath) throws ParseException {
         String whsName = mrpDetailDTO.getWhsName();
         Calendar totalCheckStartTime = Calendar.getInstance();
         Calendar beforeDate = Calendar.getInstance();
@@ -460,8 +408,7 @@ public class MrpAdvancedAnalysisServiceV3 {
             resultTpDTO = new MrpResultDTO();
             String landMark = simpleDateFormat.format(date);
             resultTpDTO.setLandmark(landMark);
-            if (analysisDateIndex < mrpDetailDTO.getDetailResult().size()
-                && landMark.equals(mrpDetailDTO.getDetailResult().get(analysisDateIndex).getLandmark())) {
+            if (analysisDateIndex < mrpDetailDTO.getDetailResult().size() && landMark.equals(mrpDetailDTO.getDetailResult().get(analysisDateIndex).getLandmark())) {
                 resultTpDTO.setOriginQuantity(mrpDetailDTO.getDetailResult().get(analysisDateIndex++).getOriginQuantity());
             }
             detailResult.add(resultTpDTO);
@@ -471,25 +418,7 @@ public class MrpAdvancedAnalysisServiceV3 {
             String parentPathBtp = mrpDetailBtpDTO.getParentPath() + "_" + mrpDetailBtpDTO.getItemCode();
 //            System.err.println("parent " + mrpDetailDTO.getItemCode() + " " + parentPathBtp);
 //            System.err.println(mrpDetailBtpDTO);
-            analysisSingleProduct(
-                mrpDetailBtpDTO,
-                itemOnDuplicateMap,
-                additionalItemInBomMap,
-                inStockQuantityMap,
-                inStockQuantityMapWithWhsCode,
-                prQuantityMap,
-                poQuantityMap,
-                itemHoldQuantity,
-                itemHoldQuantityByWhs,
-                itemOnOrderQuantityMap,
-                allTime,
-                totalStartTime,
-                totalEndTime,
-                analysisPeriod,
-                soCode,
-                countLevel + 1,
-                parentPathBtp
-            );
+            analysisSingleProduct(mrpDetailBtpDTO, itemOnDuplicateMap, additionalItemInBomMap, inStockQuantityMap, inStockQuantityMapWithWhsCode, prQuantityMap, poQuantityMap, itemHoldQuantity, itemHoldQuantityByWhs, itemOnOrderQuantityMap, allTime, totalStartTime, totalEndTime, analysisPeriod, soCode, countLevel + 1, parentPathBtp);
         }
         //TODO lấy bm ở đây
         //query lấy children mức NVL của sản phẩm
@@ -514,25 +443,7 @@ public class MrpAdvancedAnalysisServiceV3 {
         long start = System.currentTimeMillis();
         //Phân tích ở level2 cho mức NVL của sản phẩm
 
-        analysisLevelNvl(
-            mrpDetailDTO,
-            itemOnDuplicateMap,
-            itemStartDate,
-            inStockQuantityMap,
-            inStockQuantityMapWithWhsCode,
-            prQuantityMap,
-            poQuantityMap,
-            itemHoldQuantity,
-            itemHoldQuantityByWhs,
-            itemOnOrderQuantityMap,
-            soCode,
-            totalStartTime,
-            totalEndTime,
-            whsName,
-            countLevel,
-            parentPath,
-            analysisPeriod
-        );
+        analysisLevelNvl(mrpDetailDTO, itemOnDuplicateMap, itemStartDate, inStockQuantityMap, inStockQuantityMapWithWhsCode, prQuantityMap, poQuantityMap, itemHoldQuantity, itemHoldQuantityByWhs, itemOnOrderQuantityMap, soCode, totalStartTime, totalEndTime, whsName, countLevel, parentPath, analysisPeriod);
 //        System.err.println("Time to analysis NVL " + mrpDetailDTO.getItemCode() + ": " + (System.currentTimeMillis() - start));
         log.info("Time to analysis NVL " + mrpDetailDTO.getItemCode() + ": " + (System.currentTimeMillis() - start));
         //*******************************************************************
@@ -540,25 +451,7 @@ public class MrpAdvancedAnalysisServiceV3 {
 //        mrpDetailDTO.getDetailResult().clear();
     }
 
-    public void analysisLevelNvl(
-        MrpDetailDTO parentItem,
-        Map<String, List<List<MrpResultDTO>>> itemOnDuplicateMap,
-        String itemStartDate,
-        Map<String, Double> inStockQuantityMap,
-        Map<String, List<CurrentWarehouseInventory>> inStockQuantityMapWithWhsCode,
-        Map<String, Double> prQuantityMap,
-        Map<String, Double> poQuantityMap,
-        Map<String, List<ItemQuantityWithDate>> itemHoldQuantity,
-        Map<String, List<ItemQuantityWithDate>> itemHoldQuantityByWhs,
-        Map<String, List<ItemQuantityWithDate>> itemOnOrderQuantityMap,
-        String soCode,
-        Calendar totalStartTime,
-        Calendar totalEndTime,
-        String whsName,
-        Integer level,
-        String parentPath,
-        String analysisPeriod
-    ) throws ParseException {
+    public void analysisLevelNvl(MrpDetailDTO parentItem, Map<String, List<List<MrpResultDTO>>> itemOnDuplicateMap, String itemStartDate, Map<String, Double> inStockQuantityMap, Map<String, List<CurrentWarehouseInventory>> inStockQuantityMapWithWhsCode, Map<String, Double> prQuantityMap, Map<String, Double> poQuantityMap, Map<String, List<ItemQuantityWithDate>> itemHoldQuantity, Map<String, List<ItemQuantityWithDate>> itemHoldQuantityByWhs, Map<String, List<ItemQuantityWithDate>> itemOnOrderQuantityMap, String soCode, Calendar totalStartTime, Calendar totalEndTime, String whsName, Integer level, String parentPath, String analysisPeriod) throws ParseException {
         MrpResultDTO mrpResultDTO;
         int countLevel = level + 1;
         double requiredQuantity;
@@ -567,9 +460,7 @@ public class MrpAdvancedAnalysisServiceV3 {
 
         //Vòng lặp để set các thông tin của từng NVL
         for (MrpDetailDTO childItem : parentItem.getChildren()) {
-            if (childItem.getGroupItemInt() == Constants.BTP
-                || childItem.getGroupItemInt() == Constants.TP)
-                continue;
+            if (childItem.getGroupItemInt() == Constants.BTP || childItem.getGroupItemInt() == Constants.TP) continue;
 
             mrpResultDTO = new MrpResultDTO();
 
@@ -582,27 +473,12 @@ public class MrpAdvancedAnalysisServiceV3 {
             childItem.getDetailResult().add(mrpResultDTO);
 
             //lấy result phân tích theo thời gian ở mức NVl
-            analysisNvlByDayWeekMonth(
-                childItem,
-                parentItem,
-                itemStartDate,
-                totalStartTime,
-                totalEndTime,
-                itemOnOrderQuantityMap,
-                poQuantityMap,
-                prQuantityMap,
-                itemHoldQuantity,
-                itemHoldQuantityByWhs,
-                analysisPeriod
-            );
+            analysisNvlByDayWeekMonth(childItem, parentItem, itemStartDate, totalStartTime, totalEndTime, itemOnOrderQuantityMap, poQuantityMap, prQuantityMap, itemHoldQuantity, itemHoldQuantityByWhs, analysisPeriod);
 
             //******************************
 
             //Fill Dữ liệu cho từng NVL
-            childItem.setIsHold(
-                itemHoldQuantity.containsKey(childItem.getItemCode())
-                    || itemHoldQuantityByWhs.containsKey(childItem.getItemCode())
-            );
+            childItem.setIsHold(itemHoldQuantity.containsKey(childItem.getItemCode()) || itemHoldQuantityByWhs.containsKey(childItem.getItemCode()));
             childItem.setRequiredQuantity(requiredQuantity);
             // SL sẵn sàng
 //            mrpDetailNVL.setInStockQuantity(mrpResultDTOList.get(0).getReadyQuantity());
@@ -620,18 +496,7 @@ public class MrpAdvancedAnalysisServiceV3 {
     }
 
 
-    public void analysisNvlByDayWeekMonth(
-        MrpDetailDTO currentItem,
-        MrpDetailDTO parentItem,
-        String itemStartDate,
-        Calendar totalStartTime,
-        Calendar totalEndTime,
-        Map<String, List<ItemQuantityWithDate>> itemOnOrderQuantityMap,
-        Map<String, Double> poQuantity,
-        Map<String, Double> prQuantity,
-        Map<String, List<ItemQuantityWithDate>> itemHoldQuantity,
-        Map<String, List<ItemQuantityWithDate>> itemHoldQuantityByWhs,
-        String analysisPeriod) throws ParseException {
+    public void analysisNvlByDayWeekMonth(MrpDetailDTO currentItem, MrpDetailDTO parentItem, String itemStartDate, Calendar totalStartTime, Calendar totalEndTime, Map<String, List<ItemQuantityWithDate>> itemOnOrderQuantityMap, Map<String, Double> poQuantity, Map<String, Double> prQuantity, Map<String, List<ItemQuantityWithDate>> itemHoldQuantity, Map<String, List<ItemQuantityWithDate>> itemHoldQuantityByWhs, String analysisPeriod) throws ParseException {
         Calendar totalCheckStartTime = Calendar.getInstance();
         Calendar totalCheckEndTime = Calendar.getInstance();
 
@@ -643,7 +508,7 @@ public class MrpAdvancedAnalysisServiceV3 {
         double lastInStockQuantity = currentItem.getDetailResult().get(0).getOriginQuantity();
         boolean isPassFirstDate = false;
         boolean isStart = false;
-
+        boolean isZero = false;
         Date beforeDate = new Date(Long.MIN_VALUE);
         Date holdBeforeDate = new Date(Long.MIN_VALUE);
 
@@ -658,21 +523,21 @@ public class MrpAdvancedAnalysisServiceV3 {
             // Find last date
             Date lastDate = new Date();
             switch (analysisPeriod) {
-            case "Ngày":
-                lastDate = DateUtils.addDays(currentDate, -1);
-                break;
-            case "Tuần":
-                lastDate = DateUtils.addDays(currentDate, -7);
-                break;
-            case "1/2 tuần":
-                lastDate = DateUtils.addDays(currentDate, -3);
-                break;
-            case "2 Tuần":
-                lastDate = DateUtils.addDays(currentDate, -14);
-                break;
-            case "Tháng":
-                lastDate = DateUtils.addMonths(currentDate, -1);
-                break;
+                case "Ngày":
+                    lastDate = DateUtils.addDays(currentDate, -1);
+                    break;
+                case "Tuần":
+                    lastDate = DateUtils.addDays(currentDate, -7);
+                    break;
+                case "1/2 tuần":
+                    lastDate = DateUtils.addDays(currentDate, -3);
+                    break;
+                case "2 Tuần":
+                    lastDate = DateUtils.addDays(currentDate, -14);
+                    break;
+                case "Tháng":
+                    lastDate = DateUtils.addMonths(currentDate, -1);
+                    break;
             }
             String lastDateStr = simpleDateFormat.format(lastDate);
             MrpResultDTO lastResult = null;
@@ -694,31 +559,31 @@ public class MrpAdvancedAnalysisServiceV3 {
             if (isStart) {
 //                MrpAnalysisUtil.setHoldQuantityV3(
 //                    currentItem, itemResult, holdBeforeDate, currentDate, itemHoldQuantityByWhs, simpleDateFormat);
-                MrpAnalysisUtil.setHoldQuantityV3(
-                    currentItem, itemResult, holdBeforeDate, currentDate, itemHoldQuantity, simpleDateFormat);
+                MrpAnalysisUtil.setHoldQuantityV3(currentItem, itemResult, holdBeforeDate, currentDate, itemHoldQuantity, simpleDateFormat);
                 holdBeforeDate.setTime(currentDate.getTime());
             }
 
             // isPassFirstDate Kỳ đầu tiên
             if (isPassFirstDate) {
-                itemResult.setSumPoAndDeliveringQuantity(
-                    Math.max(
-                        currentItem.getDetailResult().get(i-1).getReadyQuantity() - currentItem.getDetailResult().get(i-1).getOriginQuantity(), 0.0
-                    )
-                );
+                if (isZero) {
+                    itemResult.setSumPoAndDeliveringQuantity(0.0);
+                } else {
+                    itemResult.setSumPoAndDeliveringQuantity(Math.max(currentItem.getDetailResult().get(i - 1).getReadyQuantity() - currentItem.getDetailResult().get(i - 1).getOriginQuantity(), 0.0));
+                }
+
+
             }
 
             if (parentIte.getLandmark().equals(itemStartDate)) {
                 isPassFirstDate = true;
-
+                if (itemResult.getSumPoAndDeliveringQuantity() == 0.0) {
+                    isZero = true;
+                }
             }
 
 
-
-
             itemResult.setInStockQuantity(lastInStockQuantity);
-            itemResult.setReadyQuantity(
-                itemResult.getInStockQuantity() // Warehouse
+            itemResult.setReadyQuantity(itemResult.getInStockQuantity() // Warehouse
 //                    + mrpResultDTO.getExpectedQuantity() // PR
                     + itemResult.getSumPoAndDeliveringQuantity() // PR
                     - itemResult.getRequiredQuantity() // Hold quantity
@@ -735,21 +600,14 @@ public class MrpAdvancedAnalysisServiceV3 {
 //                }
 //                lastInStockQuantity = 0.0;
 //            }
-            lastInStockQuantity = Math.max(
-                lastInStockQuantity
-                    - itemResult.getOriginQuantity()
-                    - itemResult.getRequiredQuantity(), 0
-            );
+            lastInStockQuantity = Math.max(lastInStockQuantity - itemResult.getOriginQuantity() - itemResult.getRequiredQuantity(), 0);
             if (lastResult != null) {
-                lastResult.setOrderQuantity(
-                    Math.min(itemResult.getReadyQuantity() - itemResult.getOriginQuantity(), 0.0)
-                );
+                lastResult.setOrderQuantity(Math.min(itemResult.getReadyQuantity() - itemResult.getOriginQuantity(), 0.0));
 
                 if (itemResult.getSumPoAndDeliveringQuantity() > 0) {
                     lastResult.setNeedQuantity(
                         // Always < 0, ignore > 0
-                        Math.min(itemResult.getInStockQuantity() - itemResult.getTotalOriginQuantity(), 0)
-                    );
+                        Math.min(itemResult.getInStockQuantity() - itemResult.getTotalOriginQuantity(), 0));
                 }
             }
 
@@ -797,12 +655,7 @@ public class MrpAdvancedAnalysisServiceV3 {
      * @param analysisPeriod
      * @return
      */
-    public List<Date> generateDate(
-        Calendar startTime,
-        Calendar endTime,
-        List<Date> listTime,
-        String analysisPeriod
-    ) {
+    public List<Date> generateDate(Calendar startTime, Calendar endTime, List<Date> listTime, String analysisPeriod) {
         List<Date> allTime = new ArrayList<>();
         Calendar dateIte = Calendar.getInstance();
         dateIte.setTime(startTime.getTime());
@@ -825,14 +678,7 @@ public class MrpAdvancedAnalysisServiceV3 {
      * @param listTimeIndex  index hiện tại cuả listTime
      * @return listTimeIndex để xác định ngày cuối
      */
-    private int generateDate(
-        List<Date> allTime,
-        Calendar dateIte,
-        Calendar endTime,
-        List<Date> listTime,
-        String analysisPeriod,
-        int listTimeIndex
-    ) {
+    private int generateDate(List<Date> allTime, Calendar dateIte, Calendar endTime, List<Date> listTime, String analysisPeriod, int listTimeIndex) {
         while (dateIte.compareTo(endTime) <= 0) {
 //            System.err.println("\nCurrent date " + simpleDateFormat.format(dateIte.getTime()));
             if (dateIte.getTime().after(listTime.get(listTimeIndex))) {
