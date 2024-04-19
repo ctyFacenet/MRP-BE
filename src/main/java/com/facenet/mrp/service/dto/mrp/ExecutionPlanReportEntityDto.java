@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Value;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.Size;
 import java.io.Serializable;
@@ -15,8 +16,6 @@ import java.time.Instant;
 /**
  * DTO for {@link ExecutionPlanReportEntity}
  */
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
 public class ExecutionPlanReportEntityDto extends BaseDynamicDTO implements Serializable {
@@ -28,4 +27,17 @@ public class ExecutionPlanReportEntityDto extends BaseDynamicDTO implements Seri
     Double totalQuantity;
     Instant startDate;
     Instant endDate;
+
+    public ExecutionPlanReportEntityDto() {
+    }
+
+    public ExecutionPlanReportEntityDto(Boolean isActive, Long id, String nameCompare, Integer type, Double totalQuantity, Instant startDate, Instant endDate) {
+        this.isActive = isActive;
+        this.id = id;
+        this.nameCompare = nameCompare;
+        this.type = type;
+        this.totalQuantity = totalQuantity;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
 }

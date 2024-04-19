@@ -34,7 +34,7 @@ public class ExecutionPlanReportDetailQuantityEntity {
     @Column(name = "quantity")
     private Integer quantity;
 
-    @Column(name = "order")
-    private Integer order;
+    @Column(name = "stt")
+    private Integer stt;
 
 }

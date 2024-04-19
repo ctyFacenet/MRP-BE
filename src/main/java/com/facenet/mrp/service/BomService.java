@@ -119,6 +119,7 @@ public class BomService {
 
     public CommonResponse<List<BomItemDetailDTO>> getBomDetailV2(String productCode, String version) {
         List<BomItemDetailDTO> list = new ArrayList<>();
+        System.out.println("---------------"+productCode);
         dequy(new BomItemDetailDTO(),list,1,productCode, version);
         if (list == null || list.isEmpty()) throw new CustomException("record.notfound");
         return new CommonResponse<List<BomItemDetailDTO>>()
@@ -134,7 +135,9 @@ public class BomService {
             if(!itemList.contains(item.getMaterialCode())){
                 itemList.add(item.getMaterialCode());
                 item.setLevel(count);
-                if(bomItemDetailDTO.getMaterialCode() != null){
+                if(count == 1){
+                    item.setRootMaterial(productCode);
+                }else if(bomItemDetailDTO.getMaterialCode() != null){
                     item.setRootMaterial(bomItemDetailDTO.getMaterialCode());
                 }
                 list.add(item);

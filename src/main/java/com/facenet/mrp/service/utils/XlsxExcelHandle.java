@@ -35,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 
+import static com.facenet.mrp.service.utils.ExcelUtils.getIntegerCellValue;
 import static com.facenet.mrp.service.utils.ExcelUtils.getStringCellValue;
 import static org.apache.poi.ss.usermodel.CellType.STRING;
 
@@ -495,4 +496,52 @@ public class XlsxExcelHandle {
 
         itemVendorMap.put(itemCode, vendorCode);
     }
+
+    public List<ExecutionPlanReportDetailEntity> convertToReport(InputStream fis) throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook(fis);
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        Row headerRow = sheet.getRow(0); // Lấy hàng đầu tiên (tiêu đề)
+
+        int columnCount = headerRow.getLastCellNum();
+        // Lấy ra Iterator cho tất cả các dòng của sheet hiện tại.
+        boolean skipFirst = false;
+        ArrayList<ExecutionPlanReportDetailEntity> result;
+        List<ExecutionPlanReportDetailEntity> listHashMap  = new ArrayList<>();
+        ExecutionPlanReportDetailEntity emp;
+        for (Row row : sheet) {
+            // Lấy Iterator cho tất cả các cell của dòng hiện tại.
+            Iterator<Cell> cellIterator = row.cellIterator();
+            if(skipFirst) {
+                emp = excelToExecutionPlanReportDetail(columnCount,row);
+                if(emp == null){
+                    continue;
+                }else {
+                    listHashMap.add(emp);
+                }
+
+            } else skipFirst = true;
+
+        }
+        return listHashMap;
+    }
+
+    private ExecutionPlanReportDetailEntity excelToExecutionPlanReportDetail(int columnCount,Row row){
+        ExcelUtils.validateRow(row, 0, columnCount-1);
+        ExecutionPlanReportDetailEntity planReportDetailEntity = new ExecutionPlanReportDetailEntity();
+        planReportDetailEntity.setPlanReportDetail(new ArrayList<>());
+
+        planReportDetailEntity.setProductCode(getStringCellValue(row.getCell(0)));
+        planReportDetailEntity.setProductName(getStringCellValue(row.getCell(1)));
+        planReportDetailEntity.setVersion(getStringCellValue(row.getCell(2)));
+        planReportDetailEntity.setTotalQuantity(getIntegerCellValue(row.getCell(3)));
+
+        for (int i = 4; i < columnCount; i++){
+            ExecutionPlanReportDetailQuantityEntity detailQuantityEntity = new ExecutionPlanReportDetailQuantityEntity();
+            detailQuantityEntity.setQuantity(getIntegerCellValue(row.getCell(i)));
+            detailQuantityEntity.setStt(i-3);
+            planReportDetailEntity.getPlanReportDetail().add(detailQuantityEntity);
+        }
+        return planReportDetailEntity;
+    }
+
 }

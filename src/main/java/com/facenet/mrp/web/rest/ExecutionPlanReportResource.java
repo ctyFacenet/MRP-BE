@@ -6,12 +6,10 @@ import com.facenet.mrp.service.dto.mrp.ExecutionPlanReportEntityDto;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.model.PageFilterInput;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/execution-plan-report-compare")
@@ -27,9 +25,10 @@ public class ExecutionPlanReportResource {
     }
 
 
+    //TODO đối chiếu kế hoạch
     @PostMapping(value = "/new")
-    public CommonResponse addExecutionPlanReport(@RequestBody ExecutionPlanReportEntityDto entityDto) {
-        return new CommonResponse().success().data(executionPlanReportService.addExecutionPlanReport(entityDto));
+    public CommonResponse addExecutionPlanReport(@RequestPart("file") MultipartFile file, @RequestPart("entityDto") ExecutionPlanReportEntityDto entityDto) throws IOException {
+        return new CommonResponse().success().data(executionPlanReportService.addExecutionPlanReport(file,entityDto));
     }
 
     @DeleteMapping(value = "/{id}")
@@ -38,9 +37,14 @@ public class ExecutionPlanReportResource {
         return new CommonResponse().success();
     }
 
+
     @PostMapping(value = "execution-plan-report-detail-compare/")
     public CommonResponse getExecutionPlanReportDetail(@RequestBody PageFilterInput<ExecutionPlanReportDetailEntityDto> input) {
         return new CommonResponse().success().data(executionPlanReportService.getExecutionPlanReportDetail(input));
+    }
+    @GetMapping(value = "/{id}")
+    public CommonResponse getExecutionPlanReport(@PathVariable Long id) {
+        return executionPlanReportService.getExecution(id);
     }
 
 }

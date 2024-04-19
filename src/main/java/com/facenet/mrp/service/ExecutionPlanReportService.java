@@ -1,23 +1,20 @@
 package com.facenet.mrp.service;
 
-import com.facenet.mrp.domain.mrp.ColumnPropertyEntity;
-import com.facenet.mrp.domain.mrp.ExecutionPlanReportDetailEntity;
-import com.facenet.mrp.domain.mrp.ExecutionPlanReportEntity;
-import com.facenet.mrp.domain.mrp.ExecutionPlanReportEntityMapper;
-import com.facenet.mrp.domain.mrp.QExecutionPlanReportDetailEntity;
-import com.facenet.mrp.domain.mrp.QExecutionPlanReportEntity;
-import com.facenet.mrp.domain.mrp.QKeyValueEntityV2;
+import com.facenet.mrp.domain.mrp.*;
 import com.facenet.mrp.repository.mrp.ColumnPropertyRepository;
 import com.facenet.mrp.repository.mrp.ExecutionPlanReportDetailEntityRepository;
 import com.facenet.mrp.repository.mrp.ExecutionPlanReportDetailQuantityEntityRepository;
 import com.facenet.mrp.repository.mrp.ExecutionPlanReportEntityRepository;
 import com.facenet.mrp.repository.mrp.KeyValueV2Repository;
+import com.facenet.mrp.service.dto.ReportDetailPlanDTO;
 import com.facenet.mrp.service.dto.mrp.ExecutionPlanReportDetailEntityDto;
 import com.facenet.mrp.service.dto.mrp.ExecutionPlanReportEntityDto;
+import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.mapper.ExecutionPlanReportDetailEntityMapper;
 import com.facenet.mrp.service.model.PageFilterInput;
 import com.facenet.mrp.service.utils.Constants;
+import com.facenet.mrp.service.utils.XlsxExcelHandle;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Path;
@@ -35,9 +32,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,9 +59,32 @@ public class ExecutionPlanReportService {
     private KeyValueV2Repository keyValueV2Repository;
     @Autowired
     private ColumnPropertyRepository columnPropertyRepository;
+
     @Autowired
     private KeyValueService keyValueService;
 
+    @Autowired
+    private XlsxExcelHandle excelHandle;
+
+
+
+    public CommonResponse getExecution(Long id){
+        List<ExecutionPlanReportDetailEntity> reportDetailEntities = executionPlanReportDetailEntityRepository.getAllById(id);
+        List<ReportDetailPlanDTO> detailPlanDTOS = new ArrayList<>();
+        for (ExecutionPlanReportDetailEntity item: reportDetailEntities){
+            ReportDetailPlanDTO reportDetailPlanDTO = new ReportDetailPlanDTO();
+            reportDetailPlanDTO.setId(item.getId());
+            reportDetailPlanDTO.setProductCode(item.getProductCode());
+            reportDetailPlanDTO.setProductName(item.getProductName());
+            reportDetailPlanDTO.setActive(item.getIsActive());
+            reportDetailPlanDTO.setVersion(item.getVersion());
+            reportDetailPlanDTO.setTotalQuantity(item.getTotalQuantity());
+            reportDetailPlanDTO.setType(executionPlanReportDetailEntityRepository.getType(id));
+            reportDetailPlanDTO.setPlanReportDetail(executionPlanReportDetailQuantityEntityRepository.getAllById(item.getId()));
+            detailPlanDTOS.add(reportDetailPlanDTO);
+        }
+        return new CommonResponse<>().success().data(detailPlanDTOS);
+    }
     @Transactional
     public Page<ExecutionPlanReportEntityDto> getExecutionPlanReport(PageFilterInput<ExecutionPlanReportEntityDto> input) {
 //        return null;
@@ -199,19 +221,26 @@ public class ExecutionPlanReportService {
     }
 
     @Transactional
-    public ExecutionPlanReportEntityDto addExecutionPlanReport(ExecutionPlanReportEntityDto entityDto) {
+    public ExecutionPlanReportEntityDto addExecutionPlanReport(MultipartFile file,ExecutionPlanReportEntityDto entityDto) throws IOException {
         List<ExecutionPlanReportEntity> opSoProductCheckExistCode = executionPlanReportEntityRepository.findExecutionPlanReportEntitiesByNameCompare(entityDto.getNameCompare());
         if (!opSoProductCheckExistCode.isEmpty())
             throw new CustomException(HttpStatus.BAD_REQUEST, "Trùng tên", String.valueOf(entityDto.getId()));
-
         //        if (StringUtils.isEmpty(apsSellOrderProductDTO.getSoCode()))
         //            throw new CustomException(HttpStatus.BAD_REQUEST, "must.have.soCode");
         ExecutionPlanReportEntity apsSellOrderProductEntity = ExecutionPlanReportEntityMapper.INSTANCE.toEntity(entityDto);
-//        apsSellOrderProductEntity.setStatus(4);//set mặc định trạng thái hoạt động khi thêm mới
         apsSellOrderProductEntity.setIsActive(Boolean.TRUE);
         ExecutionPlanReportEntity resultEntity = executionPlanReportEntityRepository.save(apsSellOrderProductEntity);
         ExecutionPlanReportEntityDto resultDto = ExecutionPlanReportEntityMapper.INSTANCE.entityToDTO(resultEntity);
-
+        //phần đọc excel
+        List<ExecutionPlanReportDetailEntity> planReportDetailEntities = excelHandle.convertToReport(file.getInputStream());
+        for (ExecutionPlanReportDetailEntity item: planReportDetailEntities){
+            item.setIdExecutionPlanReport(resultEntity);
+            ExecutionPlanReportDetailEntity detailEntity = executionPlanReportDetailEntityRepository.save(item);
+            for (ExecutionPlanReportDetailQuantityEntity quantityEntity : item.getPlanReportDetail()){
+                quantityEntity.setIdExecutionPlanReportDetail(detailEntity);
+            }
+            executionPlanReportDetailQuantityEntityRepository.saveAll(item.getPlanReportDetail());
+        }
         if (!entityDto.getPropertiesMap().isEmpty()) {
             keyValueService.createUpdateKeyValueOfEntity(Math.toIntExact(apsSellOrderProductEntity.getId()), entityDto.getPropertiesMap(), Constants.EntityType.EXECUTION_PLAN_REPORT, false);
         }
