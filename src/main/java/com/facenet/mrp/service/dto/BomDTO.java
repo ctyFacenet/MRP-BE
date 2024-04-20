@@ -3,7 +3,6 @@ package com.facenet.mrp.service.dto;
 import com.querydsl.core.annotations.QueryProjection;
 
 import java.sql.Date;
-
 public class BomDTO {
     private String productCode;
     private String description;
@@ -18,6 +17,8 @@ public class BomDTO {
     private Long quantity;
     private String warehouse;
     private Double quota;
+    private Integer groupItem;
+    private Integer level;
 
     public Double getQuota() {
         return quota;
@@ -31,7 +32,7 @@ public class BomDTO {
     }
 
     @QueryProjection
-    public BomDTO(Double quota,String productCode, String description, String version, String speciality, String remark, String docUrl, Date fromDate, Date toDate, Date createTime, String status, Long quantity, String warehouse) {
+    public BomDTO(Double quota,String productCode, String description, String version, String speciality, String remark, String docUrl, Date fromDate, Date toDate, Date createTime, String status, Long quantity, String warehouse,Integer groupItem) {
         this.productCode = productCode;
         this.description = description;
         this.version = version;
@@ -45,6 +46,7 @@ public class BomDTO {
         this.quantity = quantity;
         this.warehouse = warehouse;
         this.quota = quota;
+        this.groupItem = groupItem;
     }
 
     public String getProductCode() {
@@ -141,5 +143,21 @@ public class BomDTO {
 
     public void setWarehouse(String warehouse) {
         this.warehouse = warehouse;
+    }
+
+    public Integer getGroupItem() {
+        return groupItem;
+    }
+
+    public void setGroupItem(Integer groupItem) {
+        this.groupItem = groupItem;
+    }
+
+    public Integer getLevel() {
+        return level;
+    }
+
+    public void setLevel(Integer level) {
+        this.level = level;
     }
 }

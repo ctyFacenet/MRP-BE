@@ -37,6 +37,10 @@ public class BomService {
         this.coittRepository = coittRepository;
     }
 
+    public List<String> getListBTP(){
+        return coittRepository.getListBTP();
+    }
+
     /**
      * Lấy danh sách các BOM
      * @param bomDTO
@@ -61,10 +65,11 @@ public class BomService {
                 qCoittEntity.createDate,
                 qCoittEntity.uActive,
                 qOitmEntity.onHand,
-                qCoittEntity.uWhsCod
+                qCoittEntity.uWhsCod,
+                qOitmEntity.itmsGrpCod.itmsGrpCode
             ))
             .from(qCoittEntity)
-            .join(qOitmEntity).on(qCoittEntity.uProNo.eq(qOitmEntity.itemCode))
+            .innerJoin(qOitmEntity).on(qCoittEntity.uProNo.eq(qOitmEntity.itemCode))
             .limit(pageable.getPageSize())
             .offset(pageable.getOffset());
         BooleanBuilder booleanBuilder = new BooleanBuilder();

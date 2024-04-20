@@ -30,7 +30,26 @@ public class BomResource {
     @PostMapping("")
     @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX','BOM','VIEW')")
     public PageResponse<List<BomDTO>> getAllBom(@RequestBody @Valid PageFilterInput<BomFilterInput> input) {
-        return bomService.getAllBom(input);
+        return getLevel(input);
+    }
+
+    @GetMapping("/get")
+    public List<String> get(){
+        List<String> btps = bomService.getListBTP();
+        return btps;
+    }
+
+    private PageResponse<List<BomDTO>> getLevel(PageFilterInput<BomFilterInput> input){
+        PageResponse<List<BomDTO>> pageResponse = bomService.getAllBom(input);
+        List<String> btps = bomService.getListBTP();
+        for (BomDTO bomDTO: pageResponse.getData()){
+            if(bomDTO.getGroupItem() == 104){
+                bomDTO.setLevel(1);
+            }else if(bomDTO.getGroupItem() == 101 && btps.contains(bomDTO.getProductCode())){
+                bomDTO.setLevel(2);
+            }
+        }
+        return pageResponse;
     }
 
     @GetMapping("/get-bom/{productCode}/{version}")

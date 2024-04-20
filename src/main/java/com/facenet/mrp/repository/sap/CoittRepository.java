@@ -144,4 +144,8 @@ public interface CoittRepository extends JpaRepository<CoittEntity,Integer> {
 
     @Query(value = "select a from CoittEntity a where a.uProNo = :productCode")
     List<CoittEntity> getList(@Param("productCode") String productCode);
+
+    @Query(value = "select y.uItemCode from CoittEntity x join Citt1Entity y on x.docEntry = y.docEntry join OitmEntity z on x.uProNo = z.itemCode where y.uVersions is not null and x.uProNo in " +
+        "(select a.uProNo from CoittEntity a join OitmEntity b on a.uProNo = b.itemCode where b.itmsGrpCod.itmsGrpCode = 104)")
+    List<String> getListBTP();
 }
