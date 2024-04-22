@@ -26,6 +26,7 @@ public class Producer {
      */
     @Scheduled(cron = "0 0/5 8-16 * * ?")
     public void sendMessage(){
+		log.info("go to here sendMessage");
         Gson gson = new Gson();
         String topic = "mrp-so";
         List<ContextAlert> alertList = kafkaService.getInfoSoAndFc();
@@ -39,8 +40,9 @@ public class Producer {
     /**
      * cảnh báo nvl,btp trong đơn hàng so và fc
      */
-    @Scheduled(cron = "0 0 8,16 * * ?")
+    @Scheduled(cron = "0 0/5 8-16 * * ?")
     public void sendMessageForItem(){
+		log.info("go to here sendMessageForItem");
         Gson gson = new Gson();
         String topic = "mrp-so-item";
         List<ItemContextAlert> alertList = kafkaService.getInfoItemInSoFc();
