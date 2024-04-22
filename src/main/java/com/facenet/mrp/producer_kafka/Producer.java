@@ -24,7 +24,7 @@ public class Producer {
     /**
      * cảnh báo đơn hàng so và fc
      */
-    @Scheduled(cron = "0 0/5 8-16 * * ?")
+    @Scheduled(cron = "0 0/2 8-23 * * ?")
     public void sendMessage(){
 		log.info("go to here sendMessage");
         Gson gson = new Gson();
@@ -40,7 +40,7 @@ public class Producer {
     /**
      * cảnh báo nvl,btp trong đơn hàng so và fc
      */
-    @Scheduled(cron = "0 0/5 8-16 * * ?")
+    @Scheduled(cron = "0 0/2 8-23 * * ?")
     public void sendMessageForItem(){
 		log.info("go to here sendMessageForItem");
         Gson gson = new Gson();
@@ -48,8 +48,12 @@ public class Producer {
         List<ItemContextAlert> alertList = kafkaService.getInfoItemInSoFc();
         for (ItemContextAlert element:alertList
         ) {
+            log.info("Run run");
             String json = gson.toJson(element);
+            String bootstrapServers = kafkaTemplate.getProducerFactory().getConfigurationProperties().get("bootstrap.servers").toString();
+            System.out.println("Bootstrap Servers: " + bootstrapServers);
             this.kafkaTemplate.send(topic,json);
+            log.info("Successfully");
         }
     }
 }
