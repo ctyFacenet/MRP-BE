@@ -68,6 +68,7 @@ public class KafkaService {
                 long checkTime = rangeTimeCheck / (24 * 60 * 60 * 1000);
                 percent = (checkTime * 100) / poTime;
             } catch (ArithmeticException e) {
+                log.info(e.getMessage());
                 log.info("Error: Division by zero or other arithmetic exception occurred.");
             }
             //thời gian đơn hàng quá 60% thì bắt đầu kiểm tra
@@ -236,6 +237,7 @@ public class KafkaService {
                 long checkTime = rangeTimeCheck / (24 * 60 * 60 * 1000);
                 percent = (checkTime * 100) / poTime;
             } catch (ArithmeticException e) {
+                log.info(e.getMessage());
                 log.info("Error: Division by zero or other arithmetic exception occurred.");
             }
             Double sumPr = sapOnOrderSummaryRepository.sumQuantityItemPr(item.getSoCode(), item.getMrpCode(), item.getItemCode());
