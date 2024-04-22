@@ -355,7 +355,7 @@ public class KafkaService {
         for (ItemContextAlert a : alertList) {
             log.info("----------------------------------" + a.getItemCode() + "/" + a.getSoCode() + "/" + a.getMrpCode() + "/" + a.getPercent() + "/" + a.getStatus());
         }
-        alertItemSoRepository.saveAll(alertItemSoEntityList);
+//        alertItemSoRepository.saveAll(alertItemSoEntityList);
         return alertList;
     }
 
