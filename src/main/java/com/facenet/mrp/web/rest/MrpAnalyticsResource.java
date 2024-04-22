@@ -59,9 +59,9 @@ public class MrpAnalyticsResource {
     public ResponseEntity mrpAnalysis (@RequestBody MrpAnalyticsInput input) throws ParseException {
         AdvancedMrpDTO mrpAnalyticsResult = new AdvancedMrpDTO();
         if (input.getAnalysisMode().equalsIgnoreCase("phân tích cơ bản")){
-            mrpAnalyticsResult = basicAnalysisService.basicAnalysisMRP(input);
+            return basicAnalysisService.basicAnalysisMRP(input);
         } else if (input.getAnalysisMode().equalsIgnoreCase("phân tích nâng cao")) {
-            mrpAnalyticsResult = advancedAnalysisService.estimatedProductionSchedule(input);
+            return advancedAnalysisService.estimatedProductionSchedule(input);
         }
         return ResponseEntity.ok(new CommonResponse<AdvancedMrpDTO>()
             .isOk(true)

@@ -8,6 +8,7 @@ import com.facenet.mrp.repository.sap.Por1Repository;
 import com.facenet.mrp.repository.sap.Prq1Repository;
 import com.facenet.mrp.service.dto.AdvancedMrpDTO;
 import com.facenet.mrp.service.dto.mrp.*;
+import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.mapper.MrpAnalyticsMapper;
 import com.facenet.mrp.service.utils.Constants;
@@ -17,6 +18,7 @@ import com.facenet.mrp.thread.CloneBomService;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -72,7 +74,7 @@ public class MrpBasicAnalysisService {
      * @param input
      * @return
      */
-    public AdvancedMrpDTO basicAnalysisMRP(MrpAnalyticsInput input) throws ParseException {
+    public ResponseEntity basicAnalysisMRP(MrpAnalyticsInput input) throws ParseException {
 
         List<MrpDetailDTO> mrpDetailDTOList = new ArrayList<>();
         HashMap<Integer, MrpItemQuantityDTO> mrpItemQuantityHM = new HashMap<>();
@@ -193,14 +195,22 @@ public class MrpBasicAnalysisService {
                 input.getSoCode(),
                 input.getAnalysisOption()
             );
-            if (mrpDetailDTO != null)
+            if (mrpDetailDTO.getStatus() != null
+            && mrpDetailDTO.getStatus().equals("NOT_BOM")){
+                return ResponseEntity.badRequest().body("Mã: "+mrpDetailDTO.getItemCode()+" chưa có BOM hoặc BOM không active, Hãy kiểm tra lại trước khi phân tích.");
+            }else {
                 mrpDetailDTOList.add(mrpDetailDTO);
+            }
         }
 
         //add biến cần vào mrpDtoMapper
         mrpDTO = mrpAnalyticsMapper.inputToDto(input, mrpCode, mrpSubCode, dNow, mrpDetailDTOList);
-
-        return mrpDTO;
+        return ResponseEntity.ok(new CommonResponse<AdvancedMrpDTO>()
+            .isOk(true)
+            .message("Success")
+            .errorCode("00")
+            .data(mrpDTO)
+        );
     }
 
     /**
@@ -244,7 +254,12 @@ public class MrpBasicAnalysisService {
         //Query trong sap lấy thông tin cần thiết của sản phẩm
         //TODO: Optimize
         MrpDetailDTO itemInfo = bomService.getProduct().get(Utils.toItemKey(mrpItem.getItemCode(), mrpItem.getBomVersion()));
-        if (itemInfo == null) return null;
+        if (itemInfo == null){
+            MrpDetailDTO mrpDetailDTOFake = new MrpDetailDTO();
+            mrpDetailDTOFake.setItemCode(mrpItem.getItemCode());
+            mrpDetailDTOFake.setStatus("NOT_BOM");
+            return mrpDetailDTOFake;
+        }
         mrpDetailDTO = new MrpDetailDTO(itemInfo);
 
         //Lấy số lượng hiện trạng tồn kho

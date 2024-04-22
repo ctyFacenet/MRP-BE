@@ -8,6 +8,7 @@ import com.facenet.mrp.repository.sap.Por1Repository;
 import com.facenet.mrp.repository.sap.Prq1Repository;
 import com.facenet.mrp.service.dto.AdvancedMrpDTO;
 import com.facenet.mrp.service.dto.mrp.*;
+import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.mapper.MrpAnalyticsMapper;
@@ -23,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -79,7 +81,7 @@ public class MrpAdvancedAnalysisServiceV2 {
      * @param input
      * @return
      */
-    public AdvancedMrpDTO estimatedProductionSchedule(MrpAnalyticsInput input) throws ParseException {
+    public ResponseEntity estimatedProductionSchedule(MrpAnalyticsInput input) throws ParseException {
 
         List<MrpDetailDTO> mrpDetailDTOList = new ArrayList<>();
 
@@ -156,7 +158,9 @@ public class MrpAdvancedAnalysisServiceV2 {
         for (MrpItemQuantityDTO item : quantities) {
             MrpDetailDTO bomItem = bomService.getProduct().get(Utils.toItemKey(item.getItemCode(), item.getBomVersion()));
             if (bomItem == null) {
-                continue;
+//                continue;
+                //nếu có sp không có bom hoặc bom có status not active thì không cho phân tích
+                return ResponseEntity.badRequest().body("Mã: "+item.getItemCode()+" chưa có BOM hoặc BOM không active, Hãy kiểm tra lại trước khi phân tích.");
             }
 
             MrpDetailDTO mrpDetailDTO = new MrpDetailDTO(bomItem);
@@ -181,7 +185,12 @@ public class MrpAdvancedAnalysisServiceV2 {
         mrpDTO.setListItemCode(input.getListItemId());
         String sessionId = StringUtils.isEmpty(input.getSessionId()) ? UUID.randomUUID().toString() : input.getSessionId();
         mrpDTO.setSessionId(sessionId);
-        return mrpDTO;
+        return ResponseEntity.ok(new CommonResponse<AdvancedMrpDTO>()
+            .isOk(true)
+            .message("Success")
+            .errorCode("00")
+            .data(mrpDTO)
+        );
     }
 
     /**
