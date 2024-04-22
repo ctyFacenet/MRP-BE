@@ -197,7 +197,11 @@ public class MrpBasicAnalysisService {
             );
             if (mrpDetailDTO.getStatus() != null
             && mrpDetailDTO.getStatus().equals("NOT_BOM")){
-                return ResponseEntity.badRequest().body("Mã: "+mrpDetailDTO.getItemCode()+" chưa có BOM hoặc BOM không active, Hãy kiểm tra lại trước khi phân tích.");
+                return ResponseEntity.ok(new CommonResponse<AdvancedMrpDTO>()
+                    .isOk(false)
+                    .message("Mã: "+mrpDetailDTO.getItemCode()+" chưa có BOM hoặc BOM không active, Hãy kiểm tra lại trước khi phân tích.")
+                    .errorCode("400")
+                );
             }else {
                 mrpDetailDTOList.add(mrpDetailDTO);
             }

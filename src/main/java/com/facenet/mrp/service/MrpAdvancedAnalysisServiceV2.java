@@ -160,7 +160,11 @@ public class MrpAdvancedAnalysisServiceV2 {
             if (bomItem == null) {
 //                continue;
                 //nếu có sp không có bom hoặc bom có status not active thì không cho phân tích
-                return ResponseEntity.badRequest().body("Mã: "+item.getItemCode()+" chưa có BOM hoặc BOM không active, Hãy kiểm tra lại trước khi phân tích.");
+                return ResponseEntity.ok(new CommonResponse<AdvancedMrpDTO>()
+                    .isOk(false)
+                    .message("Mã: "+item.getItemCode()+" chưa có BOM hoặc BOM không active, Hãy kiểm tra lại trước khi phân tích.")
+                    .errorCode("400")
+                );
             }
 
             MrpDetailDTO mrpDetailDTO = new MrpDetailDTO(bomItem);
