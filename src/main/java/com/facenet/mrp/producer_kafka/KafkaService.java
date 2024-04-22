@@ -54,6 +54,8 @@ public class KafkaService {
         //lấy danh sách đơn hàng chưa quá hạn trong db
         List<ProductOrder> productOrderList = productOrderRepository.getAllProductOrder(fiveDaysLater);
         for (ProductOrder item : productOrderList) {
+            log.info("Chạy đơn hàng");
+            log.info(item.getProductOrderCode());
             // Tạo đối tượng Date
             AlertSoEntity check;
             Date startDate = item.getOrderDate();
@@ -225,6 +227,9 @@ public class KafkaService {
         }
 
         for (InfoItemDTO item : result) {
+            log.info("Chạy đơn hàng 1");
+            log.info(item.getSoCode());
+
             Date startDate = item.getStartTime();
             Date endDate = item.getEndTime();
             Date now = new Date();
