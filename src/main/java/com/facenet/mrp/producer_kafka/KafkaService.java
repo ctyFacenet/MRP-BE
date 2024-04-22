@@ -97,10 +97,11 @@ public class KafkaService {
                     contextAlert.setPercent(percentPoOrder);
                     check = checkExist(alertSoEntityList, contextAlert);
                     if (check != null) {
-                        contextAlerts.add(contextAlert);
-                        contextAlert.setWarningLevel("Green");
-                        alertSoEntities.add(check);
+
                     }
+                    contextAlerts.add(contextAlert);
+                    contextAlert.setWarningLevel("Green");
+                    alertSoEntities.add(check);
                 }
                 //thời gian đặt hàng < 85% và tỉ lệ hoàn thành < 85%
                 else if (percent < 85 && percentPoOrder < 85) {
@@ -116,10 +117,11 @@ public class KafkaService {
                     contextAlert.setPercent(percentPoOrder);
                     check = checkExist(alertSoEntityList, contextAlert);
                     if (check != null) {
-                        contextAlerts.add(contextAlert);
-                        contextAlert.setWarningLevel("Yellow");
-                        alertSoEntities.add(check);
+
                     }
+                    contextAlerts.add(contextAlert);
+                    contextAlert.setWarningLevel("Yellow");
+                    alertSoEntities.add(check);
                 }
                 //thời gian đặt hàng > 85% và tỉ lệ hoàn thành < 85%
                 else if (percent > 85 && percentPoOrder < 85) {
@@ -135,10 +137,11 @@ public class KafkaService {
                     contextAlert.setPercent(percentPoOrder);
                     check = checkExist(alertSoEntityList, contextAlert);
                     if (check != null) {
-                        contextAlerts.add(contextAlert);
-                        contextAlert.setWarningLevel("Red");
-                        alertSoEntities.add(check);
+
                     }
+                    contextAlerts.add(contextAlert);
+                    contextAlert.setWarningLevel("Red");
+                    alertSoEntities.add(check);
                 } else if (percent > 85 && percentPoOrder > 85) {
                     ContextAlert contextAlert = new ContextAlert();
                     contextAlert.setSoCode(item.getProductOrderCode());
@@ -152,10 +155,11 @@ public class KafkaService {
                     contextAlert.setPercent(percentPoOrder);
                     check = checkExist(alertSoEntityList, contextAlert);
                     if (check != null) {
-                        contextAlerts.add(contextAlert);
-                        contextAlert.setWarningLevel("Green");
-                        alertSoEntities.add(check);
+
                     }
+                    contextAlerts.add(contextAlert);
+                    contextAlert.setWarningLevel("Green");
+                    alertSoEntities.add(check);
                 }
             }
         }
@@ -262,10 +266,11 @@ public class KafkaService {
                 itemContextAlert.setPercent(0.0);
                 AlertItemSoEntity check = checkExistItem(alertItemSoEntities, itemContextAlert);
                 if (check != null) {
-                    alertItemSoEntityList.add(check);
-                    itemContextAlert.setWarningLevel("Red");
-                    alertList.add(itemContextAlert);
+
                 }
+                alertItemSoEntityList.add(check);
+                itemContextAlert.setWarningLevel("Red");
+                alertList.add(itemContextAlert);
             } else if (sumPO == null) {
                 log.info("Check 2");
                 ItemContextAlert itemContextAlert = new ItemContextAlert();
@@ -279,10 +284,11 @@ public class KafkaService {
                 itemContextAlert.setEndTime(item.getEndTime());
                 AlertItemSoEntity check = checkExistItem(alertItemSoEntities, itemContextAlert);
                 if (check != null) {
-                    alertItemSoEntityList.add(check);
-                    itemContextAlert.setWarningLevel("Red");
-                    alertList.add(itemContextAlert);
+
                 }
+                alertItemSoEntityList.add(check);
+                itemContextAlert.setWarningLevel("Red");
+                alertList.add(itemContextAlert);
             } else if (sumPO != null) {
                 log.info("Check 3");
                 percentFinsh = (sumPO / sumPr) * 100;
@@ -300,10 +306,11 @@ public class KafkaService {
                 itemContextAlert.setPercent(percentFinsh);
                 AlertItemSoEntity check = checkExistItem(alertItemSoEntities, itemContextAlert);
                 if (check != null) {
-                    alertItemSoEntityList.add(check);
-                    itemContextAlert.setWarningLevel("Green");
-                    alertList.add(itemContextAlert);
+
                 }
+                alertItemSoEntityList.add(check);
+                itemContextAlert.setWarningLevel("Green");
+                alertList.add(itemContextAlert);
             } else if (percent > 70 && percent <= 85 && percentFinsh < 65 && sumPr != null) {
                 log.info("Check 5");
                 ItemContextAlert itemContextAlert = new ItemContextAlert();
@@ -317,10 +324,11 @@ public class KafkaService {
                 itemContextAlert.setPercent(percentFinsh);
                 AlertItemSoEntity check = checkExistItem(alertItemSoEntities, itemContextAlert);
                 if (check != null) {
-                    alertItemSoEntityList.add(check);
-                    itemContextAlert.setWarningLevel("Yellow");
-                    alertList.add(itemContextAlert);
+
                 }
+                alertItemSoEntityList.add(check);
+                itemContextAlert.setWarningLevel("Yellow");
+                alertList.add(itemContextAlert);
             } else if (percent > 85 && percentFinsh < 85 && sumPr != null) {
                 log.info("Check 6");
                 ItemContextAlert itemContextAlert = new ItemContextAlert();
@@ -334,10 +342,11 @@ public class KafkaService {
                 itemContextAlert.setPercent(percentFinsh);
                 AlertItemSoEntity check = checkExistItem(alertItemSoEntities, itemContextAlert);
                 if (check != null) {
-                    alertItemSoEntityList.add(check);
-                    itemContextAlert.setWarningLevel("Red");
-                    alertList.add(itemContextAlert);
+
                 }
+                alertItemSoEntityList.add(check);
+                itemContextAlert.setWarningLevel("Red");
+                alertList.add(itemContextAlert);
             }
             else {
                 log.info("Go to here");
