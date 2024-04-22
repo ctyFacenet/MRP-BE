@@ -242,6 +242,7 @@ public class KafkaService {
                 long checkTime = rangeTimeCheck / (24 * 60 * 60 * 1000);
                 percent = (checkTime * 100) / poTime;
             } catch (ArithmeticException e) {
+                percent = -1;
                 log.info(e.getMessage());
                 log.info("Error: Division by zero or other arithmetic exception occurred.");
             }
@@ -249,6 +250,7 @@ public class KafkaService {
             Double sumPO = sapOnOrderSummaryRepository.sumQuantityItemPO(item.getSoCode(), item.getMrpCode(), item.getItemCode());
             double percentFinsh = 0.0;
             if (sumPr == null) {
+                log.info("Check 1");
                 ItemContextAlert itemContextAlert = new ItemContextAlert();
                 itemContextAlert.setSoCode(item.getSoCode());
                 itemContextAlert.setMrpCode(item.getMrpCode());
@@ -265,6 +267,7 @@ public class KafkaService {
                     alertList.add(itemContextAlert);
                 }
             } else if (sumPO == null) {
+                log.info("Check 2");
                 ItemContextAlert itemContextAlert = new ItemContextAlert();
                 itemContextAlert.setSoCode(item.getSoCode());
                 itemContextAlert.setMrpCode(item.getMrpCode());
@@ -281,9 +284,11 @@ public class KafkaService {
                     alertList.add(itemContextAlert);
                 }
             } else if (sumPO != null) {
+                log.info("Check 3");
                 percentFinsh = (sumPO / sumPr) * 100;
             }
             if (percent > 70 && percent <= 85 && percentFinsh > 85 && sumPr != null) {
+                log.info("Check 4");
                 ItemContextAlert itemContextAlert = new ItemContextAlert();
                 itemContextAlert.setSoCode(item.getSoCode());
                 itemContextAlert.setMrpCode(item.getMrpCode());
@@ -300,6 +305,7 @@ public class KafkaService {
                     alertList.add(itemContextAlert);
                 }
             } else if (percent > 70 && percent <= 85 && percentFinsh < 65 && sumPr != null) {
+                log.info("Check 5");
                 ItemContextAlert itemContextAlert = new ItemContextAlert();
                 itemContextAlert.setSoCode(item.getSoCode());
                 itemContextAlert.setMrpCode(item.getMrpCode());
@@ -316,6 +322,7 @@ public class KafkaService {
                     alertList.add(itemContextAlert);
                 }
             } else if (percent > 85 && percentFinsh < 85 && sumPr != null) {
+                log.info("Check 6");
                 ItemContextAlert itemContextAlert = new ItemContextAlert();
                 itemContextAlert.setSoCode(item.getSoCode());
                 itemContextAlert.setMrpCode(item.getMrpCode());
@@ -331,6 +338,9 @@ public class KafkaService {
                     itemContextAlert.setWarningLevel("Red");
                     alertList.add(itemContextAlert);
                 }
+            }
+            else {
+                log.info("Go to here");
             }
         }
         for (ItemContextAlert a : alertList) {
