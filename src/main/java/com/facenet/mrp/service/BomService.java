@@ -37,10 +37,6 @@ public class BomService {
         this.coittRepository = coittRepository;
     }
 
-    public List<String> getListBTP(){
-        return coittRepository.getListBTP();
-    }
-
     /**
      * Lấy danh sách các BOM
      * @param bomDTO
@@ -88,6 +84,9 @@ public class BomService {
         }
         if (filter.getCreateTime() != null) {
             booleanBuilder.and(qCoittEntity.createDate.eq(filter.getCreateTime()));
+        }
+        if (filter.getType() != null) {
+            booleanBuilder.and(qOitmEntity.itmsGrpCod.itmsGrpCode.eq(filter.getType()));
         }
         query.where(booleanBuilder);
         List<BomDTO> result = query.fetch();

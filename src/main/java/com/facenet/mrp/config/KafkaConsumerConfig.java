@@ -35,13 +35,14 @@ public class KafkaConsumerConfig {
 //    @Value("${spring.kafka.consumer.key-deserializer}")
 //    private String keyDeserializer;
 
+    @Value("${spring.kafka.producer.bootstrap-servers}")
+    private String bootstrapServer;
     @Bean
     public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.68.76:9092");
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        // Thiết lập max.poll.interval.ms tại đây
         return new DefaultKafkaProducerFactory<>(props);
     }
 

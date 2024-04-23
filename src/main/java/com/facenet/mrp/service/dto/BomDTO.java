@@ -1,7 +1,6 @@
 package com.facenet.mrp.service.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
-
 import java.sql.Date;
 public class BomDTO {
     private String productCode;
@@ -19,6 +18,7 @@ public class BomDTO {
     private Double quota;
     private Integer groupItem;
     private Integer level;
+    private String root;
 
     public Double getQuota() {
         return quota;
@@ -47,6 +47,23 @@ public class BomDTO {
         this.warehouse = warehouse;
         this.quota = quota;
         this.groupItem = groupItem;
+    }
+
+    public BomDTO(Double quota,String productCode, String description, String version, String speciality, String remark, String docUrl, Date fromDate, Date toDate, Date createTime, String status, String warehouse,Integer groupItem,Integer level) {
+        this.productCode = productCode;
+        this.description = description;
+        this.version = version;
+        this.speciality = speciality;
+        this.remark = remark;
+        this.docUrl = docUrl;
+        this.fromDate = fromDate;
+        this.toDate = toDate;
+        this.createTime = createTime;
+        this.status = status;
+        this.warehouse = warehouse;
+        this.quota = quota;
+        this.groupItem = groupItem;
+        this.level = level;
     }
 
     public String getProductCode() {
@@ -159,5 +176,23 @@ public class BomDTO {
 
     public void setLevel(Integer level) {
         this.level = level;
+    }
+
+    public String getRoot() {
+        return root;
+    }
+
+    public void setRoot(String root) {
+        this.root = root;
+    }
+
+    @Override
+    public String toString() {
+        return "ReceiptDTO{" +
+            "vendor=" + productCode +
+            ", soId='" + level + '\'' +
+            ", productId='" + docUrl + '\'' +
+            ", description=" + description +
+            '}';
     }
 }

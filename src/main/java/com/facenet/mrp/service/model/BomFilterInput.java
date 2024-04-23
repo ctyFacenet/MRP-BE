@@ -17,6 +17,7 @@ public class BomFilterInput {
     public Long getQuantity() {
         return quantity;
     }
+    private Integer type;
 
     public void setQuantity(Long quantity) {
         this.quantity = quantity;
@@ -76,5 +77,13 @@ public class BomFilterInput {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
     }
 }

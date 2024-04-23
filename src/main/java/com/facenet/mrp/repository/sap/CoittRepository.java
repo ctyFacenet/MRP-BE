@@ -1,6 +1,8 @@
 package com.facenet.mrp.repository.sap;
 
+import com.facenet.mrp.domain.sap.Citt1Entity;
 import com.facenet.mrp.domain.sap.CoittEntity;
+import com.facenet.mrp.service.dto.BomDTO;
 import com.facenet.mrp.service.dto.BomItemDetailDTO;
 import com.facenet.mrp.service.dto.BomItemDetailDraftDTO;
 import com.facenet.mrp.service.dto.DetailBomVersionDTO;
@@ -145,7 +147,9 @@ public interface CoittRepository extends JpaRepository<CoittEntity,Integer> {
     @Query(value = "select a from CoittEntity a where a.uProNo = :productCode")
     List<CoittEntity> getList(@Param("productCode") String productCode);
 
-    @Query(value = "select y.uItemCode from CoittEntity x join Citt1Entity y on x.docEntry = y.docEntry join OitmEntity z on x.uProNo = z.itemCode where y.uVersions is not null and x.uProNo in " +
-        "(select a.uProNo from CoittEntity a join OitmEntity b on a.uProNo = b.itemCode where b.itmsGrpCod.itmsGrpCode = 104)")
-    List<String> getListBTP();
+    @Query("select x from CoittEntity y join Citt1Entity x on x.docEntry = y.docEntry  where x.uVersions is not null and x.uVersions != '' and y.uVersions = :version and y.uProNo = :productCode")
+    List<Citt1Entity> getAll(@Param("productCode") String productCode, @Param("version") String version);
+
+    @Query(value = "select x from CoittEntity x where x.uProNo = :productCode and x.uVersions = :version")
+    CoittEntity getListBTP(@Param("productCode") String productCode, @Param("version") String version);
 }
