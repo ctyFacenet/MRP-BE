@@ -63,7 +63,7 @@ public class BomResource {
                     newBom.setWarehouse(coittEntity.getuWhsCod());
                     newBom.setDocUrl(coittEntity.getuDocUrl());
                     newBom.setLevel(2);
-                    newBom.setRoot(bomDTO.getProductCode());
+                    newBom.setRoot(bomDTO.getProductCode()+"_"+bomDTO.getVersion());
                     newBom.setCreateTime(coittEntity.getCreateDate());
                     newBom.setFromDate(coittEntity.getuFromDate());
                     newBom.setGroupItem(101);
