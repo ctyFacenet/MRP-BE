@@ -51,7 +51,7 @@ public class Producer {
             log.info("Run run");
             String json = gson.toJson(element);
             String bootstrapServers = kafkaTemplate.getProducerFactory().getConfigurationProperties().get("bootstrap.servers").toString();
-            System.out.println("Bootstrap Servers: " + bootstrapServers);
+            log.info("Bootstrap Servers: " + bootstrapServers);
             this.kafkaTemplate.send(topic,json);
             log.info("Successfully");
         }
