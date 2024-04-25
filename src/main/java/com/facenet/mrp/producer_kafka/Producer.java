@@ -24,14 +24,13 @@ public class Producer {
     /**
      * cảnh báo đơn hàng so và fc
      */
-    @Scheduled(cron = "0 0 10,16 * * ?")
+    @Scheduled(cron = "0 0 8,11,16 * * ?")
     public void sendMessage(){
 		log.info("go to here sendMessage");
         Gson gson = new Gson();
         String topic = "mrp-so";
         List<ContextAlert> alertList = kafkaService.getInfoSoAndFc();
-        for (ContextAlert element:alertList
-             ) {
+        for (ContextAlert element:alertList) {
             String json = gson.toJson(element);
             this.kafkaTemplate.send(topic,json);
         }
@@ -40,7 +39,7 @@ public class Producer {
     /**
      * cảnh báo nvl,btp trong đơn hàng so và fc
      */
-    @Scheduled(cron = "0 0 10,16 * * ?")
+    @Scheduled(cron = "0 0 8,11,16 * * ?")
     public void sendMessageForItem(){
 		log.info("go to here sendMessageForItem");
         Gson gson = new Gson();

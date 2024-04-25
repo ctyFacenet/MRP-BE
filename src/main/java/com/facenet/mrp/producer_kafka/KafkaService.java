@@ -47,7 +47,7 @@ public class KafkaService {
         List<ContextAlert> contextAlerts = new ArrayList<>();
         List<AlertSoEntity> alertSoEntities = new ArrayList<>();
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DATE, -5);
+        calendar.add(Calendar.DATE, -20);
         Date fiveDaysLater = calendar.getTime();
         //lấy danh sách cảch báo đã lưu trong db
         List<AlertSoEntity> alertSoEntityList = alertSoRepository.getAlertSoEntityBeforeTime(fiveDaysLater);
@@ -163,7 +163,7 @@ public class KafkaService {
                 }
             }
         }
-        alertSoRepository.saveAll(alertSoEntities);
+//        alertSoRepository.saveAll(alertSoEntities);
         for (ContextAlert index : contextAlerts) {
             log.info("----------test o day:" + index.getSoCode() + "/" + index.getPercent() + "/" + index.getTimeStart());
         }
@@ -217,7 +217,7 @@ public class KafkaService {
         List<ItemContextAlert> alertList = new ArrayList<>();
         List<AlertItemSoEntity> alertItemSoEntityList = new ArrayList<>();
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DATE, -5);
+        calendar.add(Calendar.DATE, -20);
         Date fiveDaysLater = calendar.getTime();
         //lấy danh sách cảnh báo của các item còn trong range time
         List<AlertItemSoEntity> alertItemSoEntities = alertSoRepository.getAlertItemSoEntityBeforeTime(fiveDaysLater);
