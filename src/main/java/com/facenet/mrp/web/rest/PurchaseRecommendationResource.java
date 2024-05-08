@@ -68,7 +68,7 @@ public class PurchaseRecommendationResource {
         return purchaseRecommendationService.saveSyntheticMrp(mrpAnalysisCache.getSyntheticResult(sessionId), items);
     }
 
-    @PostMapping("/mrp-analytics/save-synthetic-mrp-analytics/{sessionId}")
+    @PostMapping("/v2/mrp-analytics/save-synthetic-mrp-analytics/{sessionId}")
     public CommonResponse saveSyntheticMrpOfSessionV2(@PathVariable String sessionId, @RequestParam Boolean isHold, @RequestBody Set<String> items) throws JsonProcessingException, ParseException {
         historyMrpService.saveMrpResult(mrpAnalysisCache.getMrpResult(sessionId), isHold);
         return purchaseRecommendationService.saveSyntheticMrp(mrpAnalysisCache.getSyntheticResult(sessionId), items);
