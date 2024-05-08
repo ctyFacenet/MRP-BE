@@ -179,7 +179,7 @@ public class HoldItemService {
         return itemHoldRepository.saveAll(itemHoldEntities);
     }
 
-    public List<ItemHoldEntity> saveHoldItemV2(SyntheticMrpDTO syntheticMrpDTO, Set<String> listHold) throws ParseException {
+    public List<ItemHoldEntity> saveHoldItemV2(SyntheticMrpDTO syntheticMrpDTO, List<String> listHold) throws ParseException {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         List<ItemHoldEntity> itemHoldEntities = new ArrayList<>();
         for (ItemSyntheticDTO item : syntheticMrpDTO.getResultData()) {

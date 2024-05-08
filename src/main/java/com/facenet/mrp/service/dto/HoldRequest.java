@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,6 +16,6 @@ import java.util.Set;
 @AllArgsConstructor
 public class HoldRequest {
     private Map<String, Boolean> isHold;
-    private Set<String> listHold;
+    private List<String> listHold;
 
 }
