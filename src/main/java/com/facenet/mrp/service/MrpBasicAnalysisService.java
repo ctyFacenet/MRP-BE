@@ -256,7 +256,7 @@ public class MrpBasicAnalysisService {
         Calendar calCheck = Calendar.getInstance();
 
         //Query trong sap lấy thông tin cần thiết của sản phẩm
-        //TODO: Optimize
+        //TODO: chỗ này check có bom hay không? bom được lưu vào cache khi khởi động, đang check thấy tiến trình cache bom có vấn đề
         MrpDetailDTO itemInfo = bomService.getProduct().get(Utils.toItemKey(mrpItem.getItemCode(), mrpItem.getBomVersion()));
         if (itemInfo == null){
             MrpDetailDTO mrpDetailDTOFake = new MrpDetailDTO();

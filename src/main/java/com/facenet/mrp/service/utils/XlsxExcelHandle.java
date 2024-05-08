@@ -534,6 +534,7 @@ public class XlsxExcelHandle {
         planReportDetailEntity.setProductName(getStringCellValue(row.getCell(1)));
         planReportDetailEntity.setVersion(getStringCellValue(row.getCell(2)));
         planReportDetailEntity.setTotalQuantity(getIntegerCellValue(row.getCell(3)));
+        planReportDetailEntity.setIsActive(true);
 
         for (int i = 4; i < columnCount; i++){
             ExecutionPlanReportDetailQuantityEntity detailQuantityEntity = new ExecutionPlanReportDetailQuantityEntity();

@@ -33,6 +33,7 @@ public class CloneBomService {
     }
     @Scheduled(fixedDelay = 60 * 60 * 1000)
     public void cloneBom(){
+        //TODO: hàm clone bom cần check lại
         log.info("----Start BOM clone----");
         MrpDetailDTO childDetailDTO;
         MrpDetailDTO parentDetailDTO;
