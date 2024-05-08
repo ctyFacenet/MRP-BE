@@ -6,6 +6,7 @@ import com.facenet.mrp.service.HoldItemService;
 import com.facenet.mrp.service.ListSaleService;
 import com.facenet.mrp.repository.MrpAnalysisCache;
 import com.facenet.mrp.service.dto.AdvancedMrpDTO;
+import com.facenet.mrp.service.dto.HoldRequest;
 import com.facenet.mrp.service.dto.SyntheticMrpDTO;
 import com.facenet.mrp.service.dto.mrp.DetailHoldInMrpDTO;
 import com.facenet.mrp.service.dto.mrp.MrpDTO;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 @RestController
@@ -79,6 +81,15 @@ public class HistoryMrpSource {
         historyMrpService.saveMrpResult(mrpAnalysisCache.getMrpResult(sessionId), (isHold.containsKey("isHold") && isHold.get("isHold").equals(true)));
         if (isHold.containsKey("isHold") && isHold.get("isHold").equals(true))
             holdItemService.saveHoldItem(viewSyntheticScriptMrp(sessionId).getData());
+        mrpAnalysisCache.clearCache(sessionId);
+        return new CommonResponse<>().success();
+    }
+
+    @PostMapping(value = "/order-analytics/mrp-analytics/new-mrp-script/v2/{sessionId}")
+    public CommonResponse saveScriptMrpOfSession(@PathVariable String sessionId, @RequestBody HoldRequest holdRequest) throws JsonProcessingException, ParseException {
+        historyMrpService.saveMrpResult(mrpAnalysisCache.getMrpResult(sessionId), (holdRequest.getIsHold().containsKey("isHold") && holdRequest.getIsHold().get("isHold").equals(true)));
+        if (holdRequest.getIsHold().containsKey("isHold") && holdRequest.getIsHold().get("isHold").equals(true))
+            holdItemService.saveHoldItemV2(viewSyntheticScriptMrp(sessionId).getData(),holdRequest.getListHold());
         mrpAnalysisCache.clearCache(sessionId);
         return new CommonResponse<>().success();
     }
