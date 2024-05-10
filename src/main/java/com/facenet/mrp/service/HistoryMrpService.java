@@ -173,7 +173,7 @@ public class HistoryMrpService {
                 for (MrpResultDTO mrpResultDTO: mrpResultDTOS){
                     sumRequest += mrpResultDTO.getTotalOriginQuantity();
                 }
-                detailHoldInMrpDTO.setRequestNumber(sumRequest);//TODO: sửa lại số lượng yc MRP ở màn hold
+                detailHoldInMrpDTO.setRequestQuantity(sumRequest);//TODO: sửa lại số lượng yc MRP ở màn hold
                 sumRequest = 0.0;
 //                detailHoldInMrpDTO.setPrNumber(mrpDetailDTO.getPrNumber());
 //                detailHoldInMrpDTO.setReadyQuantity(mrpDetailDTO.getReadyQuantity());
