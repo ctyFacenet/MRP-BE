@@ -117,6 +117,11 @@ public class HistoryMrpSource {
     @PostMapping(value = "/order-analytics/detail-hold-1")
     public PageResponse viewDetailHold1(@RequestBody SyntheticMrpDTO syntheticMrpDTO){
         return historyMrpService.getDetailHold(syntheticMrpDTO);
+        //TODO: phần phân tích cơ bản đang sai, khi sửa lại thì phần hold này phải sửa như dưới
+        //    public PageResponse viewDetailHold1(@RequestBody AdvancedMrpDTO advancedMrpDTO,){
+        //        return historyMrpService.getDetailHold(syntheticMrpDTO,advancedMrpDTO);
+        //
+        //    }
     }
 
     @PostMapping(value = "/order-analytics/detail-hold-2")
