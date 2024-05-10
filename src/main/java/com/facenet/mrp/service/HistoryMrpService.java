@@ -152,7 +152,7 @@ public class HistoryMrpService {
             .data(result);
     }
 
-    public PageResponse getDetailHoldV2(SyntheticMrpDTO request,MrpDTO mrpDTO){
+    public PageResponse getDetailHoldV2(SyntheticMrpDTO request,AdvancedMrpDTO advancedMrpDTO){
         List<DetailHoldInMrpDTO> result = new ArrayList<>();
         List<ItemSyntheticDTO> requestData = request.getResultData();
         List<String> items = new ArrayList<>();
@@ -163,7 +163,7 @@ public class HistoryMrpService {
         }
         List<ItemHoldDTO> itemHoldDTOS = itemHoldRepository.sumHoldItem(items);
         Double sumRequest = 0.0;
-        for (MrpDetailDTO mrpDetailDTO: mrpDTO.getResultData()){
+        for (MrpDetailDTO mrpDetailDTO: advancedMrpDTO.getResultData()){
             if(mrpDetailDTO.getGroupItem().equals("NVL")){
                 DetailHoldInMrpDTO detailHoldInMrpDTO = new DetailHoldInMrpDTO();
                 detailHoldInMrpDTO.setItemCode(mrpDetailDTO.getItemCode());

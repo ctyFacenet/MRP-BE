@@ -115,8 +115,16 @@ public class HistoryMrpSource {
     public PageResponse viewDetailHold2(@RequestBody MrpDTO mrpDTO){
         PageResponse<SyntheticMrpDTO> response;
         response = this.viewSyntheticScriptMrp(mrpAnalysisCache.getMrpResult(mrpDTO.getSessionId()));
-        return historyMrpService.getDetailHoldV2(response.getData(),mrpDTO);
+        return historyMrpService.getDetailHold(response.getData());
     }
+
+    @PostMapping(value = "/order-analytics/detail-hold-2/v2")
+    public PageResponse viewDetailHold2V2(@RequestBody AdvancedMrpDTO advancedMrpDTO){
+        PageResponse<SyntheticMrpDTO> response;
+        response = this.viewSyntheticScriptMrp(mrpAnalysisCache.getMrpResult(advancedMrpDTO.getSessionId()));
+        return historyMrpService.getDetailHoldV2(response.getData(),advancedMrpDTO);
+    }
+
 
     //TODO here phân tích cơ bản
     @PostMapping(value = "/order-analytics/synthetic-mrp-analytics")
