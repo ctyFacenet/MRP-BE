@@ -153,7 +153,7 @@ public class HistoryMrpService {
     }
 
     public PageResponse getDetailHoldV2(SyntheticMrpDTO request,AdvancedMrpDTO advancedMrpDTO){
-        List<DetailHoldInMrpDTO> result = new ArrayList<>();
+        List<DetailHoldInMrpDTO> res = new ArrayList<>();
         List<ItemSyntheticDTO> requestData = request.getResultData();
         List<String> items = new ArrayList<>();
         for (ItemSyntheticDTO itemSyntheticDTO:requestData){
@@ -162,8 +162,18 @@ public class HistoryMrpService {
             }
         }
         List<ItemHoldDTO> itemHoldDTOS = itemHoldRepository.sumHoldItem(items);
+        List<DetailHoldInMrpDTO> result = dequy(advancedMrpDTO.getResultData(),itemHoldDTOS,res);
+        return new PageResponse<>()
+            .errorCode("00")
+            .message("Thành công")
+            .isOk(true)
+            .dataCount(result.size())
+            .data(result);
+    }
+
+    private List<DetailHoldInMrpDTO> dequy(List<MrpDetailDTO> mrpDetailDTOS,List<ItemHoldDTO> itemHoldDTOS,List<DetailHoldInMrpDTO> response){
         Double sumRequest = 0.0;
-        for (MrpDetailDTO mrpDetailDTO: advancedMrpDTO.getResultData()){
+        for (MrpDetailDTO mrpDetailDTO: mrpDetailDTOS){
             if(mrpDetailDTO.getGroupItem() == "101"){
                 DetailHoldInMrpDTO detailHoldInMrpDTO = new DetailHoldInMrpDTO();
                 detailHoldInMrpDTO.setItemCode(mrpDetailDTO.getItemCode());
@@ -185,19 +195,14 @@ public class HistoryMrpService {
                         break;
                     }
                 }
-                result.add(detailHoldInMrpDTO);
+                response.add(detailHoldInMrpDTO);
+            }
+            if (!mrpDetailDTO.getChildren().isEmpty()){
+                dequy(mrpDetailDTO.getChildren(),itemHoldDTOS,response);
             }
         }
-        return new PageResponse<>()
-            .errorCode("00")
-            .message("Thành công")
-            .isOk(true)
-            .dataCount(result.size())
-            .data(result);
-    }
 
-    private void dequy(List<MrpDetailDTO> mrpDetailDTOS){
-
+        return response;
     }
 
     /**
