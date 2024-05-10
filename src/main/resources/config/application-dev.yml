@@ -121,7 +121,7 @@ logging:
 spring:
   kafka:
     producer:
-      bootstrap-servers: 222.252.25.37:5044
+      bootstrap-servers: 192.168.68.76:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
   devtools:
@@ -137,12 +137,12 @@ spring:
   datasource:
     primary:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:mariadb://192.168.1.20:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
-      username: root
-      password: 171ca9e4eb616be4a8007db9fa1da1091480f211e39c2ed8cc56cd6d6d25b09a
-#      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning_test?useLegacyDatetimeCode=false&serverTimezone=UTC
+#      jdbc-url: jdbc:mariadb://192.168.1.20:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
 #      username: root
-#      password: Facenet@2023
+#      password: 171ca9e4eb616be4a8007db9fa1da1091480f211e39c2ed8cc56cd6d6d25b09a
+      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning_test?useLegacyDatetimeCode=false&serverTimezone=UTC
+      username: root
+      password: Facenet@2023
       hikari:
         poolName: Hikari
         auto-commit: false
@@ -154,12 +154,12 @@ spring:
           useServerPrepStmts: true
     sap:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:sqlserver://192.168.1.24:1433;database=Thang4;encrypt=true;trustServerCertificate=true;
-      username: sa
-      password: facenet@70d61c662aab8f49178f33794acac0deb3298c26b1ccb78c1c294ab2889072c4
-#      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Thang4;encrypt=true;trustServerCertificate=true;
-#      username: read
-#      password: 2022@mesrd
+#      jdbc-url: jdbc:sqlserver://192.168.1.24:1433;database=Thang4;encrypt=true;trustServerCertificate=true;
+#      username: sa
+#      password: facenet@70d61c662aab8f49178f33794acac0deb3298c26b1ccb78c1c294ab2889072c4
+      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Thang4;encrypt=true;trustServerCertificate=true;
+      username: read
+      password: 2022@mesrd
 
   jpa:
     show-sql: true
@@ -204,15 +204,15 @@ jhipster:
       port: 5000
       queue-size: 512
 keycloak_planning:
-  baseUrl: https://sso.xfactory.vn/auth
+  baseUrl: http://192.168.68.90:8080/auth
   realm: QLSX
   clientId: planning_backend
-  clientSecret: E1c4gANY6yIjQg0M38fiFdwlWagFfX6M
-  username: aps_demo
-  password: 123456
+  clientSecret: AMmEOEbqtPIskkErXNx94vt8c0bvF7Jd
+  username: admin
+  password: 123321
 planning:
   api:
-    syncPo: http://localhost:8080/services/api/order/sync-product-order-mrp
+    syncPo: http://192.168.68.87:7999/services/api/order/sync-product-order-mrp
     getWO: http://192.168.68.87:3300/rest/entities/PlanningWorkOrder/search?
-    getListWo: http://localhost:8080/services/api/workorder/find-by-ProductOrder/
-    createWo: http://localhost:8080/services/api/workorder/createWoMrp
+    getListWo: http://192.168.68.87:7999/services/api/workorder/find-by-ProductOrder/
+    createWo: http://192.168.68.87:7999/services/api/workorder/createWoMrp

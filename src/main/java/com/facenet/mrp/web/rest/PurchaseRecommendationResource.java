@@ -2,10 +2,9 @@ package com.facenet.mrp.web.rest;
 
 import com.facenet.mrp.repository.MrpAnalysisCache;
 import com.facenet.mrp.service.HistoryMrpService;
+import com.facenet.mrp.service.HoldItemService;
 import com.facenet.mrp.service.PurchaseRecommendationService;
-import com.facenet.mrp.service.dto.PurchaseHasRecommendationDTO;
-import com.facenet.mrp.service.dto.PurchaseRecommendationDTO;
-import com.facenet.mrp.service.dto.SyntheticMrpDTO;
+import com.facenet.mrp.service.dto.*;
 import com.facenet.mrp.service.dto.mrp.ForecastMaterialDTO;
 import com.facenet.mrp.service.dto.mrp.OrderItemForm;
 import com.facenet.mrp.service.dto.response.CommonResponse;
@@ -28,8 +27,10 @@ public class PurchaseRecommendationResource {
     private final PurchaseRecommendationService purchaseRecommendationService;
     private final MrpAnalysisCache mrpAnalysisCache;
     private final HistoryMrpService historyMrpService;
+    private final HoldItemService holdItemService;
 
-    public PurchaseRecommendationResource(PurchaseRecommendationService purchaseRecommendationService, MrpAnalysisCache mrpAnalysisCache, HistoryMrpService historyMrpService) {
+    public PurchaseRecommendationResource(HoldItemService holdItemService,PurchaseRecommendationService purchaseRecommendationService, MrpAnalysisCache mrpAnalysisCache, HistoryMrpService historyMrpService) {
+        this.holdItemService = holdItemService;
         this.purchaseRecommendationService = purchaseRecommendationService;
         this.mrpAnalysisCache = mrpAnalysisCache;
         this.historyMrpService = historyMrpService;
@@ -64,7 +65,8 @@ public class PurchaseRecommendationResource {
 
     @PostMapping("/mrp-analytics/save-synthetic-mrp-analytics/{sessionId}")
     public CommonResponse saveSyntheticMrpOfSession(@PathVariable String sessionId, @RequestBody Set<String> items) throws JsonProcessingException, ParseException {
-        historyMrpService.saveMrpResult(mrpAnalysisCache.getMrpResult(sessionId), false);
+        AdvancedMrpDTO advancedMrpDTO = mrpAnalysisCache.getMrpResult(sessionId);
+        historyMrpService.saveMrpResult(advancedMrpDTO, false);
         return purchaseRecommendationService.saveSyntheticMrp(mrpAnalysisCache.getSyntheticResult(sessionId), items);
     }
 
@@ -97,4 +99,15 @@ public class PurchaseRecommendationResource {
     public PageResponse<?> getItemOnPrPo(@RequestBody PageFilterInput<OrderItemForm> formPageFilterInput) {
         return purchaseRecommendationService.getItemOnPrPo(formPageFilterInput);
     }
+
+//    @PostMapping(value = "/order-analytics/mrp-analytics/new-mrp-script/v2/{sessionId}")
+//    public CommonResponse saveScriptMrpOfSession(@PathVariable String sessionId, @RequestBody HoldRequest holdRequest) throws JsonProcessingException, ParseException {
+//        AdvancedMrpDTO advancedMrpDTO = mrpAnalysisCache.getMrpResult(sessionId);
+//        historyMrpService.saveMrpResult( advancedMrpDTO,(holdRequest.getIsHold().containsKey("isHold") && holdRequest.getIsHold().get("isHold").equals(true)));
+//        if (holdRequest.getIsHold().containsKey("isHold") && holdRequest.getIsHold().get("isHold").equals(true))
+//            holdItemService.saveHoldItemV2(
+//                viewSyntheticScriptMrp(sessionId).getData(),holdRequest.getListHold());
+//        mrpAnalysisCache.clearCache(sessionId);
+//        return new CommonResponse<>().success();
+//    }
 }
