@@ -115,7 +115,7 @@ public class HistoryMrpSource {
     public PageResponse viewDetailHold2(@RequestBody MrpDTO mrpDTO){
         PageResponse<SyntheticMrpDTO> response;
         response = this.viewSyntheticScriptMrp(mrpAnalysisCache.getMrpResult(mrpDTO.getSessionId()));
-        return historyMrpService.getDetailHold(response.getData());
+        return historyMrpService.getDetailHoldV2(response.getData(),mrpDTO);
     }
 
     //TODO here phân tích cơ bản
