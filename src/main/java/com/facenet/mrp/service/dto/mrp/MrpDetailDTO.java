@@ -107,6 +107,8 @@ public class MrpDetailDTO {
         }
     }
 
+
+
     @JsonIgnore
     public Integer getGroupItemInt() {
         return groupItem;
