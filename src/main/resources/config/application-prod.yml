@@ -120,7 +120,7 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+
 keycloak_planning:
   baseUrl: http://192.168.68.90:8080/auth
   realm: QLSX
@@ -128,9 +128,10 @@ keycloak_planning:
   clientSecret: AMmEOEbqtPIskkErXNx94vt8c0bvF7Jd
   username: admin
   password: 123321
+# application: config planning prod
 planning:
   api:
-    syncPo: http://192.168.68.87:7999/services/api/order/sync-product-order-mrp
-    getWO: http://192.168.68.87:3300/rest/entities/PlanningWorkOrder/search?
-    getListWo: http://192.168.68.87:7999/services/api/workorder/find-by-ProductOrder/
-    createWo: http://192.168.68.87:7999/services/api/workorder/createWoMrp
+    syncPo: http://192.168.68.87:8080/services/api/order/sync-product-order-mrp
+    getWO: http://192.168.68.87:3000/rest/entities/PlanningWorkOrder/search?
+    getListWo: http://192.168.68.87:8080/services/api/workorder/find-by-ProductOrder/
+    createWo: http://192.168.68.87:8080/services/api/workorder/createWoMrp

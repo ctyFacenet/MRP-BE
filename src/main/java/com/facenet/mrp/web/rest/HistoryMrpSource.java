@@ -35,14 +35,16 @@ import java.util.Set;
 public class HistoryMrpSource {
     private final Logger log = LogManager.getLogger(ListSaleService.class);
 
-    @Autowired
-    private HoldItemService holdItemService;
+    private final HoldItemService holdItemService;
+    private final HistoryMrpService historyMrpService;
+    private final MrpAnalysisCache mrpAnalysisCache;
 
-    @Autowired
-    private HistoryMrpService historyMrpService;
+    public HistoryMrpSource(MrpAnalysisCache mrpAnalysisCache, HistoryMrpService historyMrpService, HoldItemService holdItemService) {
+        this.mrpAnalysisCache = mrpAnalysisCache;
+        this.historyMrpService = historyMrpService;
+        this.holdItemService = holdItemService;
+    }
 
-    @Autowired
-    private MrpAnalysisCache mrpAnalysisCache;
 
     @GetMapping(value = "/order-analytics/list-scripts-mrp")
     @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'HT', 'QLSX','DETAILSCRIPT','VIEW')")
@@ -87,7 +89,13 @@ public class HistoryMrpSource {
 
     @PostMapping(value = "/order-analytics/mrp-analytics/new-mrp-script/v2/{sessionId}")
     public CommonResponse saveScriptMrpOfSession(@PathVariable String sessionId, @RequestBody HoldRequest holdRequest) throws JsonProcessingException, ParseException {
-        historyMrpService.saveMrpResult(mrpAnalysisCache.getMrpResult(sessionId), (holdRequest.getIsHold().containsKey("isHold") && holdRequest.getIsHold().get("isHold").equals(true)));
+
+
+        AdvancedMrpDTO advancedMrpDTO1 = mrpAnalysisCache.getMrpResult(sessionId);
+//        historyMrpService.saveMrpResult(advancedMrpDTO1, false);
+
+        AdvancedMrpDTO advancedMrpDTO = mrpAnalysisCache.getMrpResult(sessionId);
+        historyMrpService.saveMrpResult( advancedMrpDTO,(holdRequest.getIsHold().containsKey("isHold") && holdRequest.getIsHold().get("isHold").equals(true)));
         if (holdRequest.getIsHold().containsKey("isHold") && holdRequest.getIsHold().get("isHold").equals(true))
             holdItemService.saveHoldItemV2(viewSyntheticScriptMrp(sessionId).getData(),holdRequest.getListHold());
         mrpAnalysisCache.clearCache(sessionId);
