@@ -164,7 +164,7 @@ public class HistoryMrpService {
         List<ItemHoldDTO> itemHoldDTOS = itemHoldRepository.sumHoldItem(items);
         Double sumRequest = 0.0;
         for (MrpDetailDTO mrpDetailDTO: advancedMrpDTO.getResultData()){
-            if(mrpDetailDTO.getGroupItem().equals("NVL")){
+            if(mrpDetailDTO.getGroupItem() == "101"){
                 DetailHoldInMrpDTO detailHoldInMrpDTO = new DetailHoldInMrpDTO();
                 detailHoldInMrpDTO.setItemCode(mrpDetailDTO.getItemCode());
                 detailHoldInMrpDTO.setItemName(mrpDetailDTO.getItemName());
@@ -175,11 +175,6 @@ public class HistoryMrpService {
                 }
                 detailHoldInMrpDTO.setRequestQuantity(sumRequest);//TODO: sửa lại số lượng yc MRP ở màn hold
                 sumRequest = 0.0;
-//                detailHoldInMrpDTO.setPrNumber(mrpDetailDTO.getPrNumber());
-//                detailHoldInMrpDTO.setReadyQuantity(mrpDetailDTO.getReadyQuantity());
-//                detailHoldInMrpDTO.setViewBtpTp(mrpDetailDTO.getViewBtpTp());
-//                detailHoldInMrpDTO.setRequestQuantity(mrpDetailDTO.getRequestNumber());
-//                detailHoldInMrpDTO.setDetailData(mrpDetailDTO.getDetailData());
                 detailHoldInMrpDTO.setRequiredQuantity(mrpDetailDTO.getRequiredQuantity());
                 detailHoldInMrpDTO.setBomVersion(mrpDetailDTO.getBomVersion());
                 detailHoldInMrpDTO.setType(mrpDetailDTO.getGroupItem());
@@ -199,6 +194,10 @@ public class HistoryMrpService {
             .isOk(true)
             .dataCount(result.size())
             .data(result);
+    }
+
+    private void dequy(List<MrpDetailDTO> mrpDetailDTOS){
+
     }
 
     /**
