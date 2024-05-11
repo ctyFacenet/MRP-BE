@@ -531,16 +531,44 @@ public class ProductOrderDetailService {
             if (filter.getOrderedTime() != null) {
                 Date orderedTime = filter.getOrderedTime();
                 LocalDate localDate = orderedTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                booleanBuilder.and(qProductOrderDetail.orderDate.year().eq(localDate.getYear())
-                    .and(qProductOrderDetail.orderDate.month().eq(localDate.getMonthValue()))
-                    .and(qProductOrderDetail.orderDate.dayOfMonth().eq(localDate.getDayOfMonth()  - 1)));
+                if (localDate.getDayOfMonth() == 1 && localDate.getMonthValue() == 1){
+                    booleanBuilder.and(qProductOrderDetail.orderDate.year().eq(localDate.getYear() - 1)
+                        .and(qProductOrderDetail.orderDate.month().eq(12))
+                        .and(qProductOrderDetail.orderDate.dayOfMonth().eq(31)));
+
+                }else if(localDate.getDayOfMonth()== 1){
+                    LocalDate lastMonth = localDate.minusMonths(1);
+                    LocalDate lastDayOfLastMonth = lastMonth.withDayOfMonth(lastMonth.lengthOfMonth());
+                    booleanBuilder.and(qProductOrderDetail.orderDate.year().eq(localDate.getYear())
+                        .and(qProductOrderDetail.orderDate.month().eq(localDate.getMonthValue() - 1))
+                        .and(qProductOrderDetail.orderDate.dayOfMonth().eq(lastDayOfLastMonth.getDayOfMonth())));
+                }
+                else {
+                    booleanBuilder.and(qProductOrderDetail.orderDate.year().eq(localDate.getYear())
+                        .and(qProductOrderDetail.orderDate.month().eq(localDate.getMonthValue()))
+                        .and(qProductOrderDetail.orderDate.dayOfMonth().eq(localDate.getDayOfMonth()  - 1)));
+                }
             }
             if (filter.getDeliveryTime() != null) {
                 Date deliveryTime = filter.getDeliveryTime();
                 LocalDate localDate = deliveryTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                booleanBuilder.and(qProductOrderDetail.deliverDate.year().eq(localDate.getYear())
-                    .and(qProductOrderDetail.deliverDate.month().eq(localDate.getMonthValue()))
-                    .and(qProductOrderDetail.deliverDate.dayOfMonth().eq(localDate.getDayOfMonth() - 1)));
+                if (localDate.getDayOfMonth() == 1 && localDate.getMonthValue() == 1){
+                    booleanBuilder.and(qProductOrderDetail.deliverDate.year().eq(localDate.getYear() - 1)
+                        .and(qProductOrderDetail.deliverDate.month().eq(12))
+                        .and(qProductOrderDetail.deliverDate.dayOfMonth().eq(31)));
+
+                }else if(localDate.getDayOfMonth()== 1){
+                    LocalDate lastMonth = localDate.minusMonths(1);
+                    LocalDate lastDayOfLastMonth = lastMonth.withDayOfMonth(lastMonth.lengthOfMonth());
+                    booleanBuilder.and(qProductOrderDetail.deliverDate.year().eq(localDate.getYear())
+                        .and(qProductOrderDetail.deliverDate.month().eq(localDate.getMonthValue() - 1))
+                        .and(qProductOrderDetail.deliverDate.dayOfMonth().eq(lastDayOfLastMonth.getDayOfMonth())));
+                }
+                else {
+                    booleanBuilder.and(qProductOrderDetail.deliverDate.year().eq(localDate.getYear())
+                        .and(qProductOrderDetail.deliverDate.month().eq(localDate.getMonthValue()))
+                        .and(qProductOrderDetail.deliverDate.dayOfMonth().eq(localDate.getDayOfMonth()  - 1)));
+                }
             }
             if (!StringUtils.isEmpty(filter.getSupplyMethod())) {
                 booleanBuilder.and(qProductOrderDetail.supplyType.containsIgnoreCase(filter.getSupplyMethod()));

@@ -143,16 +143,44 @@ public class ProductOrderService {
         if (filter.getOrderedTime() != null) {
             Date orderedTime = filter.getOrderedTime();
             LocalDate localDate = orderedTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear())
-                .and(qProductOrder.orderDate.month().eq(localDate.getMonthValue()))
-                .and(qProductOrder.orderDate.dayOfMonth().eq(localDate.getDayOfMonth()  - 1)));
+            if (localDate.getDayOfMonth() == 1 && localDate.getMonthValue() == 1){
+                booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear() - 1)
+                    .and(qProductOrder.orderDate.month().eq(12))
+                    .and(qProductOrder.orderDate.dayOfMonth().eq(31)));
+
+            }else if(localDate.getDayOfMonth()== 1){
+                LocalDate lastMonth = localDate.minusMonths(1);
+                LocalDate lastDayOfLastMonth = lastMonth.withDayOfMonth(lastMonth.lengthOfMonth());
+                booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear())
+                    .and(qProductOrder.orderDate.month().eq(localDate.getMonthValue() - 1))
+                    .and(qProductOrder.orderDate.dayOfMonth().eq(lastDayOfLastMonth.getDayOfMonth())));
+            }
+            else {
+                booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear())
+                    .and(qProductOrder.orderDate.month().eq(localDate.getMonthValue()))
+                    .and(qProductOrder.orderDate.dayOfMonth().eq(localDate.getDayOfMonth()  - 1)));
+            }
         }
         if (filter.getDeliveryTime() != null) {
             Date deliveryTime = filter.getDeliveryTime();
             LocalDate localDate = deliveryTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            booleanBuilder.and(qProductOrder.deliverDate.year().eq(localDate.getYear())
-                .and(qProductOrder.deliverDate.month().eq(localDate.getMonthValue()))
-                .and(qProductOrder.deliverDate.dayOfMonth().eq(localDate.getDayOfMonth() - 1)));
+            if (localDate.getDayOfMonth() == 1 && localDate.getMonthValue() == 1){
+                booleanBuilder.and(qProductOrder.deliverDate.year().eq(localDate.getYear() - 1)
+                    .and(qProductOrder.deliverDate.month().eq(12))
+                    .and(qProductOrder.deliverDate.dayOfMonth().eq(31)));
+
+            }else if(localDate.getDayOfMonth()== 1){
+                LocalDate lastMonth = localDate.minusMonths(1);
+                LocalDate lastDayOfLastMonth = lastMonth.withDayOfMonth(lastMonth.lengthOfMonth());
+                booleanBuilder.and(qProductOrder.deliverDate.year().eq(localDate.getYear())
+                    .and(qProductOrder.deliverDate.month().eq(localDate.getMonthValue() - 1))
+                    .and(qProductOrder.deliverDate.dayOfMonth().eq(lastDayOfLastMonth.getDayOfMonth())));
+            }
+            else {
+                booleanBuilder.and(qProductOrder.deliverDate.year().eq(localDate.getYear())
+                    .and(qProductOrder.deliverDate.month().eq(localDate.getMonthValue()))
+                    .and(qProductOrder.deliverDate.dayOfMonth().eq(localDate.getDayOfMonth()  - 1)));
+            }
         }
         if (!StringUtils.isEmpty(filter.getSalesCode())) {
             booleanBuilder.and(qProductOrder.partCode.containsIgnoreCase(filter.getSalesCode()));
