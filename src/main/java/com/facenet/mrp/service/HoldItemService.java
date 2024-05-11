@@ -189,19 +189,15 @@ public class HoldItemService {
                     continue;
                 }
                 DetailItemSyntheticDTO itemQuantityDetail = item.getDetailData().get(i);
-                for (String key : listItem) {
-                    Double value = listHold.get(key);
-                    if(value > 0.0){
-                        itemHoldEntities.add(itemHoldMapper.toItemHoldEntity(item, syntheticMrpDTO,
-//                                itemQuantityDetail.getRequiredQuantity(),
-                                value,
-                                null,
-                                simpleDateFormat.parse(item.getDetailData().get(i).getLandMark()),
-                                Constants.ItemHold.ACTIVE
-                            )
-                        );
-                    }
-                }
+                // Khong co nhu cau san xuat
+                if (itemQuantityDetail.getOriginQuantity() == 0) continue;
+                itemHoldEntities.add(itemHoldMapper.toItemHoldEntity(item, syntheticMrpDTO,
+                        itemQuantityDetail.getOriginQuantity(),
+                        null,
+                        simpleDateFormat.parse(item.getDetailData().get(i).getLandMark()),
+                        Constants.ItemHold.ACTIVE
+                    )
+                );
 
                 // SL yêu cầu + SL cần mua(C) - SL đã len PR(B)
 //                double warehouseNeed = itemQuantityDetail.getOriginQuantity(); // need
