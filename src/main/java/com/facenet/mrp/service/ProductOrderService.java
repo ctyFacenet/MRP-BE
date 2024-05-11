@@ -145,14 +145,14 @@ public class ProductOrderService {
             LocalDate localDate = orderedTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear())
                 .and(qProductOrder.orderDate.month().eq(localDate.getMonthValue()))
-                .and(qProductOrder.orderDate.dayOfMonth().eq(localDate.getDayOfMonth())));
+                .and(qProductOrder.orderDate.dayOfMonth().eq(localDate.getDayOfMonth()  - 1)));
         }
         if (filter.getDeliveryTime() != null) {
             Date deliveryTime = filter.getDeliveryTime();
             LocalDate localDate = deliveryTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             booleanBuilder.and(qProductOrder.deliverDate.year().eq(localDate.getYear())
                 .and(qProductOrder.deliverDate.month().eq(localDate.getMonthValue()))
-                .and(qProductOrder.deliverDate.dayOfMonth().eq(localDate.getDayOfMonth())));
+                .and(qProductOrder.deliverDate.dayOfMonth().eq(localDate.getDayOfMonth() - 1)));
         }
         if (!StringUtils.isEmpty(filter.getSalesCode())) {
             booleanBuilder.and(qProductOrder.partCode.containsIgnoreCase(filter.getSalesCode()));

@@ -39,7 +39,10 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -123,10 +126,18 @@ public class ProductOrderDetailService {
             booleanBuilder.and(qProductOrderDetail.quantity.eq(Integer.valueOf(filter.getOrderQuantity())));
         }
         if (filter.getOrderedTime() != null) {
-            booleanBuilder.and(qProductOrderDetail.orderDate.eq(filter.getOrderedTime()));
+            Date orderedTime = filter.getOrderedTime();
+            LocalDate localDate = orderedTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear())
+                .and(qProductOrder.orderDate.month().eq(localDate.getMonthValue()))
+                .and(qProductOrder.orderDate.dayOfMonth().eq(localDate.getDayOfMonth()  - 1)));
         }
         if (filter.getDeliveryTime() != null) {
-            booleanBuilder.and(qProductOrderDetail.deliverDate.eq(filter.getDeliveryTime()));
+            Date deliveryTime = filter.getDeliveryTime();
+            LocalDate localDate = deliveryTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            booleanBuilder.and(qProductOrder.deliverDate.year().eq(localDate.getYear())
+                .and(qProductOrder.deliverDate.month().eq(localDate.getMonthValue()))
+                .and(qProductOrder.deliverDate.dayOfMonth().eq(localDate.getDayOfMonth() - 1)));
         }
         if (!StringUtils.isEmpty(filter.getSupplyMethod())) {
             booleanBuilder.and(qProductOrderDetail.supplyType.containsIgnoreCase(filter.getSupplyMethod()));
@@ -518,10 +529,18 @@ public class ProductOrderDetailService {
                 booleanBuilder.and(qProductOrderDetail.quantity.eq(Integer.valueOf(filter.getOrderQuantity())));
             }
             if (filter.getOrderedTime() != null) {
-                booleanBuilder.and(qProductOrderDetail.orderDate.eq(filter.getOrderedTime()));
+                Date orderedTime = filter.getOrderedTime();
+                LocalDate localDate = orderedTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                booleanBuilder.and(qProductOrderDetail.orderDate.year().eq(localDate.getYear())
+                    .and(qProductOrderDetail.orderDate.month().eq(localDate.getMonthValue()))
+                    .and(qProductOrderDetail.orderDate.dayOfMonth().eq(localDate.getDayOfMonth()  - 1)));
             }
             if (filter.getDeliveryTime() != null) {
-                booleanBuilder.and(qProductOrderDetail.deliverDate.eq(filter.getDeliveryTime()));
+                Date deliveryTime = filter.getDeliveryTime();
+                LocalDate localDate = deliveryTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                booleanBuilder.and(qProductOrderDetail.deliverDate.year().eq(localDate.getYear())
+                    .and(qProductOrderDetail.deliverDate.month().eq(localDate.getMonthValue()))
+                    .and(qProductOrderDetail.deliverDate.dayOfMonth().eq(localDate.getDayOfMonth() - 1)));
             }
             if (!StringUtils.isEmpty(filter.getSupplyMethod())) {
                 booleanBuilder.and(qProductOrderDetail.supplyType.containsIgnoreCase(filter.getSupplyMethod()));
