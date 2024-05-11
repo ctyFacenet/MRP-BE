@@ -52,6 +52,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -139,10 +141,18 @@ public class ProductOrderService {
             booleanBuilder.and(qProductOrder.productOrderType.containsIgnoreCase(filter.getPoType()));
         }
         if (filter.getOrderedTime() != null) {
-            booleanBuilder.and(qProductOrder.orderDate.eq((filter.getOrderedTime())));
+            Date orderedTime = filter.getOrderedTime();
+            LocalDate localDate = orderedTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear())
+                .and(qProductOrder.orderDate.month().eq(localDate.getMonthValue()))
+                .and(qProductOrder.orderDate.dayOfMonth().eq(localDate.getDayOfMonth())));
         }
         if (filter.getDeliveryTime() != null) {
-            booleanBuilder.and(qProductOrder.deliverDate.eq((filter.getDeliveryTime())));
+            Date deliveryTime = filter.getDeliveryTime();
+            LocalDate localDate = deliveryTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            booleanBuilder.and(qProductOrder.deliverDate.year().eq(localDate.getYear())
+                .and(qProductOrder.deliverDate.month().eq(localDate.getMonthValue()))
+                .and(qProductOrder.deliverDate.dayOfMonth().eq(localDate.getDayOfMonth())));
         }
         if (!StringUtils.isEmpty(filter.getSalesCode())) {
             booleanBuilder.and(qProductOrder.partCode.containsIgnoreCase(filter.getSalesCode()));

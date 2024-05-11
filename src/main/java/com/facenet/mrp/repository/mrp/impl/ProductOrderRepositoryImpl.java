@@ -21,6 +21,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.util.CollectionUtils;
 
 import javax.persistence.EntityManager;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -46,7 +50,9 @@ public class ProductOrderRepositoryImpl implements ProductOrderCustomRepository 
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         booleanBuilder.and(qProductOrder.isActive.eq((byte) 1));
         booleanBuilder.and(qProductOrder.status.goe(2));
-
+        if (!StringUtils.isEmpty(filter.getCreatedPerson())) {
+            booleanBuilder.and(qProductOrder.createdBy.containsIgnoreCase(filter.getCreatedPerson()));
+        }
         if (!StringUtils.isEmpty(filter.getPoCode())) {
             booleanBuilder.and(qProductOrder.productOrderCode.containsIgnoreCase(filter.getPoCode()));
         }
@@ -60,10 +66,18 @@ public class ProductOrderRepositoryImpl implements ProductOrderCustomRepository 
             booleanBuilder.and(qProductOrder.productOrderType.containsIgnoreCase(filter.getPoType()));
         }
         if (filter.getOrderedTime() != null) {
-            booleanBuilder.and(qProductOrder.orderDate.eq(filter.getOrderedTime()));
+            Date orderedTime = filter.getOrderedTime();
+            LocalDate localDate = orderedTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear())
+                .and(qProductOrder.orderDate.month().eq(localDate.getMonthValue()))
+                .and(qProductOrder.orderDate.dayOfMonth().eq(localDate.getDayOfMonth())));
         }
         if (filter.getDeliveryTime() != null) {
-            booleanBuilder.and(qProductOrder.deliverDate.eq(filter.getDeliveryTime()));
+            Date deliveryTime = filter.getDeliveryTime();
+            LocalDate localDate = deliveryTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            booleanBuilder.and(qProductOrder.deliverDate.year().eq(localDate.getYear())
+                .and(qProductOrder.deliverDate.month().eq(localDate.getMonthValue()))
+                .and(qProductOrder.deliverDate.dayOfMonth().eq(localDate.getDayOfMonth())));
         }
         if (!StringUtils.isEmpty(filter.getSalesCode())) {
             booleanBuilder.and(qProductOrder.partCode.containsIgnoreCase(filter.getSalesCode()));
