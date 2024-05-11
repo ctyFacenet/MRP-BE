@@ -51,7 +51,7 @@ public class HoldItemService {
         List<ItemHoldDTO> result;
         if (isFirstTime) {
             result = itemHoldRepository.getAllByItemCode(itemCode,
-                DateUtils.truncate(new Date(), java.util.Calendar.DAY_OF_MONTH),
+                Utils.toUTC(input.getTimeStart()),
                 Utils.toUTC(input.getTimeEnd()));
         } else {
             result = itemHoldRepository.getAllByItemCodeExceptMrpCode(itemCode,
