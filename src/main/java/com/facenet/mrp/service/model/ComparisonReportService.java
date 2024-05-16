@@ -1,26 +1,14 @@
 package com.facenet.mrp.service.model;
 
 import com.facenet.mrp.domain.mrp.MrpProductionQuantityEntity;
-import com.facenet.mrp.domain.mrp.QMrpProductionQuantityEntity;
 import com.facenet.mrp.repository.mrp.MrpProductionQuantityRepository;
-import com.facenet.mrp.repository.mrp.PqcStoreCheckRepository;
-import com.facenet.mrp.repository.mrp.ProductWorkOrderQuantityRepository;
 import com.facenet.mrp.service.AnalysisDetailReportService;
 import com.facenet.mrp.service.dto.ComparisonQuantityDTO;
 import com.facenet.mrp.service.dto.ReportComparisonDTO;
-import com.facenet.mrp.service.dto.request.QmsQuantityDailyDTO;
-import com.facenet.mrp.service.dto.request.ScadaQuantityDailyDTO;
 import com.facenet.mrp.service.dto.response.CommonResponse;
-import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.mapper.MrpProductionQuantityMapper;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MultiMapUtils;
-import org.apache.commons.collections4.map.MultiKeyMap;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -33,16 +21,11 @@ public class ComparisonReportService {
     private final MrpProductionQuantityRepository mrpProductionQuantityRepository;
     private final MrpProductionQuantityMapper mrpProductionQuantityMapper;
     private final EntityManager entityManager;
-    private final ProductWorkOrderQuantityRepository workOrderQuantityRepository;
-    private final PqcStoreCheckRepository storeCheckRepository;
 
-    public ComparisonReportService(MrpProductionQuantityRepository mrpProductionQuantityRepository, MrpProductionQuantityMapper mrpProductionQuantityMapper, @Qualifier("mrpEntityManager") EntityManager entityManager,
-                                   ProductWorkOrderQuantityRepository workOrderQuantityRepository, PqcStoreCheckRepository storeCheckRepository ) {
+    public ComparisonReportService(MrpProductionQuantityRepository mrpProductionQuantityRepository, MrpProductionQuantityMapper mrpProductionQuantityMapper, @Qualifier("mrpEntityManager") EntityManager entityManager) {
         this.mrpProductionQuantityRepository = mrpProductionQuantityRepository;
         this.mrpProductionQuantityMapper = mrpProductionQuantityMapper;
         this.entityManager = entityManager;
-        this.workOrderQuantityRepository = workOrderQuantityRepository;
-        this.storeCheckRepository = storeCheckRepository;
     }
 
     public CommonResponse<ReportComparisonDTO> getComparisonReport(ComparisonReportFilter filter) {
@@ -67,34 +50,6 @@ public class ComparisonReportService {
                 result.add(mrpProductionQuantityMapper.toDTO(quantityData));
             }
             itemCodeMap.get(quantityData.getItemCode()).add(quantityData);
-        }
-
-        //xử lý lấy sản lượng qms daily
-        List<QmsQuantityDailyDTO> qmsQuantityDailyDTOS = storeCheckRepository.findAllByDueDateBetween(filter.getStartDate(),filter.getEndDate());
-        Map<String, Map<String, List<QmsQuantityDailyDTO>>> qmsItemMap = new HashMap<>();
-        for (QmsQuantityDailyDTO qmsQuantityDailyDTO: qmsQuantityDailyDTOS){
-            if(!qmsItemMap.containsKey(qmsQuantityDailyDTO.getPurchaseOrderCode())){
-                qmsItemMap.put(qmsQuantityDailyDTO.getPurchaseOrderCode(),new HashMap<>());
-            }
-            Map<String,List<QmsQuantityDailyDTO>> qmsItemCodeMap = qmsItemMap.get(qmsQuantityDailyDTO.getPurchaseOrderCode());
-            if(!qmsItemCodeMap.containsKey(qmsQuantityDailyDTO.getProductionCode())){
-                qmsItemCodeMap.put(qmsQuantityDailyDTO.getProductionCode(), new ArrayList<>());
-            }
-            qmsItemCodeMap.get(qmsQuantityDailyDTO.getProductionCode()).add(qmsQuantityDailyDTO);
-        }
-
-        //xử lý lấy sản lượng scada daily
-        List<ScadaQuantityDailyDTO> scadaQuantityDailyDTOS = workOrderQuantityRepository.findAllByDueDateBetween(filter.getStartDate(),filter.getEndDate());
-        Map<String, Map<String, List<ScadaQuantityDailyDTO>>> scadaItemMap = new HashMap<>();
-        for (ScadaQuantityDailyDTO scadaQuantityDailyDTO: scadaQuantityDailyDTOS){
-            if(!scadaItemMap.containsKey(scadaQuantityDailyDTO.getMrpCode())){
-                scadaItemMap.put(scadaQuantityDailyDTO.getMrpCode(),new HashMap<>());
-            }
-            Map<String,List<ScadaQuantityDailyDTO>> scadaItemCodeMap = scadaItemMap.get(scadaQuantityDailyDTO.getMrpCode());
-            if(!scadaItemCodeMap.containsKey(scadaQuantityDailyDTO.getProductCode())){
-                scadaItemCodeMap.put(scadaQuantityDailyDTO.getProductCode(), new ArrayList<>());
-            }
-            scadaItemCodeMap.get(scadaQuantityDailyDTO.getProductCode()).add(scadaQuantityDailyDTO);
         }
 
         Calendar startTime = Calendar.getInstance();

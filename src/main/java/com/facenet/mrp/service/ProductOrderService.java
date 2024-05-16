@@ -251,26 +251,27 @@ public class ProductOrderService {
 
 
     @Transactional(rollbackFor = {Throwable.class})
-    public void importProductOrder(InputStream file) throws IOException, ParseException {
+    public void importProductOrder(InputStream file,Boolean isSend) throws IOException, ParseException {
         HashMap<String, List<ProductOrder>> result = xlsxExcelHandle.readDonHangExcel(file);
-        saveAll(result);
+        saveAll(result,isSend);
         file.close();
     }
 
     @Transactional(rollbackFor = {Throwable.class})
-    public void importProductOrderCsv(InputStream file) throws IOException, ParseException {
+    public void importProductOrderCsv(InputStream file,Boolean isSend) throws IOException, ParseException {
         HashMap<String, List<ProductOrder>> result = csvHandle.readFileToProductOrder(file);
-        saveAll(result);
+        saveAll(result,isSend);
         file.close();
     }
 
-    public String saveAll(HashMap<String, List<ProductOrder>> donHangArrayList) throws CustomException {
+    //TODO: Đẩy đơn hàng khi import excel sang planning
+    public String saveAll(HashMap<String, List<ProductOrder>> donHangArrayList, Boolean isSend) throws CustomException, ParseException {
         List<MrpDetailDTO> detailDTOS;
         ItemQuantity countChildren;
 
         ProductOrderDetail orderItem;
         logger.info(" saveAll Order");
-
+        List<PlanningProductionOrder> donHangArraySendPlanning = new ArrayList<>();
         for (List<ProductOrder> orderList : donHangArrayList.values()) {
             String poId = orderList.get(0).getProductOrderCode();
             ProductOrder productionOrder = productOrderRepository.findProductOrderByProductOrderCodeAndIsActive(poId, (byte) 1);
@@ -291,8 +292,11 @@ public class ProductOrderService {
             Set<String> productCodesVersion = new HashSet<>();
             Set<String> productCodes = new HashSet<>();
             for (ProductOrder order : orderList) {
+                //lấy danh sách đơn hàng để gửi planning
+                if(isSend){
+                    donHangArraySendPlanning.addAll(mapToPlanning(order));
+                }
                 countChildren = new ItemQuantity();
-
                 String productCodeVersion = order.getProductCode() + order.getBomVersion();
                 if (productCodesVersion.contains(productCodeVersion))
                     throw new CustomException("product.code.duplicate", order.getProductCode());
@@ -340,6 +344,12 @@ public class ProductOrderService {
             productOrderRepository.save(orderList.get(0));
             productOrderDetailRepository.saveAll(productOrderDetails);
         }
+        if(isSend){
+            if(donHangArraySendPlanning.size() > 0){
+                System.out.println("----------------------------danh sách đơn hàng gửi planning khi import excel: "+donHangArraySendPlanning.get(0));
+                syncToPlanning(donHangArraySendPlanning);
+            }
+        }
         return "SUCCESS";
     }
 
@@ -361,7 +371,7 @@ public class ProductOrderService {
     }
 
     @Transactional
-    public void createNewProductOrder(List<ProductOrder> productOrders) throws ParseException {
+    public void createNewProductOrder(List<ProductOrder> productOrders, Boolean isSend) throws ParseException {
         List<PlanningProductionOrder> donHangArrayList = new ArrayList<>();
         ItemQuantity countChildren;
         List<MrpDetailDTO> detailDTOS;
@@ -415,9 +425,11 @@ public class ProductOrderService {
                 product.setMaterialChildrenCount(countChildren.getQuantity().intValue());
             }
         }
-        if(donHangArrayList.size() > 0){
-            System.out.println("----------------------------danh sách đơn hàng 1: "+donHangArrayList.get(0));
-            syncToPlanning(donHangArrayList);
+        if(isSend){
+            if(donHangArrayList.size() > 0){
+                System.out.println("----------------------------danh sách đơn hàng 1: "+donHangArrayList.get(0));
+                syncToPlanning(donHangArrayList);
+            }
         }
         productOrderRepository.saveAll(productOrders);
     }

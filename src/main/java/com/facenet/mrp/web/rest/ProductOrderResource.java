@@ -54,12 +54,12 @@ public class ProductOrderResource {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping("/import-product-order")
-    public ResponseEntity importOrder(@RequestParam("file") MultipartFile file) throws IOException, ParseException {
+    @PostMapping("/import-product-order/{isSend}")
+    public ResponseEntity importOrder(@RequestParam("file") MultipartFile file,@PathVariable Boolean isSend) throws IOException, ParseException {
         if(file == null){
             throw new CustomException(HttpStatus.BAD_REQUEST,"file.import.empty");
         }
-        productOrderService.importProductOrder(file.getInputStream());
+        productOrderService.importProductOrder(file.getInputStream(),isSend);
         return ResponseEntity.ok(
             new CommonResponse<>()
                 .isOk(true)
@@ -67,23 +67,22 @@ public class ProductOrderResource {
                 .message("Import đơn hàng thành công"));
     }
 
-    @PostMapping("/import-product-order-csv")
-    public ResponseEntity importOrderCsv(@RequestParam("file") MultipartFile file) throws IOException, ParseException {
+    @PostMapping("/import-product-order-csv/{isSend}")
+    public ResponseEntity importOrderCsv(@RequestParam("file") MultipartFile file,@PathVariable Boolean isSend) throws IOException, ParseException {
         if(file == null){
             throw new CustomException(HttpStatus.BAD_REQUEST,"file.import.empty");
         }
-        productOrderService.importProductOrderCsv(file.getInputStream());
+        productOrderService.importProductOrderCsv(file.getInputStream(),isSend);
         return ResponseEntity.ok(
             new CommonResponse<>()
                 .isOk(true)
                 .errorCode("00")
                 .message("Import đơn hàng thành công"));
     }
-
-     @PostMapping("/new-product-order")
+     @PostMapping("/new-product-order/{isSend}")
      @PreAuthorize("hasAnyAuthority('DHSX')")
-    public ResponseEntity createNewProductOrder(@Valid @RequestBody List<ProductOrder> productOrder) throws ParseException {
-        productOrderService.createNewProductOrder(productOrder);
+    public ResponseEntity createNewProductOrder(@Valid @RequestBody List<ProductOrder> productOrder, @PathVariable Boolean isSend) throws ParseException {
+        productOrderService.createNewProductOrder(productOrder,isSend);
         return ResponseEntity.ok(
             new CommonResponse<>()
                 .isOk(true)
