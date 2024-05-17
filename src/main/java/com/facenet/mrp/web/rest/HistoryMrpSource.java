@@ -35,14 +35,16 @@ import java.util.Set;
 public class HistoryMrpSource {
     private final Logger log = LogManager.getLogger(ListSaleService.class);
 
-    @Autowired
-    private HoldItemService holdItemService;
+    private final HoldItemService holdItemService;
+    private final HistoryMrpService historyMrpService;
+    private final MrpAnalysisCache mrpAnalysisCache;
 
-    @Autowired
-    private HistoryMrpService historyMrpService;
+    public HistoryMrpSource(MrpAnalysisCache mrpAnalysisCache, HistoryMrpService historyMrpService, HoldItemService holdItemService) {
+        this.mrpAnalysisCache = mrpAnalysisCache;
+        this.historyMrpService = historyMrpService;
+        this.holdItemService = holdItemService;
+    }
 
-    @Autowired
-    private MrpAnalysisCache mrpAnalysisCache;
 
     @GetMapping(value = "/order-analytics/list-scripts-mrp")
     @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'HT', 'QLSX','DETAILSCRIPT','VIEW')")
@@ -87,7 +89,13 @@ public class HistoryMrpSource {
 
     @PostMapping(value = "/order-analytics/mrp-analytics/new-mrp-script/v2/{sessionId}")
     public CommonResponse saveScriptMrpOfSession(@PathVariable String sessionId, @RequestBody HoldRequest holdRequest) throws JsonProcessingException, ParseException {
-        historyMrpService.saveMrpResult(mrpAnalysisCache.getMrpResult(sessionId), (holdRequest.getIsHold().containsKey("isHold") && holdRequest.getIsHold().get("isHold").equals(true)));
+
+
+        AdvancedMrpDTO advancedMrpDTO1 = mrpAnalysisCache.getMrpResult(sessionId);
+//        historyMrpService.saveMrpResult(advancedMrpDTO1, false);
+
+        AdvancedMrpDTO advancedMrpDTO = mrpAnalysisCache.getMrpResult(sessionId);
+        historyMrpService.saveMrpResult( advancedMrpDTO,(holdRequest.getIsHold().containsKey("isHold") && holdRequest.getIsHold().get("isHold").equals(true)));
         if (holdRequest.getIsHold().containsKey("isHold") && holdRequest.getIsHold().get("isHold").equals(true))
             holdItemService.saveHoldItemV2(viewSyntheticScriptMrp(sessionId).getData(),holdRequest.getListHold());
         mrpAnalysisCache.clearCache(sessionId);
@@ -109,6 +117,11 @@ public class HistoryMrpSource {
     @PostMapping(value = "/order-analytics/detail-hold-1")
     public PageResponse viewDetailHold1(@RequestBody SyntheticMrpDTO syntheticMrpDTO){
         return historyMrpService.getDetailHold(syntheticMrpDTO);
+        //TODO: phần phân tích cơ bản đang sai, khi sửa lại thì phần hold này phải sửa như dưới
+        //    public PageResponse viewDetailHold1(@RequestBody AdvancedMrpDTO advancedMrpDTO,){
+        //        return historyMrpService.getDetailHold(syntheticMrpDTO,advancedMrpDTO);
+        //
+        //    }
     }
 
     @PostMapping(value = "/order-analytics/detail-hold-2")
@@ -117,6 +130,14 @@ public class HistoryMrpSource {
         response = this.viewSyntheticScriptMrp(mrpAnalysisCache.getMrpResult(mrpDTO.getSessionId()));
         return historyMrpService.getDetailHold(response.getData());
     }
+
+    @PostMapping(value = "/order-analytics/detail-hold-2/v2")
+    public PageResponse viewDetailHold2V2(@RequestBody AdvancedMrpDTO advancedMrpDTO){
+        PageResponse<SyntheticMrpDTO> response;
+        response = this.viewSyntheticScriptMrp(mrpAnalysisCache.getMrpResult(advancedMrpDTO.getSessionId()));
+        return historyMrpService.getDetailHoldV2(response.getData(),advancedMrpDTO);
+    }
+
 
     //TODO here phân tích cơ bản
     @PostMapping(value = "/order-analytics/synthetic-mrp-analytics")

@@ -152,6 +152,64 @@ public class HistoryMrpService {
             .data(result);
     }
 
+    public PageResponse getDetailHoldV2(SyntheticMrpDTO request,AdvancedMrpDTO advancedMrpDTO){
+        List<DetailHoldInMrpDTO> res = new ArrayList<>();
+        List<ItemSyntheticDTO> requestData = request.getResultData();
+        List<String> items = new ArrayList<>();
+        for (ItemSyntheticDTO itemSyntheticDTO:requestData){
+            if(itemSyntheticDTO.getType().equals("NVL")){
+                items.add(itemSyntheticDTO.getItemCode());
+            }
+        }
+        List<ItemHoldDTO> itemHoldDTOS = itemHoldRepository.sumHoldItem(items);
+        List<DetailHoldInMrpDTO> result = dequy(advancedMrpDTO.getResultData(),itemHoldDTOS,res);
+        return new PageResponse<>()
+            .errorCode("00")
+            .message("Thành công")
+            .isOk(true)
+            .dataCount(result.size())
+            .data(result);
+    }
+
+    private List<DetailHoldInMrpDTO> dequy(List<MrpDetailDTO> mrpDetailDTOS,List<ItemHoldDTO> itemHoldDTOS,List<DetailHoldInMrpDTO> response){
+        Double sumRequest = 0.0;
+        Integer check = 0;
+        for (MrpDetailDTO mrpDetailDTO: mrpDetailDTOS){
+            if(mrpDetailDTO.getGroupItem().equals("NVL")){
+                DetailHoldInMrpDTO detailHoldInMrpDTO = new DetailHoldInMrpDTO();
+                detailHoldInMrpDTO.setItemCode(mrpDetailDTO.getItemCode());
+                detailHoldInMrpDTO.setItemName(mrpDetailDTO.getItemName());
+                detailHoldInMrpDTO.setTotalHoldQuantity(0.0);
+                List<MrpResultDTO> mrpResultDTOS= mrpDetailDTO.getDetailResult();
+                for (MrpResultDTO mrpResultDTO: mrpResultDTOS){
+                    if(check > 0){
+                        sumRequest += mrpResultDTO.getTotalOriginQuantity();
+                    }
+                    check ++;
+                }
+                detailHoldInMrpDTO.setRequestQuantity(sumRequest);//TODO: sửa lại số lượng yc MRP ở màn hold
+                sumRequest = 0.0;
+                check = 0;
+                detailHoldInMrpDTO.setRequiredQuantity(mrpDetailDTO.getRequiredQuantity());
+                detailHoldInMrpDTO.setBomVersion(mrpDetailDTO.getBomVersion());
+                detailHoldInMrpDTO.setType(mrpDetailDTO.getGroupItem());
+                detailHoldInMrpDTO.setAltItemCode(mrpDetailDTO.getAltItemCode());
+                for (ItemHoldDTO itemHoldDTO: itemHoldDTOS){
+                    if(itemHoldDTO.getSoCode().equals(mrpDetailDTO.getItemCode())){
+                        detailHoldInMrpDTO.setTotalHoldQuantity(itemHoldDTO.getQuantity());
+                        break;
+                    }
+                }
+                response.add(detailHoldInMrpDTO);
+            }
+            if (!mrpDetailDTO.getChildren().isEmpty()){
+                dequy(mrpDetailDTO.getChildren(),itemHoldDTOS,response);
+            }
+        }
+
+        return response;
+    }
+
     /**
      * hàm lấy ds MRP sub code
      * @param mrpCode

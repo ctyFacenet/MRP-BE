@@ -389,9 +389,15 @@ public class PurchaseRecommendationDetailService {
             batch
         );
 
+
         Integer countBatch = purchaseRecommendationBatchRepository.countBatchNotApproval(purchaseRecommendationId, batch);
         if (countBatch == 0) {
             purchaseHasRecommendationRepository.updateStatusPurchaseHasRecomment(purchaseRecommendationId, batch);
+        }
+
+        Integer count = purchaseRecommendationRepository.count(purchaseRecommendationId);
+        if (count == 0) {
+            purchaseRecommendationRepository.changeStatus(purchaseRecommendationId, 3);
         }
 
         MrpSubEntity mrpSubEntity = mrpSubRepository.getByMrpSubCodeAndStatus(purchaseRecommendationEntity.getMrpSubCode(), Constants.MrpSub.SENT_PURCHASE_RECOMMENDATION);

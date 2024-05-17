@@ -16,6 +16,7 @@ import com.facenet.mrp.service.model.ItemHoldInput;
 import com.facenet.mrp.service.utils.Constants;
 import com.facenet.mrp.service.utils.Utils;
 import org.apache.commons.lang3.time.DateUtils;
+import org.keycloak.crypto.KeyType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -24,10 +25,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class HoldItemService {
@@ -179,27 +177,28 @@ public class HoldItemService {
         return itemHoldRepository.saveAll(itemHoldEntities);
     }
 
-    public List<ItemHoldEntity> saveHoldItemV2(SyntheticMrpDTO syntheticMrpDTO, List<String> listHold) throws ParseException {
+    public List<ItemHoldEntity> saveHoldItemV2(SyntheticMrpDTO syntheticMrpDTO, Map<String,Double> listHold) throws ParseException {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        List<String> listItem = new ArrayList<>(listHold.keySet());
         List<ItemHoldEntity> itemHoldEntities = new ArrayList<>();
         for (ItemSyntheticDTO item : syntheticMrpDTO.getResultData()) {
             int numberOfOutOfSpaceWarehouse = 0;
             System.err.println("Item " + item.getItemCode());
             for (int i = 1; i < item.getDetailData().size(); i++) {
-                if (!listHold.contains(Utils.toItemKey(item.getItemCode(), item.getBomVersion()))) {
+                if (!listItem.contains(Utils.toItemKey(item.getItemCode(), item.getBomVersion()))) {
                     continue;
                 }
                 DetailItemSyntheticDTO itemQuantityDetail = item.getDetailData().get(i);
                 // Khong co nhu cau san xuat
                 if (itemQuantityDetail.getOriginQuantity() == 0) continue;
                 itemHoldEntities.add(itemHoldMapper.toItemHoldEntity(item, syntheticMrpDTO,
-//                                itemQuantityDetail.getRequiredQuantity(),
                         itemQuantityDetail.getOriginQuantity(),
                         null,
                         simpleDateFormat.parse(item.getDetailData().get(i).getLandMark()),
                         Constants.ItemHold.ACTIVE
                     )
                 );
+
                 // SL yêu cầu + SL cần mua(C) - SL đã len PR(B)
 //                double warehouseNeed = itemQuantityDetail.getOriginQuantity(); // need
 ////                    + itemQuantityDetail.getOriginalRequiredQuantity() // hold

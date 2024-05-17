@@ -30,4 +30,9 @@ public interface PurchaseRecommendationRepository extends JpaRepository<Purchase
     @Modifying
     @Query("update PurchaseRecommendationEntity p set p.status = :newStatus, p.updatedAt = current_time where p.purchaseRecommendationId = :purchaseRecommendationId and p.isActive = true")
     int changeStatus(@Param("purchaseRecommendationId") Integer purchaseRecommendationId, @Param("newStatus") int newStatus);
+
+//    @Query("select count(a) from PurchaseRecommendationEntity a where ")
+    @Query(value = "select count(p) from PurchaseRecommendationEntity a join PurchaseRecommendationDetailEntity pd on a.purchaseRecommendationId = pd.purchaseRecommendationId join PurchaseRecommendationBatch p  on p.purchaseRecommendationDetailId = pd.purchaseRecommendationDetailId where p.isActive = true and pd.isActive = true " +
+        "and pd.purchaseRecommendation.purchaseRecommendationId = :purchaseRecommendationId and p.status = 2")
+    Integer count(@Param("purchaseRecommendationId") Integer purchaseRecommendationId);
 }

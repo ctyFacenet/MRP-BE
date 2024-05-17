@@ -16,6 +16,6 @@ import java.util.Set;
 @AllArgsConstructor
 public class HoldRequest {
     private Map<String, Boolean> isHold;
-    private List<String> listHold;
+    private Map<String, Double> listHold;
 
 }

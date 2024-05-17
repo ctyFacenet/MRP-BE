@@ -13,6 +13,15 @@ public class ProductOrderFilter {
     private Date deliveryTime;
     private String salesCode;
     private String salesName;
+    private String createdPerson;
+
+    public String getCreatedPerson() {
+        return createdPerson;
+    }
+
+    public void setCreatedPerson(String createdPerson) {
+        this.createdPerson = createdPerson;
+    }
 
     private String priority;
 
