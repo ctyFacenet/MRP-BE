@@ -1,28 +1,25 @@
 package com.facenet.mrp.service.model;
 
 import com.facenet.mrp.domain.mrp.MrpProductionQuantityEntity;
-import com.facenet.mrp.domain.mrp.QMrpProductionQuantityEntity;
 import com.facenet.mrp.repository.mrp.MrpProductionQuantityRepository;
 import com.facenet.mrp.service.AnalysisDetailReportService;
 import com.facenet.mrp.service.dto.ComparisonQuantityDTO;
 import com.facenet.mrp.service.dto.ReportComparisonDTO;
 import com.facenet.mrp.service.dto.response.CommonResponse;
-import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.mapper.MrpProductionQuantityMapper;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MultiMapUtils;
-import org.apache.commons.collections4.map.MultiKeyMap;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class ComparisonReportService {
@@ -37,9 +34,7 @@ public class ComparisonReportService {
     }
 
     public CommonResponse<ReportComparisonDTO> getComparisonReport(ComparisonReportFilter filter) {
-        if (filter.getAnalysisMode() == null
-            || filter.getEndDate() == null
-            || filter.getStartDate() == null)
+        if (filter.getAnalysisMode() == null || filter.getEndDate() == null || filter.getStartDate() == null)
             throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.param");
 
         List<MrpProductionQuantityEntity> data = mrpProductionQuantityRepository.findAllByDueDateBetween(filter.getStartDate(), filter.getEndDate());
@@ -87,18 +82,32 @@ public class ComparisonReportService {
         while (startTime.compareTo(endTime) <= 0) {
             for (ReportComparisonDTO resultData : result) {
                 double mrpQuantity = 0;
+
                 List<MrpProductionQuantityEntity> itemQuantityList = mrpItemMap.get(resultData.getMrpCode()).get(resultData.getItemCode());
                 // Sum quantity between startTime & endTime
                 for (MrpProductionQuantityEntity itemQuantity : itemQuantityList) {
-                    if (itemQuantity.getDueDate().compareTo(startTime.getTime()) >= 0
-                        && itemQuantity.getDueDate().compareTo(endTime.getTime()) < 0) {
+                    if (itemQuantity.getDueDate().compareTo(startTime.getTime()) >= 0 && itemQuantity.getDueDate().compareTo(endTime.getTime()) < 0) {
                         mrpQuantity += itemQuantity.getProductionQuantity();
                     }
                 }
 
                 //TODO: Add importQuantity, qmsQuantity
+
+                Date date = startTime.getTime();
+                Date date2 = endTime.getTime();
+
+
+
                 ComparisonQuantityDTO resultQuantity = new ComparisonQuantityDTO();
                 resultQuantity.setMrpQuantity(mrpQuantity);
+
+
+//                resultQuantity.set
+
+
+
+
+
                 resultData.getCompareStats().add(resultQuantity);
             }
             startTime.add(Calendar.DATE, 1);
@@ -118,8 +127,6 @@ public class ComparisonReportService {
             }
         }
 
-        return new CommonResponse<>()
-            .success()
-            .data(result);
+        return new CommonResponse<>().success().data(result);
     }
 }

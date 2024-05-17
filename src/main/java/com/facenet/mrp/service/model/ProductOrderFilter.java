@@ -14,6 +14,8 @@ public class ProductOrderFilter {
     private String salesCode;
     private String salesName;
 
+    private String priority;
+
     public String getPoCode() {
         return poCode;
     }
@@ -76,5 +78,13 @@ public class ProductOrderFilter {
 
     public void setSalesName(String salesName) {
         this.salesName = salesName;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
     }
 }

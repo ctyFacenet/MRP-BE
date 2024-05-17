@@ -416,7 +416,7 @@ public class HistoryMrpService {
                     ItemSyntheticDTO itemSyntheticDTO = itemSyntheticDTOList.get(check);
                     itemSyntheticDTO.setRequestNumber(itemSyntheticDTO.getRequestNumber() + list.getRequestNumber());
 //                    itemSyntheticDTO.setPrNumber(itemSyntheticDTO.getPrNumber() + list.getPrNumber());
-                    if (itemSyntheticDTOList.size() > 0) {
+                    if (!itemSyntheticDTOList.isEmpty()) {
                         for (ViewBtpTpDTO vb : list.getViewBtpTp()) {
                             itemSyntheticDTO.getViewBtpTp().add(vb);
                         }

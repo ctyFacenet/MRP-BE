@@ -150,6 +150,10 @@ public class ProductOrderService {
         if (!StringUtils.isEmpty(filter.getSalesName())) {
             booleanBuilder.and(qProductOrder.partName.containsIgnoreCase(filter.getSalesName()));
         }
+
+        if (!StringUtils.isEmpty(filter.getPriority())) {
+            booleanBuilder.and(qProductOrder.priority.eq(Integer.valueOf(filter.getPriority())));
+        }
         query.where(booleanBuilder).orderBy(qProductOrder.createdAt.desc());
         List<ProductOrder> result = query.fetch();
         long count = query.fetchCount();

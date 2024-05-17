@@ -5,7 +5,15 @@ public class ComparisonQuantityDTO {
     private Double mrpQuantity;
     private Double importQuantity;
     private Double importWhsQMS;
+    private Double actualQuantity;
 
+    public Double getActualQuantity() {
+        return actualQuantity;
+    }
+
+    public void setActualQuantity(Double actualQuantity) {
+        this.actualQuantity = actualQuantity;
+    }
     public String getLandmark() {
         return landmark;
     }
