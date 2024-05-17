@@ -262,8 +262,9 @@ scada:
   user: ecyberlinh@gmail.com
   password: ATTT@123
   timeout: 10000
-exchange-rate:
-  api: https://api.exchangerate-api.com/v4/latest/USD
+report:
+  base-url: http://192.168.68.95:8080/api
+  get-mrp-integration-url: ${report.base-url}/work_orders/mrp-integration
 
 cache-mrp:
   expire: 6
