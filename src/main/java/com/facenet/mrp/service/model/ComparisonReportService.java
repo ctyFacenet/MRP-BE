@@ -4,18 +4,29 @@ import com.facenet.mrp.domain.mrp.MrpProductionQuantityEntity;
 import com.facenet.mrp.repository.mrp.MrpProductionQuantityRepository;
 import com.facenet.mrp.service.AnalysisDetailReportService;
 import com.facenet.mrp.service.dto.ComparisonQuantityDTO;
+import com.facenet.mrp.service.dto.MrpActualInputDTO;
+import com.facenet.mrp.service.dto.MrpActualOutputDTO;
+import com.facenet.mrp.service.dto.MrpCheckReportIntegrationInputDTO;
+import com.facenet.mrp.service.dto.MrpCheckReportIntegrationOutputDTO;
 import com.facenet.mrp.service.dto.ReportComparisonDTO;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.mapper.MrpProductionQuantityMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +37,10 @@ public class ComparisonReportService {
     private final MrpProductionQuantityRepository mrpProductionQuantityRepository;
     private final MrpProductionQuantityMapper mrpProductionQuantityMapper;
     private final EntityManager entityManager;
+
+    @Value("${report.get-mrp-integration-url}")
+    private String apiMrpGetCheckReportIntegrationDataFromReport;
+
 
     public ComparisonReportService(MrpProductionQuantityRepository mrpProductionQuantityRepository, MrpProductionQuantityMapper mrpProductionQuantityMapper, @Qualifier("mrpEntityManager") EntityManager entityManager) {
         this.mrpProductionQuantityRepository = mrpProductionQuantityRepository;
@@ -80,9 +95,32 @@ public class ComparisonReportService {
 
 
         while (startTime.compareTo(endTime) <= 0) {
-            for (ReportComparisonDTO resultData : result) {
-                double mrpQuantity = 0;
 
+            List<MrpActualInputDTO> mrpActualInputDTOList = new ArrayList<>();
+            for (ReportComparisonDTO resultData : result) {
+                MrpActualInputDTO mrpActualInputDTO = new MrpActualInputDTO();
+                mrpActualInputDTO.setSoCode(resultData.getSoCode());
+                mrpActualInputDTO.setBomVersion(resultData.getVersion());
+                mrpActualInputDTO.setProductCode(resultData.getItemCode());
+                mrpActualInputDTOList.add(mrpActualInputDTO);
+            }
+
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            MrpCheckReportIntegrationInputDTO mrpCheckReportIntegrationDTO = new MrpCheckReportIntegrationInputDTO();
+            mrpCheckReportIntegrationDTO.setStartTime(startTime.getTime());
+            mrpCheckReportIntegrationDTO.setEndTime(endTime.getTime());
+            mrpCheckReportIntegrationDTO.setMrpActualDTO(mrpActualInputDTOList);
+            HttpEntity<MrpCheckReportIntegrationInputDTO> httpEntity = new HttpEntity<>(mrpCheckReportIntegrationDTO,headers);
+            MrpCheckReportIntegrationOutputDTO responseBody = restTemplate.exchange(apiMrpGetCheckReportIntegrationDataFromReport, HttpMethod.POST, httpEntity, MrpCheckReportIntegrationOutputDTO.class).getBody();
+
+
+
+            for (ReportComparisonDTO resultData : result) {
+
+                double mrpQuantity = 0;
                 List<MrpProductionQuantityEntity> itemQuantityList = mrpItemMap.get(resultData.getMrpCode()).get(resultData.getItemCode());
                 // Sum quantity between startTime & endTime
                 for (MrpProductionQuantityEntity itemQuantity : itemQuantityList) {
@@ -92,22 +130,12 @@ public class ComparisonReportService {
                 }
 
                 //TODO: Add importQuantity, qmsQuantity
-
-                Date date = startTime.getTime();
-                Date date2 = endTime.getTime();
-
-
-
+                Double actualQuantity = responseBody.getHashMap().get(resultData.getSoCode() + responseBody.getSplitString() + resultData.getItemCode() + responseBody.getSplitString() + resultData.getVersion()).getActualQuantity();
+                Double qmsQuantity = responseBody.getHashMap().get(resultData.getSoCode() + responseBody.getSplitString() + resultData.getItemCode() + responseBody.getSplitString() + resultData.getVersion()).getQmsQuantity();
                 ComparisonQuantityDTO resultQuantity = new ComparisonQuantityDTO();
                 resultQuantity.setMrpQuantity(mrpQuantity);
-
-
-//                resultQuantity.set
-
-
-
-
-
+                resultQuantity.setActualQuantity(actualQuantity);
+                resultQuantity.setImportWhsQMS(qmsQuantity);
                 resultData.getCompareStats().add(resultQuantity);
             }
             startTime.add(Calendar.DATE, 1);
