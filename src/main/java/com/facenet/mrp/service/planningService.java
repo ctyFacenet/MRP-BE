@@ -40,30 +40,50 @@ public class planningService {
     @Value("${planning.api.createWo}")
     private String apiCreateWo;
 
+    @Value("${planning.api.updatePo}")
+    private String apiUpdateProductOrder;
+
     public planningService(RestTemplate restTemplate, PlanningConfigure configure) {
         this.restTemplate = restTemplate;
         this.configure = configure;
     }
 
-    public Integer callApiPlanning(List<PlanningProductionOrder> donHangArrayList) {
+    public String callApiPlanning(List<List<PlanningProductionOrder>> donHangArrayList,Boolean type) {
         String accessToken = configure.getAccessToken();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(accessToken);
-        System.out.println("-----------------------donHangArrayList-----------------"+donHangArrayList);
-        HttpEntity<List<PlanningProductionOrder>> httpEntity = new HttpEntity<>(donHangArrayList,headers);
+        String apiSyncPo = apiSyncProductOrder+type;
+        System.out.println(apiSyncPo+"-----------------------donHangArrayList-----------------"+donHangArrayList);
+        HttpEntity<List<List<PlanningProductionOrder>>> httpEntity = new HttpEntity<>(donHangArrayList,headers);
         ResponseEntity<String> response = restTemplate.exchange(
-            apiSyncProductOrder,
+            apiSyncPo,
             HttpMethod.POST,
             httpEntity,
             new ParameterizedTypeReference<>() {
             }
         );
 
-        if (response.getBody().equals("SUCCESS")) {
-            return 1;
-        }
-        return 0;
+        return response.getBody();
+    }
+
+    public String callApiPlanningUpdatePo(PlanningProductionOrder donHangArrayList,String productCode,Boolean isSend) {
+        String accessToken = configure.getAccessToken();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(accessToken);
+        String api = apiUpdateProductOrder+isSend+"/code="+productCode;
+        System.out.println("test api: "+api);
+        HttpEntity<PlanningProductionOrder> httpEntity = new HttpEntity<>(donHangArrayList,headers);
+        ResponseEntity<String> response = restTemplate.exchange(
+            api,
+            HttpMethod.POST,
+            httpEntity,
+            new ParameterizedTypeReference<>() {
+            }
+        );
+
+        return response.getBody();
     }
 
     public String callApiCreateWorkOrder(List<CreateWoFromMrp> createWoFromMrps) {

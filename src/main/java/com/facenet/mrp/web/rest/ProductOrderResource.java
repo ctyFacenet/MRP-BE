@@ -94,6 +94,12 @@ public class ProductOrderResource {
     public String createWorkOrder(@RequestBody List<CreateWoFromMrp> createWoFromMrpsc) {
         return productOrderService.createWorkOrder(createWoFromMrpsc);
     }
+
+    @PostMapping("/send-planning-before-wo/{soCode}")
+    public String sendPlanningBeforeCreateWo(@PathVariable String soCode) throws ParseException {
+        return productOrderService.sendPlanningBeforeCreateWo(soCode);
+    }
+
     @GetMapping("/get-work-order/{po}")
     public List<WorkOrder> getWorkOrder(@PathVariable String po) {
         return productOrderService.getListWO(po);
@@ -163,16 +169,17 @@ public class ProductOrderResource {
             new CommonResponse<>().isOk(true).message("xóa đơn hàng thành công").errorCode("00"));
     }
 
-    @PutMapping("/update-product-order/{productOrderCode}")
+    @PutMapping("/update-product-order/{productOrderCode}/{isSend}")
     @PreAuthorize("hasAnyAuthority('DHSX', 'S')")
     public ResponseEntity updateProductOrder(
         @PathVariable("productOrderCode")String productOrderCode,
-        @RequestBody ProductOrderDto dto
+        @RequestBody ProductOrderDto dto,
+        @PathVariable Boolean isSend
         ) {
         if (productOrderCode == null || dto == null){
             throw new CustomException(HttpStatus.BAD_REQUEST,"invalid.param");
         }
-        productOrderService.updateProductOrder(productOrderCode, dto);
+        productOrderService.updateProductOrder(productOrderCode, dto, isSend);
         return ResponseEntity.ok(
             new CommonResponse<>()
                 .isOk(true)

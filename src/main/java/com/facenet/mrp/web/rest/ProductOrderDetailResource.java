@@ -64,17 +64,18 @@ public class ProductOrderDetailResource {
         );
     }
 
-    @PutMapping("product-order-detail/updated-detail/{productOrderCode}/products/{productCode}")
+    @PutMapping("product-order-detail/updated-detail/{productOrderCode}/products/{productCode}/{isSend}")
     @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'S')")
     public ResponseEntity updateProductOrderDetail (
         @PathVariable("productCode")String productCode,
         @PathVariable("productOrderCode")String productOrderCode,
-        @RequestBody ProductOrderDetailDto dto
+        @RequestBody ProductOrderDetailDto dto,
+        @PathVariable Boolean isSend
     ) {
         if (productCode == null || dto == null){
             throw new CustomException(HttpStatus.BAD_REQUEST,"invalid.param");
         }
-        productOrderDetailService.updateProductOrderDetail(productCode, productOrderCode, dto);
+        productOrderDetailService.updateProductOrderDetail(productCode, productOrderCode, dto,isSend);
         return ResponseEntity.ok(
             new CommonResponse<>()
                 .isOk(true)
