@@ -23,6 +23,8 @@ public class ProductOrderFilter {
         this.createdPerson = createdPerson;
     }
 
+    private String priority;
+
     public String getPoCode() {
         return poCode;
     }
@@ -85,5 +87,13 @@ public class ProductOrderFilter {
 
     public void setSalesName(String salesName) {
         this.salesName = salesName;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
     }
 }

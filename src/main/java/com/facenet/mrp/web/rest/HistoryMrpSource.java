@@ -145,6 +145,7 @@ public class HistoryMrpSource {
         return historyMrpService.viewSynthetic(mrpDTO);
     }
 
+
     /**
      * Adapter for old method
      * @param sessionId sessionId (UUID)
