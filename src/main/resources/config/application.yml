@@ -169,23 +169,23 @@ spring:
       client:
         provider:
           oidc:
-#            issuer-uri: https://sso.xfactory.vn/auth/realms/QLSX
-            issuer-uri: http://192.168.68.90:8080/auth/realms/QLSX
+            issuer-uri: https://sso.xfactory.vn/auth/realms/QLSX
+#            issuer-uri: http://192.168.68.90:8080/auth/realms/QLSX
         registration:
           oidc:
             client-id: mrp_backend
             client-secret: mrp_backend
             scope: openid, profile, email, offline_access # last one for refresh tokens
 keycloak:
-#  auth-server-url: https://sso.xfactory.vn/auth
-  auth-server-url: http://192.168.68.90:8080/auth
+  auth-server-url: https://sso.xfactory.vn/auth
+#  auth-server-url: http://192.168.68.90:8080/auth
   realm: master
   resource: admin-cli
   credentials:
     secret: mrp_backend
     username: admin
-    password: 'Rangdong@123'
-#    password: '123321'
+#    password: 'Rangdong@123'
+    password: '123321'
   approval:
     realm: QLSX
     role: MRP_QL
