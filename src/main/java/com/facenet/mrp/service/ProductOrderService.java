@@ -277,7 +277,6 @@ public class ProductOrderService {
         file.close();
     }
 
-    //TODO: Đẩy đơn hàng khi import excel sang planning
     public String saveAll(HashMap<String, List<ProductOrder>> donHangArrayList, Boolean isSend) throws CustomException, ParseException {
         List<MrpDetailDTO> detailDTOS;
         ItemQuantity countChildren;
@@ -286,6 +285,9 @@ public class ProductOrderService {
         logger.info(" saveAll Order");
         List<List<PlanningProductionOrder>> donHangArraySendPlanning = new ArrayList<>();
         for (List<ProductOrder> orderList : donHangArrayList.values()) {
+            if(isSend){
+                donHangArraySendPlanning.add(mapExcelToPlanning(orderList));
+            }
             String poId = orderList.get(0).getProductOrderCode();
             ProductOrder productionOrder = productOrderRepository.findProductOrderByProductOrderCodeAndIsActive(poId, (byte) 1);
             if (productionOrder != null) {
@@ -306,9 +308,6 @@ public class ProductOrderService {
             Set<String> productCodes = new HashSet<>();
             for (ProductOrder order : orderList) {
                 //lấy danh sách đơn hàng để gửi planning
-                if(isSend){
-                    donHangArraySendPlanning.add(mapToPlanning(order));
-                }
                 countChildren = new ItemQuantity();
                 String productCodeVersion = order.getProductCode() + order.getBomVersion();
                 if (productCodesVersion.contains(productCodeVersion))
@@ -533,6 +532,67 @@ public class ProductOrderService {
                 donHang.setEndDate(null);
             }
             productionOrderList.addAll(callBomForPo(productOrder,productOrderDetails));
+            productionOrderList.add(donHang);
+            System.out.println("----------------------------danh sách đơn hàng 2: "+productionOrderList.toString());
+        }
+        return productionOrderList;
+    }
+
+
+    private List<PlanningProductionOrder> mapExcelToPlanning(List<ProductOrder> productOrders) throws ParseException {
+        List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
+        for (ProductOrder productOrder: productOrders){
+            PlanningProductionOrder donHang = new PlanningProductionOrder();
+            donHang.setId(UUID.randomUUID());
+            donHang.setProductOrderId(productOrder.getProductOrderCode());
+            donHang.setProductOrderType(productOrder.getProductOrderType());
+            donHang.setPartCode(productOrder.getPartCode());
+            donHang.setPartName(productOrder.getPartName());
+            donHang.setPriority(String.valueOf(productOrder.getPriority()));
+            donHang.setBranchCode(productOrder.getPartCode());
+
+            donHang.setExternalPoId(productOrder.getProductCodeChild());
+            donHang.setCustomerCode(productOrder.getCustomerId());
+            donHang.setCustomerName(productOrder.getCustomerName());
+            donHang.setBomVersion(productOrder.getBomVersion());
+            donHang.setProductCode(productOrder.getProductCode());
+            donHang.setProductName(productOrder.getProductName());
+            donHang.setQuantity(productOrder.getQuantity());
+            donHang.setProductType(0);
+            donHang.setState("CREATED");
+            donHang.setStatus("active");
+            donHang.setEmployeeCode(productOrder.getSaleCode());//nv sale
+            donHang.setItemPriority(productOrder.getPriorityProduct());
+            donHang.setClassify(1);
+            donHang.setOriginal("MRP");
+            if (productOrder.getOrderDate() != null) {
+                donHang.setOrderDate(convert(productOrder.getOrderDate().toString()));
+            } else {
+                donHang.setOrderDate(null);
+            }
+
+            if (productOrder.getDeliverDate()  != null) {
+                donHang.setCompleteDate(convert(productOrder.getDeliverDate().toString()));
+            }else {
+                donHang.setCompleteDate(null);
+            }
+
+            if (productOrder.getStartDate()  != null) {
+                donHang.setStartDate(convert(productOrder.getStartDate().toString()));
+            }else {
+                donHang.setStartDate(null);
+            }
+
+            if (productOrder.getEndDate()  != null) {
+                //endTime
+                donHang.setEndDate( convert(productOrder.getEndDate().toString()));
+            }else {
+                donHang.setEndDate(null);
+            }
+            ProductOrderDetail productOrderDetail = new ProductOrderDetail();
+            productOrderDetail.setProductCode(productOrder.getProductCode());
+            productOrderDetail.setBomVersion(productOrder.getBomVersion());
+            productionOrderList.addAll(callBomForPo(productOrder,productOrderDetail));
             productionOrderList.add(donHang);
             System.out.println("----------------------------danh sách đơn hàng 2: "+productionOrderList.toString());
         }
