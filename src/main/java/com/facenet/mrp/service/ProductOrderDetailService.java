@@ -12,6 +12,7 @@ import com.facenet.mrp.service.dto.ProductOrderDetailDto;
 import com.facenet.mrp.service.dto.mrp.CurrentInventory;
 import com.facenet.mrp.service.dto.mrp.ItemQuantity;
 import com.facenet.mrp.service.dto.mrp.MrpDetailDTO;
+import com.facenet.mrp.service.dto.mrp.PlanningProductionOrder;
 import com.facenet.mrp.service.dto.request.SendAnalysisRequest;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.mapper.ForrecastOrderMapper;
@@ -258,7 +259,7 @@ public class ProductOrderDetailService {
         }
     }
 
-    public void updateProductOrderDetail(String productCode, String productOrderCode, ProductOrderDetailDto dto) throws CustomException {
+    public void updateProductOrderDetail(String productCode, String productOrderCode, ProductOrderDetailDto dto,Boolean isSend) throws CustomException {
 
         ProductOrderDetail existDetail = detailRepository.getOneProductOrderDetail(productCode, productOrderCode);
         if (existDetail == null) {
@@ -307,6 +308,22 @@ public class ProductOrderDetailService {
 
         try {
             detailRepository.save(existDetail);
+            PlanningProductionOrder productOrderItem = new PlanningProductionOrder();
+            productOrderItem.setProductOrderId(productOrderCode);//mã so nội bộ
+            productOrderItem.setExternalPoId(dto.getProductOrderChild());//mã so
+            productOrderItem.setProductCode(dto.getProductCode());//mã sp
+            productOrderItem.setProductName(dto.getProductName());//tên sp
+            productOrderItem.setQuantity(dto.getOrderQuantity());//số lượng
+            productOrderItem.setBomVersion(dto.getBomVersion());//bom
+            productOrderItem.setStartDate(dto.getOrderedTime());//thời gian bắt đầu
+            productOrderItem.setEndDate(dto.getDeliveryTime());//thời gian kết thúc
+            productOrderItem.setCustomerCode(dto.getCustomerCode());//mã kh
+            productOrderItem.setCustomerName(dto.getCustomerName());//tên kh
+            productOrderItem.setNote(dto.getNote());//ghi chú
+            productOrderItem.setEmployeeCode(dto.getSaleCode());//mã sale
+            productOrderItem.setPriority(dto.getPriority());//mức độ ưu tiên
+            //cập nhật sp ở planning
+            productOrderService.updatePoPlanning(productOrderItem,existDetail.getProductCode(),isSend);
         } catch (RuntimeException e) {
             logger.error("UpdateProductOrderDetail error", e);
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "internal.error");

@@ -215,11 +215,10 @@ public class ProductOrderService {
         return productOrderResponse;
     }
 
-    public void updateProductOrder(String productOrderCode, ProductOrderDto dto) throws CustomException {
+    public void updateProductOrder(String productOrderCode, ProductOrderDto dto, Boolean isSend) throws CustomException {
         logger.info("Update poCode {}", productOrderCode);
         //lấy dữ liệu productOrder
         ProductOrder existPo = productOrderRepository.findByProductOrderCode(productOrderCode);
-
         //update dữ liệu cho Po cần cập nhật
         if (existPo == null) {
             throw new CustomException("record.notfound");
@@ -244,6 +243,16 @@ public class ProductOrderService {
         //Save dữ liệu vừa cập nhật
         try {
             productOrderRepository.save(existPo);
+            //gửi đơn hàng sang planning nếu click send hoặc update nếu có thay đổi
+            PlanningProductionOrder productionOrder = new PlanningProductionOrder();
+            productionOrder.setProductOrderId(existPo.getProductOrderCode());
+            productionOrder.setProductOrderType(dto.getPoType());
+            productionOrder.setPartCode(dto.getSalesCode());
+            productionOrder.setPartName(dto.getSalesName());
+            productionOrder.setOrderDate(dto.getOrderedTime());
+            productionOrder.setCompleteDate(dto.getDeliveryTime());
+            productionOrder.setNote(dto.getNote());
+            updatePoPlanning(productionOrder,"-1",isSend);
         } catch (CustomException e) {
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "internal.error");
         }
@@ -271,7 +280,7 @@ public class ProductOrderService {
 
         ProductOrderDetail orderItem;
         logger.info(" saveAll Order");
-        List<PlanningProductionOrder> donHangArraySendPlanning = new ArrayList<>();
+        List<List<PlanningProductionOrder>> donHangArraySendPlanning = new ArrayList<>();
         for (List<ProductOrder> orderList : donHangArrayList.values()) {
             String poId = orderList.get(0).getProductOrderCode();
             ProductOrder productionOrder = productOrderRepository.findProductOrderByProductOrderCodeAndIsActive(poId, (byte) 1);
@@ -294,7 +303,7 @@ public class ProductOrderService {
             for (ProductOrder order : orderList) {
                 //lấy danh sách đơn hàng để gửi planning
                 if(isSend){
-                    donHangArraySendPlanning.addAll(mapToPlanning(order));
+                    donHangArraySendPlanning.add(mapToPlanning(order));
                 }
                 countChildren = new ItemQuantity();
                 String productCodeVersion = order.getProductCode() + order.getBomVersion();
@@ -372,14 +381,14 @@ public class ProductOrderService {
 
     @Transactional
     public void createNewProductOrder(List<ProductOrder> productOrders, Boolean isSend) throws ParseException {
-        List<PlanningProductionOrder> donHangArrayList = new ArrayList<>();
+        List<List<PlanningProductionOrder>> donHangArrayList = new ArrayList<>();
         ItemQuantity countChildren;
         List<MrpDetailDTO> detailDTOS;
 
         logger.info("start create new product order");
         for (ProductOrder productOrder : productOrders) {
             //add BTP TP vào list
-            donHangArrayList.addAll(mapToPlanning(productOrder));
+            donHangArrayList.add(mapToPlanning(productOrder));
             Set<String> productCodes = new HashSet<>();
             if (productOrder.getProductOrderDetails() == null || productOrder.getProductOrderDetails().isEmpty()) {
                 throw new CustomException("order.detail.is.must.not.empty");
@@ -435,15 +444,37 @@ public class ProductOrderService {
     }
 
     //hàm gọi api planning và đồng bộ
-    private void syncToPlanning(List<PlanningProductionOrder> donHangArrayList){
-        Integer check = planningService.callApiPlanning(donHangArrayList);
-        if(check == 0){
-            throw new CustomException("Đồng bộ planning thất bại");
+    private void syncToPlanning(List<List<PlanningProductionOrder>> donHangArrayList){
+        String check = planningService.callApiPlanning(donHangArrayList,false);
+        if(check != "SUCCESS"){
+            throw new CustomException("Đồng bộ planning thất bại: "+check);
+        }
+    }
+    //hàm gọi update đơn hàng hoặc gửi đơn hàng từ màn ql đơn hàng sang planning
+    public void updatePoPlanning(PlanningProductionOrder donHangArrayList, String productCode, Boolean isSend){
+        String check = planningService.callApiPlanningUpdatePo(donHangArrayList, productCode,isSend);
+        if(check != "SUCCESS"){
+            throw new CustomException(check);
         }
     }
 
     public String createWorkOrder(List<CreateWoFromMrp> createWoFromMrps){
         return planningService.callApiCreateWorkOrder(createWoFromMrps);
+    }
+
+    public String sendPlanningBeforeCreateWo(String soCode) throws ParseException {
+        ProductOrder productOrder = productOrderRepository.findAllByProductOrderCode(soCode);
+        if(productOrder == null){
+            return "Mã đơn hàng "+ soCode + "không tồn tại trên hệ thống";
+        }
+        List<List<PlanningProductionOrder>> data = new ArrayList<>();
+        List<PlanningProductionOrder> planningProductionOrders = mapToPlanning(productOrder);
+        data.add(planningProductionOrders);
+        String check = planningService.callApiPlanning(data,true);
+        if(check != "SUCCESS"){
+            throw new CustomException(check);
+        }
+        return "";
     }
 
     private List<PlanningProductionOrder> mapToPlanning(ProductOrder productOrder) throws ParseException {
