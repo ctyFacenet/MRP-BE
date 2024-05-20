@@ -9,6 +9,7 @@ import com.facenet.mrp.service.dto.mrp.AnalysisDetailReportFilter;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.model.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
@@ -73,7 +74,7 @@ public class ReportResource {
 
     @PostMapping("/compare-report")
     @PreAuthorize("hasAnyAuthority('BC')")
-    public CommonResponse<ReportComparisonDTO> getComparisonReport(@RequestBody ComparisonReportFilter filter){
+    public CommonResponse<ReportComparisonDTO> getComparisonReport(@RequestBody ComparisonReportFilter filter) throws JsonProcessingException {
         return comparisonReportService.getComparisonReport(filter);
     }
 

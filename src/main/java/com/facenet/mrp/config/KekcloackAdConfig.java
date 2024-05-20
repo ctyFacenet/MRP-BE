@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class KekcloackAdConfig {
+
+    // Planning
     @Value("${keycloak_planning.baseUrl}")
     private String serverUrl;
 
@@ -26,6 +28,30 @@ public class KekcloackAdConfig {
 
     @Value("${keycloak_planning.clientSecret}")
     private String clientSecret;
+
+    // Report
+
+
+    @Value("${keycloak_report.baseUrl}")
+    private String serverReportUrl;
+
+    @Value("${keycloak_report.realm}")
+    private String realmReport;
+
+    @Value("${keycloak_report.clientId}")
+    private String clientIdReport;
+
+    @Value("${keycloak_report.username}")
+    private String usernameReport;
+
+    @Value("${keycloak_report.password}")
+    private String passwordReport;
+
+    @Value("${keycloak_report.clientSecret}")
+    private String clientSecretReport;
+
+
+
     @Bean
     public Keycloak getKeycloak() {
         return KeycloakBuilder
@@ -44,4 +70,10 @@ public class KekcloackAdConfig {
     public PlanningConfigure PlanningTokenProvider() {
         return new PlanningConfigure(serverUrl, realm, clientId, clientSecret, username, password);
     }
+
+    @Bean
+    public ReportConfigure ReportTokenProvider() {
+        return new ReportConfigure(serverReportUrl, realmReport, clientIdReport, clientSecretReport, usernameReport, passwordReport);
+    }
+
 }

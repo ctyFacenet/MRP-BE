@@ -169,16 +169,16 @@ spring:
       client:
         provider:
           oidc:
-            issuer-uri: https://sso.xfactory.vn/auth/realms/QLSX
-#            issuer-uri: http://192.168.68.90:8080/auth/realms/QLSX
+#            issuer-uri: https://sso.xfactory.vn/auth/realms/QLSX
+            issuer-uri: http://192.168.68.90:8080/auth/realms/QLSX
         registration:
           oidc:
             client-id: mrp_backend
             client-secret: mrp_backend
             scope: openid, profile, email, offline_access # last one for refresh tokens
 keycloak:
-  auth-server-url: https://sso.xfactory.vn/auth
-#  auth-server-url: http://192.168.68.90:8080/auth
+#  auth-server-url: https://sso.xfactory.vn/auth
+  auth-server-url: http://192.168.68.90:8080/auth
   realm: master
   resource: admin-cli
   credentials:
@@ -265,7 +265,7 @@ scada:
 exchange-rate:
   api: https://api.exchangerate-api.com/v4/latest/USD
 report:
-  base-url: http://192.168.68.95:8080/api
+  base-url: http://localhost:9089/api
   get-mrp-integration-url: ${report.base-url}/work_orders/mrp-integration
 
 cache-mrp:
