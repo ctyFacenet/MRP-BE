@@ -365,6 +365,9 @@ public class ProductOrderService {
         return "SUCCESS";
     }
 
+    public String deletePoPlanning(String orderCode, String productCode, Boolean type){
+        return planningService.callApiDeletePo(orderCode,productCode,type);
+    }
     private void validateBomVersion(List<ProductOrderDetail> productOrderDetails, Set<String> productCodes) {
         List<CoittEntity> coittEntities = coittRepository.getCoittEntitiesByuProNoIn(productCodes);
         MultiValuedMap<String, String> itemBomMap = new ArrayListValuedHashMap<>();

@@ -43,6 +43,9 @@ public class planningService {
     @Value("${planning.api.updatePo}")
     private String apiUpdateProductOrder;
 
+    @Value("${planning.api.deletePo}")
+    private String apiDeleteProductOrder;
+
     public planningService(RestTemplate restTemplate, PlanningConfigure configure) {
         this.restTemplate = restTemplate;
         this.configure = configure;
@@ -95,6 +98,25 @@ public class planningService {
 
         ResponseEntity<String> response = restTemplate.exchange(
             apiCreateWo,
+            HttpMethod.POST,
+            httpEntity,
+            new ParameterizedTypeReference<>() {
+            }
+        );
+
+        return response.getBody();
+    }
+
+    public String callApiDeletePo(String orderCode, String productCode, Boolean type) {
+        String accessToken = configure.getAccessToken();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(accessToken);
+        HttpEntity<String> httpEntity = new HttpEntity<>(headers);
+        String api = apiDeleteProductOrder+ orderCode + "/productCode="+productCode+"/type="+type;
+        System.out.println("--------api xóa đơn hàng "+api);
+        ResponseEntity<String> response = restTemplate.exchange(
+            api,
             HttpMethod.POST,
             httpEntity,
             new ParameterizedTypeReference<>() {

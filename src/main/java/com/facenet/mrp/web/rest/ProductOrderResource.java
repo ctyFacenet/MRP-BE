@@ -14,6 +14,7 @@ import com.facenet.mrp.service.model.ProductOrderInput;
 import com.facenet.mrp.service.model.ProductOrderResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -188,5 +189,18 @@ public class ProductOrderResource {
         );
     }
 
-
+    @PostMapping("/delete-product-order/{productOrderCode}/productCode={productCode}/type={type}")
+    public ResponseEntity deleteProductOrder(
+        @PathVariable("productOrderCode")String productOrderCode,
+        @PathVariable("productCode") String productCode,// xóa đơn hàng thì mặc định là -1
+        @PathVariable("type") Boolean type// xóa đơn hàng thì = true, xóa sp thì = false
+    ) {
+        String mes_str = productOrderService.deletePoPlanning(productOrderCode, productCode, type);
+        return ResponseEntity.ok(
+            new CommonResponse<>()
+                .isOk(true)
+                .errorCode("00")
+                .data(mes_str)
+        );
+    }
 }
