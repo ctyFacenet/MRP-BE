@@ -80,7 +80,6 @@ public class ProductOrderDetailService {
         this.productOrderService = productOrderService;
         this.coittRepository = coittRepository;
     }
-
     /**
      * Lấy sản phẩm groupBy Đơn hàng có hỗ trợ paging
      *
@@ -89,20 +88,17 @@ public class ProductOrderDetailService {
      * @return
      */
     public ProductOrderDetailResponse getAllProductDetail(String productOrderCode, ProductOrderDetailInput input) throws IOException, ParseException {
-
         List<ProductOrderDetailDto> dtoList = new ArrayList<>();
         List<String> poCodeList = new ArrayList<>();
         ResultCode resultCode = new ResultCode();
         ProductOrderDetailResponse response = new ProductOrderDetailResponse();
         HashMap<String, Double> inStockQuantityHM = new HashMap<>();
         HashMap<String, Double> missingQuantityHM = new HashMap<>();
-
         double missingQuantity;
         Pageable pageable = PageRequest.of(input.getPageNumber(), input.getPageSize());
         ProductOrderDetailFilter filter = input.getFilter();
         QProductOrder qProductOrder = QProductOrder.productOrder;
         QProductOrderDetail qProductOrderDetail = QProductOrderDetail.productOrderDetail;
-
         JPAQuery<ProductOrderDetail> query = new
             JPAQueryFactory(entityManager)
             .selectFrom(qProductOrderDetail);
@@ -163,9 +159,7 @@ public class ProductOrderDetailService {
         List<ProductOrderDetail> result = query.fetch();
         long count = query.fetchCount();
 //        Page<ProductOrderDetail> productOrderDetailPage = new PageImpl<>(result, pageable, count);
-
         logger.info("productOrderDetailPage.content: {}", result.size());
-
         if (result.isEmpty() || result == null) {
             throw new CustomException("record.notfound");
 //            logger.info("No record for product order {}", productOrderCode);
@@ -202,12 +196,10 @@ public class ProductOrderDetailService {
                     inStockQuantityHM.get(detail.getProductCode()),
                     String.format("%.1f", missingQuantity)));
             }
-
             response.setResult(resultCode);
             response.setDataCount(count);
             response.setData(dtoList);
         }
-
         return response;
     }
 
@@ -219,7 +211,6 @@ public class ProductOrderDetailService {
     public void createNewProductOrderDetail(String poCode, ProductOrderDetailDto dto) throws IOException, ParseException {
         ItemQuantity countChildren = new ItemQuantity();
         List<MrpDetailDTO> detailDTOS;
-
         //tìm po chứa product để insert
         ProductOrder productOrder = productOrderRepository.findByProductOrderCode(poCode);
         ProductOrderDetail existDetail = detailRepository.getOneProductOrderDetail(dto.getProductCode(), poCode);
@@ -229,103 +220,25 @@ public class ProductOrderDetailService {
         if (!(existDetail == null)) {
             throw new CustomException("product.order.detail.exist", dto.getProductCode());
         }
-
         //Count so NVl trong TP
         //query lấy children của sản phẩm TP
         detailDTOS = coittRepository.getAllMrpProductBom(dto.getProductCode(), dto.getBomVersion());
         logger.info("children của sản phẩm: {}", detailDTOS);
-
         //Cho vào hàm đệ quy để tìm các NVl/BTp con trong TP
         countChildren.setQuantity(0.0);
         productOrderService.getChildrenCountOfProduct(countChildren, detailDTOS);
-
         System.err.println("countChildren dff: " + countChildren.getQuantity());
-
         //Chuyển Dto thành entity
         ProductOrderDetail orderDetail = mapper.dtoToEntity(dto);
         orderDetail.setProductOrderCode(productOrder);
         orderDetail.setStatus(1);
         orderDetail.setIsActive((byte) 1);
         orderDetail.setMaterialChildrenCount(countChildren.getQuantity().intValue());
-
-
         //Save product vao db
         try {
             detailRepository.save(orderDetail);
-
         } catch (RuntimeException e) {
             logger.error("createNewProductOrderDetail error", e);
-            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "internal.error");
-        }
-    }
-
-    public void updateProductOrderDetail(String productCode, String productOrderCode, ProductOrderDetailDto dto,Boolean isSend) throws CustomException {
-
-        ProductOrderDetail existDetail = detailRepository.getOneProductOrderDetail(productCode, productOrderCode);
-        if (existDetail == null) {
-            throw new CustomException("record.notfound");
-        }
-
-        if (productCode.equals(dto.getProductCode())) {
-            existDetail.setProductName(dto.getProductName());
-            existDetail.setBomVersion(dto.getBomVersion());
-            existDetail.setQuantity(dto.getOrderQuantity());
-            existDetail.setOrderDate(dto.getOrderedTime());
-            existDetail.setDeliverDate(dto.getDeliveryTime());
-            existDetail.setSupplyType(dto.getSupplyMethod());
-            existDetail.setPriority(Integer.valueOf(dto.getPriority()));
-            existDetail.setNote(dto.getNote());
-            existDetail.setBomStatus(dto.getBomStatus());
-            existDetail.setCustomerCode(dto.getCustomerCode());
-            existDetail.setProductOrderChild(dto.getProductOrderChild());
-            existDetail.setCustomerName(dto.getCustomerName());
-            existDetail.setSaleCode(dto.getSaleCode());
-        } else {
-            int checkExistProduct = detailRepository.checkExistProduct(dto.getProductCode(), productOrderCode);
-
-            if (checkExistProduct >= 1) {
-                throw new CustomException("product.order.detail.exist", dto.getProductCode());
-            } else {
-                existDetail.setProductCode(dto.getProductCode());
-                existDetail.setProductName(dto.getProductName());
-                existDetail.setBomVersion(dto.getBomVersion());
-                existDetail.setQuantity(dto.getOrderQuantity());
-                existDetail.setOrderDate(dto.getOrderedTime());
-                existDetail.setDeliverDate(dto.getDeliveryTime());
-                existDetail.setSupplyType(dto.getSupplyMethod());
-                existDetail.setPriority(Integer.valueOf(dto.getPriority()));
-                existDetail.setNote(dto.getNote());
-                existDetail.setBomStatus(dto.getBomStatus());
-                existDetail.setCustomerCode(dto.getCustomerCode());
-                existDetail.setProductOrderChild(dto.getProductOrderChild());
-                existDetail.setCustomerName(dto.getCustomerName());
-                existDetail.setSaleCode(dto.getSaleCode());
-            }
-        }
-
-        logger.info("------------------------------------------------");
-        logger.info("existDetail.productName: {}", existDetail.getProductName());
-
-        try {
-            detailRepository.save(existDetail);
-            PlanningProductionOrder productOrderItem = new PlanningProductionOrder();
-            productOrderItem.setProductOrderId(productOrderCode);//mã so nội bộ
-            productOrderItem.setExternalPoId(dto.getProductOrderChild());//mã so
-            productOrderItem.setProductCode(dto.getProductCode());//mã sp
-            productOrderItem.setProductName(dto.getProductName());//tên sp
-            productOrderItem.setQuantity(dto.getOrderQuantity());//số lượng
-            productOrderItem.setBomVersion(dto.getBomVersion());//bom
-            productOrderItem.setStartDate(dto.getOrderedTime());//thời gian bắt đầu
-            productOrderItem.setEndDate(dto.getDeliveryTime());//thời gian kết thúc
-            productOrderItem.setCustomerCode(dto.getCustomerCode());//mã kh
-            productOrderItem.setCustomerName(dto.getCustomerName());//tên kh
-            productOrderItem.setNote(dto.getNote());//ghi chú
-            productOrderItem.setEmployeeCode(dto.getSaleCode());//mã sale
-            productOrderItem.setPriority(dto.getPriority());//mức độ ưu tiên
-            //cập nhật sp ở planning
-            productOrderService.updatePoPlanning(productOrderItem,existDetail.getProductCode(),isSend);
-        } catch (RuntimeException e) {
-            logger.error("UpdateProductOrderDetail error", e);
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "internal.error");
         }
     }
@@ -429,6 +342,80 @@ public class ProductOrderDetailService {
         }
     }
 
+    public void updateProductOrderDetail(String productCode, String productOrderCode, ProductOrderDetailDto dto,Boolean isSend) throws CustomException {
+        ProductOrderDetail existDetail = detailRepository.getOneProductOrderDetail(productCode, productOrderCode);
+        if (existDetail == null) {
+            throw new CustomException("record.notfound");
+        }
+        if (productCode.equals(dto.getProductCode())) {
+            existDetail.setProductName(dto.getProductName());
+            existDetail.setBomVersion(dto.getBomVersion());
+            existDetail.setQuantity(dto.getOrderQuantity());
+            existDetail.setOrderDate(dto.getOrderedTime());
+            existDetail.setDeliverDate(dto.getDeliveryTime());
+            existDetail.setSupplyType(dto.getSupplyMethod());
+            existDetail.setPriority(Integer.valueOf(dto.getPriority()));
+            existDetail.setNote(dto.getNote());
+            existDetail.setBomStatus(dto.getBomStatus());
+            existDetail.setCustomerCode(dto.getCustomerCode());
+            existDetail.setProductOrderChild(dto.getProductOrderChild());
+            existDetail.setCustomerName(dto.getCustomerName());
+            existDetail.setSaleCode(dto.getSaleCode());
+            if(isSend){
+                existDetail.setStatusPlanning(2);
+            }
+        } else {
+            int checkExistProduct = detailRepository.checkExistProduct(dto.getProductCode(), productOrderCode);
+
+            if (checkExistProduct >= 1) {
+                throw new CustomException("product.order.detail.exist", dto.getProductCode());
+            } else {
+                if(isSend){
+                    existDetail.setStatusPlanning(2);
+                }
+                existDetail.setProductCode(dto.getProductCode());
+                existDetail.setProductName(dto.getProductName());
+                existDetail.setBomVersion(dto.getBomVersion());
+                existDetail.setQuantity(dto.getOrderQuantity());
+                existDetail.setOrderDate(dto.getOrderedTime());
+                existDetail.setDeliverDate(dto.getDeliveryTime());
+                existDetail.setSupplyType(dto.getSupplyMethod());
+                existDetail.setPriority(Integer.valueOf(dto.getPriority()));
+                existDetail.setNote(dto.getNote());
+                existDetail.setBomStatus(dto.getBomStatus());
+                existDetail.setCustomerCode(dto.getCustomerCode());
+                existDetail.setProductOrderChild(dto.getProductOrderChild());
+                existDetail.setCustomerName(dto.getCustomerName());
+                existDetail.setSaleCode(dto.getSaleCode());
+            }
+        }
+
+        logger.info("------------------------------------------------");
+        logger.info("existDetail.productName: {}", existDetail.getProductName());
+
+        try {
+            detailRepository.save(existDetail);
+            PlanningProductionOrder productOrderItem = new PlanningProductionOrder();
+            productOrderItem.setProductOrderId(productOrderCode);//mã so nội bộ
+            productOrderItem.setExternalPoId(dto.getProductOrderChild());//mã so
+            productOrderItem.setProductCode(dto.getProductCode());//mã sp
+            productOrderItem.setProductName(dto.getProductName());//tên sp
+            productOrderItem.setQuantity(dto.getOrderQuantity());//số lượng
+            productOrderItem.setBomVersion(dto.getBomVersion());//bom
+            productOrderItem.setStartDate(dto.getOrderedTime());//thời gian bắt đầu
+            productOrderItem.setEndDate(dto.getDeliveryTime());//thời gian kết thúc
+            productOrderItem.setCustomerCode(dto.getCustomerCode());//mã kh
+            productOrderItem.setCustomerName(dto.getCustomerName());//tên kh
+            productOrderItem.setNote(dto.getNote());//ghi chú
+            productOrderItem.setEmployeeCode(dto.getSaleCode());//mã sale
+            productOrderItem.setPriority(dto.getPriority());//mức độ ưu tiên
+            //cập nhật sp ở planning
+            productOrderService.updatePoPlanning(productOrderItem,existDetail.getProductCode(),isSend);
+        } catch (RuntimeException e) {
+            logger.error("UpdateProductOrderDetail error", e);
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "internal.error");
+        }
+    }
     public ProductOrderDetailResponse getAllAnalyticsProduct(String productOrderCode, ProductOrderDetailInput input, Integer type) throws IOException, ParseException {
 
         List<ProductOrderDetailDto> dtoList = new ArrayList<>();

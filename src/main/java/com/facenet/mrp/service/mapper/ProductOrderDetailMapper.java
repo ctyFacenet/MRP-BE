@@ -18,6 +18,7 @@ public interface ProductOrderDetailMapper {
     @Mapping(target = "missingQuantity", source = "missingQuantity")
     @Mapping(target = "orderedTime", source = "productOrderDetail.orderDate")
     @Mapping(target = "deliveryTime", source = "productOrderDetail.deliverDate")
+    @Mapping(target = "statusPlanning", source = "productOrderDetail.statusPlanning")
     @Mapping(target = "supplyMethod", source = "productOrderDetail.supplyType")
     @Mapping(target = "priority", source = "productOrderDetail.priority")
     @Mapping(target = "bomVersion", source = "productOrderDetail.bomVersion")

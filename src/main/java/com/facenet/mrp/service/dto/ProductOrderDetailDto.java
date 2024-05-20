@@ -15,6 +15,7 @@ public class ProductOrderDetailDto implements Serializable {
     private String itemGroup;
     private String bomVersion;
     private Integer orderQuantity;
+    private Integer statusPlanning;
 
     private Double instockQuantity;
     private String missingQuantity;
@@ -211,5 +212,13 @@ public class ProductOrderDetailDto implements Serializable {
 
     public void setSaleCode(String saleCode) {
         this.saleCode = saleCode;
+    }
+
+    public Integer getStatusPlanning() {
+        return statusPlanning;
+    }
+
+    public void setStatusPlanning(Integer statusPlanning) {
+        this.statusPlanning = statusPlanning;
     }
 }

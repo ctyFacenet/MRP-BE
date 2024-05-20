@@ -74,6 +74,9 @@ public class ProductOrderDetail {
     @Column(name = "status", nullable = false)
     private Integer status;
 
+    @Column(name = "status_planning", nullable = false)
+    private Integer statusPlanning;
+
     @Column(name = "customer_code")
     private String customerCode;
 
@@ -202,6 +205,14 @@ public class ProductOrderDetail {
 
     public void setBomVersion(String bomVersion) {
         this.bomVersion = bomVersion;
+    }
+
+    public Integer getStatusPlanning() {
+        return statusPlanning;
+    }
+
+    public void setStatusPlanning(Integer statusPlanning) {
+        this.statusPlanning = statusPlanning;
     }
 
     public Byte getBomStatus() {

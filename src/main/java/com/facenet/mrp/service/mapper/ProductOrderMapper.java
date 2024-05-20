@@ -25,6 +25,7 @@ public interface ProductOrderMapper {
     @Mapping(target = "mrpPoId", source = "productOrder.mrpPoId")
     @Mapping(target = "quantity", source = "productOrder.quantity")
     @Mapping(target = "createdBy", source = "createdBy")
+    @Mapping(target = "statusPlanning", source = "statusPlanning")
     ProductOrderDto entityToDto(ProductOrder productOrder);
 
 }

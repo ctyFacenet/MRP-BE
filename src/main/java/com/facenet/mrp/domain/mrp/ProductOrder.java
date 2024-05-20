@@ -95,6 +95,9 @@ public class ProductOrder implements Serializable {
     @Column(name = "status", nullable = false)
     private Integer status;
 
+    @Column(name = "status_planning", nullable = false)
+    private Integer statusPlanning;
+
     @Column(name = "state")
     private String state;
 
@@ -183,6 +186,14 @@ public class ProductOrder implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Integer getStatusPlanning() {
+        return statusPlanning;
+    }
+
+    public void setStatusPlanning(Integer statusPlanning) {
+        this.statusPlanning = statusPlanning;
     }
 
     public String getProductOrderCode() {

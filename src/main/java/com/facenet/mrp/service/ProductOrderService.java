@@ -46,6 +46,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import javax.persistence.Column;
 import javax.persistence.EntityManager;
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +56,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductOrderService {
@@ -244,6 +246,10 @@ public class ProductOrderService {
         existPo.setPriority(Integer.valueOf(dto.getPriority()));
         existPo.setNote(dto.getNote());
 
+        if(isSend){
+            existPo.setStatusPlanning(2);
+        }
+
         //Save dữ liệu vừa cập nhật
         try {
             productOrderRepository.save(existPo);
@@ -337,6 +343,10 @@ public class ProductOrderService {
                 orderItem.setOrderDate(order.getStartDate());
                 orderItem.setDeliverDate(order.getEndDate());
                 orderItem.setPriority(order.getPriorityProduct());
+                if(isSend){//nếu gửi planning thì update status
+                    orderItem.setStatusPlanning(2);
+                    orderList.get(0).setStatusPlanning(2);
+                }
                 orderItem.setSupplyType(order.getSupplyType());
                 orderItem.setItemIndex(itemIndex);
                 orderItem.setProductOrderChild(order.getProductCodeChild());
@@ -412,14 +422,23 @@ public class ProductOrderService {
                 logger.info(" mrp po id " + mrpPoId + " is exists in database");
                 throw new CustomException("product.order.mrp.id.exist", mrpPoId);
             }
+            if(isSend){
+                productOrder.setStatusPlanning(2);
+                productOrder.getProductOrderDetails().forEach(productOrderDetail -> {
+                    productOrderDetail.setProductOrderCode(productOrder);
+                    productOrderDetail.setStatusPlanning(2);
+                    productOrderDetail.setStatus(Constants.ProductOrder.STATUS_NEW);
+                });
+            }else {
+                productOrder.getProductOrderDetails().forEach(productOrderDetail -> {
+                    productOrderDetail.setProductOrderCode(productOrder);
+                    productOrderDetail.setStatus(Constants.ProductOrder.STATUS_NEW);
+                });
+            }
             productOrder.setMrpPoId(mrpPoId);
             productOrder.setProductOrderCode(po_id);
             productOrder.setStatus(Constants.ProductOrder.STATUS_NEW);
             productOrder.setType("Đơn hàng");
-            productOrder.getProductOrderDetails().forEach(productOrderDetail -> {
-                productOrderDetail.setProductOrderCode(productOrder);
-                productOrderDetail.setStatus(Constants.ProductOrder.STATUS_NEW);
-            });
             // Check trùng mã sản phẩm
             // Lay tung san pham de tim so luong NVl ben trong theo bomversion
             for (ProductOrderDetail product : productOrder.getProductOrderDetails()) {
@@ -480,7 +499,12 @@ public class ProductOrderService {
         if(check != "SUCCESS"){
             throw new CustomException(check);
         }
-        return "";
+        productOrder.setStatusPlanning(2);
+        for (ProductOrderDetail productOrderDetail: productOrder.getProductOrderDetails()){
+            productOrderDetail.setStatusPlanning(2);
+        }
+        productOrderRepository.save(productOrder);
+        return "SUCCESS";
     }
 
     private List<PlanningProductionOrder> mapToPlanning(ProductOrder productOrder) throws ParseException {

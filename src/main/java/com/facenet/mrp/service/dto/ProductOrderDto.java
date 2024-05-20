@@ -22,6 +22,7 @@ public class ProductOrderDto implements Serializable {
     private Long quantity;
     private String type;
     private String createdBy;
+    private Byte statusPlanning;
 
     public String getMrpPoId() {
         return mrpPoId;
@@ -157,5 +158,13 @@ public class ProductOrderDto implements Serializable {
 
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public Byte getStatusPlanning() {
+        return statusPlanning;
+    }
+
+    public void setStatusPlanning(Byte statusPlanning) {
+        this.statusPlanning = statusPlanning;
     }
 }
