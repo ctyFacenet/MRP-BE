@@ -526,7 +526,7 @@ public class ProductOrderService {
             donHang.setProductCode(productOrderDetails.getProductCode());
             donHang.setProductName(productOrderDetails.getProductName());
             donHang.setQuantity(productOrderDetails.getQuantity());
-            donHang.setProductType(0);
+            donHang.setProductType(1);
             donHang.setState("CREATED");
             donHang.setStatus("active");
             donHang.setEmployeeCode(productOrderDetails.getSaleCode());//nv sale
@@ -585,7 +585,7 @@ public class ProductOrderService {
             donHang.setProductCode(productOrder.getProductCode());
             donHang.setProductName(productOrder.getProductName());
             donHang.setQuantity(productOrder.getQuantity());
-            donHang.setProductType(0);
+            donHang.setProductType(1);
             donHang.setState("CREATED");
             donHang.setStatus("active");
             donHang.setEmployeeCode(productOrder.getSaleCode());//nv sale
@@ -619,6 +619,12 @@ public class ProductOrderService {
             ProductOrderDetail productOrderDetail = new ProductOrderDetail();
             productOrderDetail.setProductCode(productOrder.getProductCode());
             productOrderDetail.setBomVersion(productOrder.getBomVersion());
+            productOrderDetail.setQuantity(productOrder.getQuantity());
+            productOrderDetail.setCustomerCode(productOrder.getCustomerId());
+            productOrderDetail.setCustomerName(productOrder.getCustomerName());
+            productOrderDetail.setProductOrderChild(productOrder.getProductCodeChild());
+            productOrderDetail.setSaleCode(productOrder.getSaleCode());
+            productOrderDetail.setPriority(productOrder.getPriority());
             productionOrderList.addAll(callBomForPo(productOrder,productOrderDetail));
             productionOrderList.add(donHang);
             System.out.println("----------------------------danh sách đơn hàng 2: "+productionOrderList.toString());
