@@ -58,6 +58,8 @@ public class planningService {
         headers.setBearerAuth(accessToken);
         String apiSyncPo = apiSyncProductOrder+type;
         System.out.println(apiSyncPo+"-----------------------donHangArrayList-----------------"+donHangArrayList);
+        System.out.println("api: "+apiSyncPo);
+        System.out.println("token:  "+accessToken);
         HttpEntity<List<List<PlanningProductionOrder>>> httpEntity = new HttpEntity<>(donHangArrayList,headers);
         ResponseEntity<String> response = restTemplate.exchange(
             apiSyncPo,
