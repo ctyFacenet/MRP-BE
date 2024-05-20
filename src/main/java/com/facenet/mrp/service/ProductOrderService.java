@@ -471,7 +471,9 @@ public class ProductOrderService {
     //hàm gọi api planning và đồng bộ
     private void syncToPlanning(List<List<PlanningProductionOrder>> donHangArrayList){
         String check = planningService.callApiPlanning(donHangArrayList,false);
-        if(check != "SUCCESS"){
+        System.out.println("-----------------"+check);
+
+        if(!check.equals("SUCCESS")){
             throw new CustomException("Đồng bộ planning thất bại: "+check);
         }
     }
