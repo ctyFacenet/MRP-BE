@@ -134,6 +134,7 @@ spring:
     serialization:
       FAIL_ON_EMPTY_BEANS: false
       indent-output: true
+    time-zone: Asia/Ho_Chi_Minh
   datasource:
     primary:
       type: com.zaxxer.hikari.HikariDataSource
