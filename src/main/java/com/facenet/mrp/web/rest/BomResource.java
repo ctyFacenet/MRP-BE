@@ -55,6 +55,7 @@ public class BomResource {
             results.add(bomDTO);
             List<Citt1Entity> entityList = repository.getAll(bomDTO.getProductCode(),bomDTO.getVersion());
             for (Citt1Entity citt1Entity: entityList){
+                System.out.println("---------------"+citt1Entity.getuItemCode()+"-"+citt1Entity.getuVersions());
                 CoittEntity coittEntity = repository.getListBTP(citt1Entity.getuItemCode(),citt1Entity.getuVersions());
                 if(coittEntity != null){
                     BomDTO newBom = new BomDTO();
