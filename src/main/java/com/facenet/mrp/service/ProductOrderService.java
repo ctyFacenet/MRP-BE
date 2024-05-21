@@ -272,6 +272,7 @@ public class ProductOrderService {
     @Transactional(rollbackFor = {Throwable.class})
     public void importProductOrder(InputStream file,Boolean isSend) throws IOException, ParseException {
         HashMap<String, List<ProductOrder>> result = xlsxExcelHandle.readDonHangExcel(file);
+        if(result.keySet().isEmpty()) throw new CustomException(HttpStatus.NOT_FOUND, "excel.file.empty");
         saveAll(result,isSend);
         file.close();
     }
