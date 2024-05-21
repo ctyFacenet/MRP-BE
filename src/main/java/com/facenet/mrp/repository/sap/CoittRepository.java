@@ -151,5 +151,5 @@ public interface CoittRepository extends JpaRepository<CoittEntity,Integer> {
     List<Citt1Entity> getAll(@Param("productCode") String productCode, @Param("version") String version);
 
     @Query(value = "select x from CoittEntity x where x.uProNo = :productCode and x.uVersions = :version")
-    CoittEntity getListBTP(@Param("productCode") String productCode, @Param("version") String version);
+    List<CoittEntity> getListBTP(@Param("productCode") String productCode, @Param("version") String version);
 }

@@ -40,6 +40,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -492,14 +493,14 @@ public class ProductOrderService {
         return check;
     }
 
-    public String createWorkOrder(List<CreateWoFromMrp> createWoFromMrps){
-        return planningService.callApiCreateWorkOrder(createWoFromMrps);
+    public ResponseEntity createWorkOrder(List<CreateWoFromMrp> createWoFromMrps){
+        return new ResponseEntity<>(planningService.callApiCreateWorkOrder(createWoFromMrps), HttpStatus.OK);
     }
 
-    public String sendPlanningBeforeCreateWo(String soCode) throws ParseException {
+    public ResponseEntity sendPlanningBeforeCreateWo(String soCode) throws ParseException {
         ProductOrder productOrder = productOrderRepository.findAllByProductOrderCode(soCode);
         if(productOrder == null){
-            return "Mã đơn hàng "+ soCode + "không tồn tại trên hệ thống";
+            return new ResponseEntity("Mã đơn hàng "+ soCode + "không tồn tại trên hệ thống",HttpStatus.OK);
         }
         List<List<PlanningProductionOrder>> data = new ArrayList<>();
         List<PlanningProductionOrder> planningProductionOrders = mapToPlanning(productOrder);
@@ -513,7 +514,7 @@ public class ProductOrderService {
             productOrderDetail.setStatusPlanning(2);
         }
         productOrderRepository.save(productOrder);
-        return "SUCCESS";
+        return new ResponseEntity("SUCCESS",HttpStatus.OK);
     }
 
     private List<PlanningProductionOrder> mapToPlanning(ProductOrder productOrder) throws ParseException {

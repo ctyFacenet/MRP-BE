@@ -56,24 +56,24 @@ public class BomResource {
             List<Citt1Entity> entityList = repository.getAll(bomDTO.getProductCode(),bomDTO.getVersion());
             for (Citt1Entity citt1Entity: entityList){
                 System.out.println("---------------"+citt1Entity.getuItemCode()+"-"+citt1Entity.getuVersions());
-                CoittEntity coittEntity = repository.getListBTP(citt1Entity.getuItemCode(),citt1Entity.getuVersions());
-                if(coittEntity != null){
+                List<CoittEntity> coittEntity = repository.getListBTP(citt1Entity.getuItemCode(),citt1Entity.getuVersions());
+                if(!coittEntity.isEmpty()){
                     BomDTO newBom = new BomDTO();
-                    newBom.setProductCode(coittEntity.getuProNo());
-                    newBom.setDescription(coittEntity.getuProNam());
-                    newBom.setWarehouse(coittEntity.getuWhsCod());
-                    newBom.setDocUrl(coittEntity.getuDocUrl());
+                    newBom.setProductCode(coittEntity.get(0).getuProNo());
+                    newBom.setDescription(coittEntity.get(0).getuProNam());
+                    newBom.setWarehouse(coittEntity.get(0).getuWhsCod());
+                    newBom.setDocUrl(coittEntity.get(0).getuDocUrl());
                     newBom.setLevel(2);
                     newBom.setRoot(bomDTO.getProductCode()+"_"+bomDTO.getVersion());
-                    newBom.setCreateTime(coittEntity.getCreateDate());
-                    newBom.setFromDate(coittEntity.getuFromDate());
+                    newBom.setCreateTime(coittEntity.get(0).getCreateDate());
+                    newBom.setFromDate(coittEntity.get(0).getuFromDate());
                     newBom.setGroupItem(101);
-                    newBom.setQuota(coittEntity.getuQuantity());
-                    newBom.setSpeciality(coittEntity.getuSpec());
-                    newBom.setRemark(coittEntity.getRemark());
-                    newBom.setToDate(coittEntity.getuToDate());
-                    newBom.setStatus(coittEntity.getuActive());
-                    newBom.setVersion(coittEntity.getuVersions());
+                    newBom.setQuota(coittEntity.get(0).getuQuantity());
+                    newBom.setSpeciality(coittEntity.get(0).getuSpec());
+                    newBom.setRemark(coittEntity.get(0).getRemark());
+                    newBom.setToDate(coittEntity.get(0).getuToDate());
+                    newBom.setStatus(coittEntity.get(0).getuActive());
+                    newBom.setVersion(coittEntity.get(0).getuVersions());
                     results.add(newBom);
                 }
             }
