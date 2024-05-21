@@ -26,6 +26,7 @@ import com.facenet.mrp.service.utils.XlsxExcelHandle;
 import com.facenet.mrp.thread.CloneBomService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.collections4.MultiValuedMap;
@@ -145,23 +146,34 @@ public class ProductOrderService {
         if (filter.getOrderedTime() != null) {
             Date orderedTime = filter.getOrderedTime();
             LocalDate localDate = orderedTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            if (localDate.getDayOfMonth() == 1 && localDate.getMonthValue() == 1){
-                booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear() - 1)
-                    .and(qProductOrder.orderDate.month().eq(12))
-                    .and(qProductOrder.orderDate.dayOfMonth().eq(31)));
 
-            }else if(localDate.getDayOfMonth()== 1){
-                LocalDate lastMonth = localDate.minusMonths(1);
-                LocalDate lastDayOfLastMonth = lastMonth.withDayOfMonth(lastMonth.lengthOfMonth());
-                booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear())
-                    .and(qProductOrder.orderDate.month().eq(localDate.getMonthValue() - 1))
-                    .and(qProductOrder.orderDate.dayOfMonth().eq(lastDayOfLastMonth.getDayOfMonth())));
-            }
-            else {
-                booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear())
-                    .and(qProductOrder.orderDate.month().eq(localDate.getMonthValue()))
-                    .and(qProductOrder.orderDate.dayOfMonth().eq(localDate.getDayOfMonth()  - 1)));
-            }
+            Integer month = localDate.getMonthValue();
+            Integer year = localDate.getYear();
+            Integer day = localDate.getDayOfMonth();
+            booleanBuilder.and(qProductOrder.orderDate.year().eq(year)
+//                .and(Expressions.numberTemplate(Integer.class, "MONTH({0})", qProductOrder.orderDate).eq(month))
+                .and(qProductOrder.orderDate.month().eq(month))
+                .and(qProductOrder.orderDate.dayOfMonth().eq(day)));
+
+
+            // K hiểu
+//            if (localDate.getDayOfMonth() == 1 && localDate.getMonthValue() == 1){
+//                booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear() - 1)
+//                    .and(qProductOrder.orderDate.month().eq(12))
+//                    .and(qProductOrder.orderDate.dayOfMonth().eq(31)));
+//
+//            }else if(localDate.getDayOfMonth()== 1){
+//                LocalDate lastMonth = localDate.minusMonths(1);
+//                LocalDate lastDayOfLastMonth = lastMonth.withDayOfMonth(lastMonth.lengthOfMonth());
+//                booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear())
+//                    .and(qProductOrder.orderDate.month().eq(localDate.getMonthValue() - 1))
+//                    .and(qProductOrder.orderDate.dayOfMonth().eq(lastDayOfLastMonth.getDayOfMonth())));
+//            }
+//            else {
+//                booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear())
+//                    .and(qProductOrder.orderDate.month().eq(localDate.getMonthValue()))
+//                    .and(qProductOrder.orderDate.dayOfMonth().eq(localDate.getDayOfMonth()  - 1)));
+//            }
         }
         if (filter.getDeliveryTime() != null) {
             Date deliveryTime = filter.getDeliveryTime();
