@@ -235,6 +235,7 @@ public class XlsxExcelHandle {
             } else skipFirst = true;
 
         }
+
         return listHashMap;
     }
 
