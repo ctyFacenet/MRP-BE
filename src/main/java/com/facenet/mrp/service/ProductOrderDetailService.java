@@ -233,6 +233,7 @@ public class ProductOrderDetailService {
         orderDetail.setProductOrderCode(productOrder);
         orderDetail.setStatus(1);
         orderDetail.setIsActive((byte) 1);
+        orderDetail.setStatusPlanning(1);
         orderDetail.setMaterialChildrenCount(countChildren.getQuantity().intValue());
         //Save product vao db
         try {

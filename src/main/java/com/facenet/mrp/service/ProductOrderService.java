@@ -252,7 +252,7 @@ public class ProductOrderService {
 
         //Save dữ liệu vừa cập nhật
         try {
-            productOrderRepository.save(existPo);
+
             //gửi đơn hàng sang planning nếu click send hoặc update nếu có thay đổi
             PlanningProductionOrder productionOrder = new PlanningProductionOrder();
             productionOrder.setProductOrderId(existPo.getProductOrderCode());
@@ -262,7 +262,11 @@ public class ProductOrderService {
             productionOrder.setOrderDate(dto.getOrderedTime());
             productionOrder.setCompleteDate(dto.getDeliveryTime());
             productionOrder.setNote(dto.getNote());
-            updatePoPlanning(productionOrder,"-1",isSend);
+            String check = updatePoPlanning(productionOrder,"-1",isSend);
+            if(check.equals("SUCCESS")){
+                productOrderRepository.save(existPo);
+            }
+
         } catch (CustomException e) {
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "internal.error");
         }
@@ -472,16 +476,20 @@ public class ProductOrderService {
     //hàm gọi api planning và đồng bộ
     private void syncToPlanning(List<List<PlanningProductionOrder>> donHangArrayList){
         String check = planningService.callApiPlanning(donHangArrayList,false);
-        if(check != "SUCCESS"){
+        System.out.println("-----------------"+check);
+
+        if(!check.equals("SUCCESS")){
             throw new CustomException("Đồng bộ planning thất bại: "+check);
         }
     }
     //hàm gọi update đơn hàng hoặc gửi đơn hàng từ màn ql đơn hàng sang planning
-    public void updatePoPlanning(PlanningProductionOrder donHangArrayList, String productCode, Boolean isSend){
+    public String updatePoPlanning(PlanningProductionOrder donHangArrayList, String productCode, Boolean isSend){
         String check = planningService.callApiPlanningUpdatePo(donHangArrayList, productCode,isSend);
-        if(check != "SUCCESS"){
+        System.out.println("---------------"+check);
+        if(!check.equals("SUCCESS")){
             throw new CustomException(check);
         }
+        return check;
     }
 
     public String createWorkOrder(List<CreateWoFromMrp> createWoFromMrps){
@@ -527,7 +535,7 @@ public class ProductOrderService {
             donHang.setProductCode(productOrderDetails.getProductCode());
             donHang.setProductName(productOrderDetails.getProductName());
             donHang.setQuantity(productOrderDetails.getQuantity());
-            donHang.setProductType(0);
+            donHang.setProductType(1);
             donHang.setState("CREATED");
             donHang.setStatus("active");
             donHang.setEmployeeCode(productOrderDetails.getSaleCode());//nv sale
@@ -586,7 +594,7 @@ public class ProductOrderService {
             donHang.setProductCode(productOrder.getProductCode());
             donHang.setProductName(productOrder.getProductName());
             donHang.setQuantity(productOrder.getQuantity());
-            donHang.setProductType(0);
+            donHang.setProductType(1);
             donHang.setState("CREATED");
             donHang.setStatus("active");
             donHang.setEmployeeCode(productOrder.getSaleCode());//nv sale
@@ -620,6 +628,12 @@ public class ProductOrderService {
             ProductOrderDetail productOrderDetail = new ProductOrderDetail();
             productOrderDetail.setProductCode(productOrder.getProductCode());
             productOrderDetail.setBomVersion(productOrder.getBomVersion());
+            productOrderDetail.setQuantity(productOrder.getQuantity());
+            productOrderDetail.setCustomerCode(productOrder.getCustomerId());
+            productOrderDetail.setCustomerName(productOrder.getCustomerName());
+            productOrderDetail.setProductOrderChild(productOrder.getProductCodeChild());
+            productOrderDetail.setSaleCode(productOrder.getSaleCode());
+            productOrderDetail.setPriority(productOrder.getPriority());
             productionOrderList.addAll(callBomForPo(productOrder,productOrderDetail));
             productionOrderList.add(donHang);
             System.out.println("----------------------------danh sách đơn hàng 2: "+productionOrderList.toString());
