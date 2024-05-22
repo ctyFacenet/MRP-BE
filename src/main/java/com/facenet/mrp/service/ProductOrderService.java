@@ -387,6 +387,9 @@ public class ProductOrderService {
                 if(isSend){//nếu gửi planning thì update status
                     orderItem.setStatusPlanning(2);
                     orderList.get(0).setStatusPlanning(2);
+                }else {
+                    orderItem.setStatusPlanning(1);
+                    orderList.get(0).setStatusPlanning(1);
                 }
                 orderItem.setSupplyType(order.getSupplyType());
                 orderItem.setItemIndex(itemIndex);
@@ -397,7 +400,6 @@ public class ProductOrderService {
                 orderItem.setMaterialChildrenCount(countChildren.getQuantity().intValue());
 
                 productOrderDetails.add(orderItem);
-//                productOrderItemRepository.save(orderItem);
             }
             validateBomVersion(productOrderDetails, productCodes);
             logger.info("sumQuantity = {}", sumQuantity);
@@ -471,6 +473,7 @@ public class ProductOrderService {
                     productOrderDetail.setStatus(Constants.ProductOrder.STATUS_NEW);
                 });
             }else {
+                productOrder.setStatusPlanning(1);
                 productOrder.getProductOrderDetails().forEach(productOrderDetail -> {
                     productOrderDetail.setProductOrderCode(productOrder);
                     productOrderDetail.setStatusPlanning(1);
@@ -482,7 +485,6 @@ public class ProductOrderService {
             productOrder.setProductOrderCode(po_id);
             productOrder.setStatus(Constants.ProductOrder.STATUS_NEW);
             productOrder.setType("Đơn hàng");
-            productOrder.setStatusPlanning(1);
             // Check trùng mã sản phẩm
             // Lay tung san pham de tim so luong NVl ben trong theo bomversion
             for (ProductOrderDetail product : productOrder.getProductOrderDetails()) {
@@ -505,7 +507,7 @@ public class ProductOrderService {
         }
         if(isSend){
             if(donHangArrayList.size() > 0){
-                System.out.println("----------------------------danh sách đơn hàng 1: "+donHangArrayList.get(0));
+                System.out.println("----------------------------danh sách đơn hàng 1: "+donHangArrayList.size());
                 syncToPlanning(donHangArrayList);
             }
         }
