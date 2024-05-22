@@ -473,13 +473,16 @@ public class ProductOrderService {
             }else {
                 productOrder.getProductOrderDetails().forEach(productOrderDetail -> {
                     productOrderDetail.setProductOrderCode(productOrder);
+                    productOrderDetail.setStatusPlanning(1);
                     productOrderDetail.setStatus(Constants.ProductOrder.STATUS_NEW);
                 });
             }
+            
             productOrder.setMrpPoId(mrpPoId);
             productOrder.setProductOrderCode(po_id);
             productOrder.setStatus(Constants.ProductOrder.STATUS_NEW);
             productOrder.setType("Đơn hàng");
+            productOrder.setStatusPlanning(1);
             // Check trùng mã sản phẩm
             // Lay tung san pham de tim so luong NVl ben trong theo bomversion
             for (ProductOrderDetail product : productOrder.getProductOrderDetails()) {
