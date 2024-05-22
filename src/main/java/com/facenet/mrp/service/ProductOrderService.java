@@ -529,7 +529,13 @@ public class ProductOrderService {
     }
 
     public ResponseEntity createWorkOrder(List<CreateWoFromMrp> createWoFromMrps){
-        return new ResponseEntity<>(planningService.callApiCreateWorkOrder(createWoFromMrps), HttpStatus.OK);
+        String str = planningService.callApiCreateWorkOrder(createWoFromMrps);
+        return ResponseEntity.ok(
+            new CommonResponse<>()
+                .isOk(true)
+                .errorCode("00")
+                .message("Cập nhật đơn hàng thành công")
+                .data(str));
     }
 
     public ResponseEntity sendPlanningBeforeCreateWo(String soCode) throws ParseException {
@@ -540,8 +546,14 @@ public class ProductOrderService {
         List<List<PlanningProductionOrder>> data = new ArrayList<>();
         List<PlanningProductionOrder> planningProductionOrders = mapToPlanning(productOrder);
         data.add(planningProductionOrders);
+        for (List<PlanningProductionOrder> planningProductionOrders1: data){
+            for(PlanningProductionOrder productionOrder : planningProductionOrders1){
+                System.out.println("1------------------------"+productionOrder.getProductCode()+"-"+productionOrder.getBomVersion());
+            }
+        }
         String check = planningService.callApiPlanning(data,true);
-        if(check != "SUCCESS"){
+        System.out.println("-------------------------"+check);
+        if(!check.equals("SUCCESS")){
             throw new CustomException(check);
         }
         productOrder.setStatusPlanning(2);
@@ -549,12 +561,18 @@ public class ProductOrderService {
             productOrderDetail.setStatusPlanning(2);
         }
         productOrderRepository.save(productOrder);
-        return new ResponseEntity("SUCCESS",HttpStatus.OK);
+        return ResponseEntity.ok(
+            new CommonResponse<>()
+                .isOk(true)
+                .errorCode("00")
+                .message("Cập nhật đơn hàng thành công")
+                .data("SUCCESS"));
     }
 
     private List<PlanningProductionOrder> mapToPlanning(ProductOrder productOrder) throws ParseException {
         List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
         for (ProductOrderDetail productOrderDetails: productOrder.getProductOrderDetails()){
+            System.out.println("----------------"+productOrderDetails.getOrderDate()+"-"+productOrderDetails.getProductCode());
             PlanningProductionOrder donHang = new PlanningProductionOrder();
             donHang.setId(UUID.randomUUID());
             donHang.setProductOrderId(productOrder.getProductOrderCode());
@@ -679,11 +697,18 @@ public class ProductOrderService {
 
     public Date convert(String input) {
         String dateFormat = "EEE MMM dd HH:mm:ss zzz yyyy";
+        String dateFormat1 = "yyyy-MM-dd HH:mm:ss.S";
+
 
         try {
             SimpleDateFormat doiFormat = new SimpleDateFormat(dateFormat);
-            Date date = doiFormat.parse(input);
-
+            Date date;
+            try{
+                date = doiFormat.parse(input);
+            }catch (Exception e){
+                SimpleDateFormat doiFormat1 = new SimpleDateFormat(dateFormat1);
+                date = doiFormat1.parse(input);
+            }
             SimpleDateFormat desiredFormat = new SimpleDateFormat("yyyy-MM-dd");
             String formattedDate = desiredFormat.format(date);
             Date output = new SimpleDateFormat("yyyy-mm-dd").parse(formattedDate);

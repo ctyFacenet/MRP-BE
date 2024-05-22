@@ -647,31 +647,34 @@ public class ReportService {
             .leftJoin(qMqqPriceEntity).on(qPurchaseRecommendationBatch.moqPriceId.eq(qMqqPriceEntity.itemPriceId))
             .leftJoin(qVendorEntity).on(qMqqPriceEntity.vendorCode.eq(qVendorEntity.vendorCode));
         BooleanBuilder booleanBuilder = new BooleanBuilder();
-        if (filter.getStart() != null && filter.getEnd() != null) {
-            booleanBuilder.and(qPurchaseRecommendation.startTime.after(filter.getStart()).and(qPurchaseRecommendation.startTime.before(filter.getEnd())));
-            booleanBuilder.or(qPurchaseRecommendation.endTime.after(filter.getStart()).and(qPurchaseRecommendation.endTime.before(filter.getEnd())));
+        if (filter != null) {
+            if (filter.getStart() != null && filter.getEnd() != null) {
+                booleanBuilder.and(qPurchaseRecommendation.startTime.after(filter.getStart()).and(qPurchaseRecommendation.startTime.before(filter.getEnd())));
+                booleanBuilder.or(qPurchaseRecommendation.endTime.after(filter.getStart()).and(qPurchaseRecommendation.endTime.before(filter.getEnd())));
+            }
+            if (!StringUtils.isEmpty(filter.getItemCode())) {
+                booleanBuilder.and(qPurchaseRecommendationBatch.itemCode.containsIgnoreCase(filter.getItemCode().trim()));
+            }
+            if (!StringUtils.isEmpty(filter.getItemDescription())) {
+                booleanBuilder.and(qPurchaseRecommendationBatch.itemDescription.containsIgnoreCase(filter.getItemDescription()));
+            }
+            if (!StringUtils.isEmpty(filter.getMrpCode())) {
+                booleanBuilder.and(qPurchaseRecommendation.mrpSubCode.eq(filter.getMrpCode().trim()));
+            }
+            if (!StringUtils.isEmpty(filter.getSoCode())) {
+                booleanBuilder.and(qProductOrder.productOrderCode.eq(filter.getSoCode().trim()));
+            }
+            if (!CollectionUtils.isEmpty(filter.getStatus())) {
+                booleanBuilder.and(qPurchaseRecommendationBatch.status.in(filter.getStatus()));
+            }
+            if (!StringUtils.isEmpty(filter.getSupplierCode())) {
+                booleanBuilder.and(qVendorEntity.vendorCode.eq(filter.getSupplierCode().trim()));
+            }
+            if (!StringUtils.isEmpty(filter.getSupplierName())) {
+                booleanBuilder.and(qVendorEntity.vendorName.eq(filter.getSupplierName().trim()));
+            }
         }
-        if (!StringUtils.isEmpty(filter.getItemCode())) {
-            booleanBuilder.and(qPurchaseRecommendationBatch.itemCode.containsIgnoreCase(filter.getItemCode()));
-        }
-        if (!StringUtils.isEmpty(filter.getItemDescription())) {
-            booleanBuilder.and(qPurchaseRecommendationBatch.itemDescription.containsIgnoreCase(filter.getItemDescription()));
-        }
-        if (!StringUtils.isEmpty(filter.getMrpCode())) {
-            booleanBuilder.and(qPurchaseRecommendation.mrpSubCode.eq(filter.getMrpCode()));
-        }
-        if (!StringUtils.isEmpty(filter.getSoCode())) {
-            booleanBuilder.and(qProductOrder.productOrderCode.eq(filter.getSoCode()));
-        }
-        if (!CollectionUtils.isEmpty(filter.getStatus())) {
-            booleanBuilder.and(qPurchaseRecommendationBatch.status.in(filter.getStatus()));
-        }
-        if (!StringUtils.isEmpty(filter.getSupplierCode())) {
-            booleanBuilder.and(qVendorEntity.vendorCode.eq(filter.getSupplierCode()));
-        }
-        if (!StringUtils.isEmpty(filter.getSoCode())) {
-            booleanBuilder.and(qVendorEntity.vendorName.eq(filter.getSupplierName()));
-        }
+
         booleanBuilder.and(qPurchaseRecommendationBatch.status.eq(3));
         query.where(booleanBuilder);
         return query;
