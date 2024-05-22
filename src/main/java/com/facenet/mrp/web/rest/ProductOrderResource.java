@@ -92,12 +92,12 @@ public class ProductOrderResource {
     }
 
     @PostMapping("/create-work-order")
-    public String createWorkOrder(@RequestBody List<CreateWoFromMrp> createWoFromMrpsc) {
+    public ResponseEntity createWorkOrder(@RequestBody List<CreateWoFromMrp> createWoFromMrpsc) {
         return productOrderService.createWorkOrder(createWoFromMrpsc);
     }
 
     @PostMapping("/send-planning-before-wo/{soCode}")
-    public String sendPlanningBeforeCreateWo(@PathVariable String soCode) throws ParseException {
+    public ResponseEntity sendPlanningBeforeCreateWo(@PathVariable String soCode) throws ParseException {
         return productOrderService.sendPlanningBeforeCreateWo(soCode);
     }
 
