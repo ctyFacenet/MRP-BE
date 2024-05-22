@@ -546,7 +546,7 @@ public class ProductOrderService {
     public ResponseEntity sendPlanningBeforeCreateWo(String soCode) throws ParseException {
         ProductOrder productOrder = productOrderRepository.findAllByProductOrderCode(soCode);
         if(productOrder == null){
-            return new ResponseEntity("Mã đơn hàng "+ soCode + "không tồn tại trên hệ thống",HttpStatus.OK);
+            return new ResponseEntity("Mã đơn hàng "+ soCode + " không tồn tại trên hệ thống",HttpStatus.OK);
         }
         List<List<PlanningProductionOrder>> data = new ArrayList<>();
         List<PlanningProductionOrder> planningProductionOrders = mapToPlanning(productOrder);
