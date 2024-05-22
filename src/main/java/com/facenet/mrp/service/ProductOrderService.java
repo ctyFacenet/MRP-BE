@@ -580,7 +580,7 @@ public class ProductOrderService {
             System.out.println("----------------"+productOrderDetails.getOrderDate()+"-"+productOrderDetails.getProductCode());
             PlanningProductionOrder donHang = new PlanningProductionOrder();
             donHang.setId(UUID.randomUUID());
-            donHang.setProductOrderId(productOrder.getProductOrderCode());
+            donHang.setProductOrderId("RAL-SO-"+productOrder.getProductOrderCode());
             donHang.setProductOrderType(productOrder.getProductOrderType());
             donHang.setPartCode(productOrder.getPartCode());
             donHang.setPartName(productOrder.getPartName());
@@ -739,7 +739,7 @@ public class ProductOrderService {
             System.out.println("----------------------------: "+mrpDetailDTO.getItemCode());
             PlanningProductionOrder donHang = new PlanningProductionOrder();
             donHang.setId(UUID.randomUUID());
-            donHang.setProductOrderId(productOrder.getProductOrderCode());
+            donHang.setProductOrderId("RAL-SO-"+productOrder.getProductOrderCode());
             donHang.setProductOrderType(productOrder.getProductOrderType());
             donHang.setPartCode(productOrder.getPartCode());
             donHang.setPartName(productOrder.getPartName());
