@@ -477,7 +477,7 @@ public class ProductOrderService {
                     productOrderDetail.setStatus(Constants.ProductOrder.STATUS_NEW);
                 });
             }
-            
+
             productOrder.setMrpPoId(mrpPoId);
             productOrder.setProductOrderCode(po_id);
             productOrder.setStatus(Constants.ProductOrder.STATUS_NEW);
@@ -691,9 +691,11 @@ public class ProductOrderService {
             productOrderDetail.setProductOrderChild(productOrder.getProductCodeChild());
             productOrderDetail.setSaleCode(productOrder.getSaleCode());
             productOrderDetail.setPriority(productOrder.getPriority());
+            productOrderDetail.setOrderDate(productOrder.getOrderDate());
+            productOrderDetail.setDeliverDate(productOrder.getDeliverDate());
             productionOrderList.addAll(callBomForPo(productOrder,productOrderDetail));
             productionOrderList.add(donHang);
-            System.out.println("----------------------------danh sách đơn hàng 2: "+productionOrderList.toString());
+            System.out.println("----------------------------danh sách đơn hàng 2: "+productionOrderList.size());
         }
         return productionOrderList;
     }
@@ -729,10 +731,10 @@ public class ProductOrderService {
     //lấy danh sách btp của product code và đồng bộ cùng thành phẩm sang planning
     private List<PlanningProductionOrder> callBomForPo(ProductOrder productOrder, ProductOrderDetail productOrderDetails) throws ParseException {
         List<MrpDetailDTO> mrpDetailDTOS = getListBtp(productOrderDetails.getProductCode(),productOrderDetails.getBomVersion());
-        System.out.println("----------------------------danh sách bom type btp: "+mrpDetailDTOS.size());
 
         List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
         for(MrpDetailDTO mrpDetailDTO: mrpDetailDTOS){
+            System.out.println("----------------------------: "+mrpDetailDTO.getItemCode());
             PlanningProductionOrder donHang = new PlanningProductionOrder();
             donHang.setId(UUID.randomUUID());
             donHang.setProductOrderId(productOrder.getProductOrderCode());
