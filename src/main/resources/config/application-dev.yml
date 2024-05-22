@@ -134,11 +134,11 @@ spring:
     serialization:
       FAIL_ON_EMPTY_BEANS: false
       indent-output: true
-    time-zone: Asia/Ho_Chi_Minh
+    time-zone: Europe/London
   datasource:
     primary:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:mariadb://192.168.1.20:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
+      jdbc-url: jdbc:mariadb://192.168.1.20:3307/material_requirements_planning?useLegacyDatetimeCode=false
       username: root
       password: 171ca9e4eb616be4a8007db9fa1da1091480f211e39c2ed8cc56cd6d6d25b09a
 #      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning_test?useLegacyDatetimeCode=false&serverTimezone=UTC

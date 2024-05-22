@@ -1,5 +1,6 @@
 package com.facenet.mrp.domain.mrp;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.annotation.CreatedBy;
@@ -73,6 +74,7 @@ public class ProductOrder implements Serializable {
     private String productOrderType;
 
 //    @NotBlank(message = "order_date.is.must.not.empty")
+//    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", locale = "vi_VN", timezone = "Asia/Ho_Chi_Minh")
     @Column(name = "order_date", nullable = false)
     private Date orderDate;
 

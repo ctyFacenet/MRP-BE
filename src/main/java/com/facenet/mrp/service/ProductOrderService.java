@@ -41,6 +41,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -91,6 +93,8 @@ public class ProductOrderService {
     @Autowired
     CloneBomService bomService;
 
+    @Autowired
+    JdbcTemplate jdbcTemplate;
 
     public ProductOrderService(ProductOrderRepository productOrderRepository, @Qualifier("mrpEntityManager") EntityManager entityManager, ProductOrderMapper productOrderMapper, ForecastOrderDetailRepository forecastOrderDetailRepository) {
         this.productOrderRepository = productOrderRepository;
@@ -132,16 +136,16 @@ public class ProductOrderService {
         booleanBuilder.and(qProductOrder.isActive.eq((byte) 1));
         booleanBuilder.andAnyOf(qProductOrder.type.notEqualsIgnoreCase("forecast"), qProductOrder.type.isNull());
         if (!StringUtils.isEmpty(filter.getPoCode())) {
-            booleanBuilder.and(qProductOrder.productOrderCode.containsIgnoreCase(filter.getPoCode()));
+            booleanBuilder.and(qProductOrder.productOrderCode.containsIgnoreCase(filter.getPoCode().trim()));
         }
         if (!StringUtils.isEmpty(filter.getCustomerCode())) {
-            booleanBuilder.and(qProductOrder.customerId.containsIgnoreCase(filter.getCustomerCode()));
+            booleanBuilder.and(qProductOrder.customerId.containsIgnoreCase(filter.getCustomerCode().trim()));
         }
         if (!StringUtils.isEmpty(filter.getCustomerName())) {
-            booleanBuilder.and(qProductOrder.customerName.containsIgnoreCase(filter.getCustomerName()));
+            booleanBuilder.and(qProductOrder.customerName.containsIgnoreCase(filter.getCustomerName().trim()));
         }
         if (!StringUtils.isEmpty(filter.getPoType())) {
-            booleanBuilder.and(qProductOrder.productOrderType.containsIgnoreCase(filter.getPoType()));
+            booleanBuilder.and(qProductOrder.productOrderType.containsIgnoreCase(filter.getPoType().trim()));
         }
         if (filter.getOrderedTime() != null) {
             Date orderedTime = filter.getOrderedTime();
@@ -178,36 +182,46 @@ public class ProductOrderService {
         if (filter.getDeliveryTime() != null) {
             Date deliveryTime = filter.getDeliveryTime();
             LocalDate localDate = deliveryTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            if (localDate.getDayOfMonth() == 1 && localDate.getMonthValue() == 1){
-                booleanBuilder.and(qProductOrder.deliverDate.year().eq(localDate.getYear() - 1)
-                    .and(qProductOrder.deliverDate.month().eq(12))
-                    .and(qProductOrder.deliverDate.dayOfMonth().eq(31)));
 
-            }else if(localDate.getDayOfMonth()== 1){
-                LocalDate lastMonth = localDate.minusMonths(1);
-                LocalDate lastDayOfLastMonth = lastMonth.withDayOfMonth(lastMonth.lengthOfMonth());
-                booleanBuilder.and(qProductOrder.deliverDate.year().eq(localDate.getYear())
-                    .and(qProductOrder.deliverDate.month().eq(localDate.getMonthValue() - 1))
-                    .and(qProductOrder.deliverDate.dayOfMonth().eq(lastDayOfLastMonth.getDayOfMonth())));
-            }
-            else {
-                booleanBuilder.and(qProductOrder.deliverDate.year().eq(localDate.getYear())
-                    .and(qProductOrder.deliverDate.month().eq(localDate.getMonthValue()))
-                    .and(qProductOrder.deliverDate.dayOfMonth().eq(localDate.getDayOfMonth()  - 1)));
-            }
+            Integer month = localDate.getMonthValue();
+            Integer year = localDate.getYear();
+            Integer day = localDate.getDayOfMonth();
+            booleanBuilder.and(qProductOrder.orderDate.year().eq(year)
+//                .and(Expressions.numberTemplate(Integer.class, "MONTH({0})", qProductOrder.orderDate).eq(month))
+                .and(qProductOrder.orderDate.month().eq(month))
+                .and(qProductOrder.orderDate.dayOfMonth().eq(day)));
+
         }
         if (!StringUtils.isEmpty(filter.getSalesCode())) {
-            booleanBuilder.and(qProductOrder.partCode.containsIgnoreCase(filter.getSalesCode()));
+            booleanBuilder.and(qProductOrder.partCode.containsIgnoreCase(filter.getSalesCode().trim()));
         }
         if (!StringUtils.isEmpty(filter.getSalesName())) {
-            booleanBuilder.and(qProductOrder.partName.containsIgnoreCase(filter.getSalesName()));
+            booleanBuilder.and(qProductOrder.partName.containsIgnoreCase(filter.getSalesName().trim()));
         }
 
         if (!StringUtils.isEmpty(filter.getPriority())) {
-            booleanBuilder.and(qProductOrder.priority.eq(Integer.valueOf(filter.getPriority())));
+            booleanBuilder.and(qProductOrder.priority.eq(Integer.valueOf(filter.getPriority().trim())));
         }
         query.where(booleanBuilder).orderBy(qProductOrder.createdAt.desc());
+        TimeZone timeZone = TimeZone.getDefault();
+        log.info("Current JVM timezone: " + timeZone.getID());
+
         List<ProductOrder> result = query.fetch();
+
+//        RowMapper<ProductOrder> rowMapper2 = (rs, rowNum) -> {
+//            ProductOrder entity = new ProductOrder();
+//            // Ánh xạ các cột từ ResultSet vào các thuộc tính của PlanningWorkOrderEntity
+////            entity.setId(rs.getInt("id"));
+////            entity.setBomVersion(rs.getString("bom_version"));
+////            entity.setProductCode(rs.getString("product_code"));
+////            entity.setProductName(rs.getString("product_name"));
+//            entity.setOrderDate(rs.getDate("order_date"));
+//            // Tiếp tục ánh xạ các thuộc tính khác...
+//            return entity;
+//        };
+//
+//        List<ProductOrder> productOrderList = jdbcTemplate.query("SELECT * FROM product_order LIMIT 10", rowMapper2);
+
         long count = query.fetchCount();
         Page<ProductOrder> productOrderPage = new PageImpl<>(result, pageable, count);
         logger.info("productOrderPage: {}", productOrderPage.getContent().size());
@@ -218,7 +232,16 @@ public class ProductOrderService {
 
         } else {
 
-            productOrderPage.getContent().forEach(productOrder -> productOrderDtoList.add(productOrderMapper.entityToDto(productOrder)));
+            productOrderPage.getContent().forEach(productOrder -> {
+                // Xử lý bị lỗi GMT +7 chưa đc, xử lý chưa triệt để, nếu config đc là tốt nhất
+                Date orderDate = productOrder.getOrderDate();
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(orderDate);
+                cal.add(Calendar.HOUR, -7); // Dành cho GMT 7
+                Date oneHourBack = cal.getTime();
+                productOrder.setOrderDate(oneHourBack);
+                productOrderDtoList.add(productOrderMapper.entityToDto(productOrder));
+            });
             logger.info("productOrderDtoList: {}", productOrderDtoList.size());
 
             resultCode.setResponseCode("00");
@@ -251,8 +274,8 @@ public class ProductOrderService {
         existPo.setCustomerId(dto.getCustomerCode());
         existPo.setCustomerName(dto.getCustomerName());
         existPo.setProductOrderType(dto.getPoType());
-        existPo.setOrderDate(dto.getOrderedTime());
-        existPo.setDeliverDate(dto.getDeliveryTime());
+        existPo.setOrderDate(Date.from(dto.getOrderedTime()));
+        existPo.setDeliverDate(Date.from(dto.getDeliveryTime()));
         existPo.setPartCode(dto.getSalesCode());
         existPo.setPartName(dto.getSalesName());
         existPo.setPriority(Integer.valueOf(dto.getPriority()));
@@ -271,8 +294,8 @@ public class ProductOrderService {
             productionOrder.setProductOrderType(dto.getPoType());
             productionOrder.setPartCode(dto.getSalesCode());
             productionOrder.setPartName(dto.getSalesName());
-            productionOrder.setOrderDate(dto.getOrderedTime());
-            productionOrder.setCompleteDate(dto.getDeliveryTime());
+            productionOrder.setOrderDate(Date.from(dto.getOrderedTime()));
+            productionOrder.setCompleteDate(Date.from(dto.getDeliveryTime()));
             productionOrder.setNote(dto.getNote());
             String check = updatePoPlanning(productionOrder,"-1",isSend);
             if(check.equals("SUCCESS")){

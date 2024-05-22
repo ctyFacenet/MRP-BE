@@ -1,6 +1,7 @@
 package com.facenet.mrp.service.dto;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Date;
 
 public class ProductOrderDto implements Serializable {
@@ -10,8 +11,8 @@ public class ProductOrderDto implements Serializable {
     private String customerCode;
     private String customerName;
     private String poType;
-    private Date orderedTime;
-    private Date deliveryTime;
+    private Instant orderedTime;
+    private Instant deliveryTime;
     private String salesCode;
     private String salesName;
     private String priority;
@@ -80,19 +81,19 @@ public class ProductOrderDto implements Serializable {
         this.poType = poType;
     }
 
-    public Date getOrderedTime() {
+    public Instant getOrderedTime() {
         return orderedTime;
     }
 
-    public void setOrderedTime(Date orderedTime) {
+    public void setOrderedTime(Instant orderedTime) {
         this.orderedTime = orderedTime;
     }
 
-    public Date getDeliveryTime() {
+    public Instant getDeliveryTime() {
         return deliveryTime;
     }
 
-    public void setDeliveryTime(Date deliveryTime) {
+    public void setDeliveryTime(Instant deliveryTime) {
         this.deliveryTime = deliveryTime;
     }
 
