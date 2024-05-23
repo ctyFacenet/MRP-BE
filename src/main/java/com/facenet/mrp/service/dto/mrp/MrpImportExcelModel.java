@@ -11,6 +11,15 @@ public class MrpImportExcelModel {
     private Integer level;
     private double requiredQuantity;
     private List<MrpDateQuantity> LandMarkDTOs;
+    private String parent;
+
+    public String getParent() {
+        return parent;
+    }
+
+    public void setParent(String parent) {
+        this.parent = parent;
+    }
 
     public String getProductCode() {
         return productCode;

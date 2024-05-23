@@ -2122,14 +2122,14 @@ public class MrpAdvancedAnalysisServiceV2 {
 
             //add giá tri
             mrpImportExcelModel = new MrpImportExcelModel();
+            mrpImportExcelModel.setParent(ExcelUtils.getStringCellValue(row.getCell(0)));
+            mrpImportExcelModel.setProductCode(ExcelUtils.getStringCellValue(row.getCell(1)));
+            mrpImportExcelModel.setProductName(ExcelUtils.getStringCellValue(row.getCell(2)));
+            mrpImportExcelModel.setBomVersion(ExcelUtils.getStringCellValue(row.getCell(3)));
+            mrpImportExcelModel.setLevel(ExcelUtils.getIntegerCellValue(row.getCell(5)));
+            mrpImportExcelModel.setRequiredQuantity(row.getCell(7).getNumericCellValue());
 
-            mrpImportExcelModel.setProductCode(ExcelUtils.getStringCellValue(row.getCell(0)));
-            mrpImportExcelModel.setProductName(ExcelUtils.getStringCellValue(row.getCell(1)));
-            mrpImportExcelModel.setBomVersion(ExcelUtils.getStringCellValue(row.getCell(2)));
-            mrpImportExcelModel.setLevel(ExcelUtils.getIntegerCellValue(row.getCell(4)));
-            mrpImportExcelModel.setRequiredQuantity(row.getCell(6).getNumericCellValue());
-
-            int i = 7;
+            int i = 8;
             while (row.getCell(i) != null) {
                 mrpDateQuantity = new MrpDateQuantity();
 //                mrpDateQuantity.setLandmark(sheet.getRow(0).getCell(i).getStringCellValue());

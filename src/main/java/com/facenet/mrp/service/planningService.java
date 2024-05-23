@@ -46,6 +46,9 @@ public class planningService {
     @Value("${planning.api.deletePo}")
     private String apiDeleteProductOrder;
 
+    @Value("${planning.api.syncItemPo}")
+    private String apiSyncItemProductOrder;
+
     public planningService(RestTemplate restTemplate, PlanningConfigure configure) {
         this.restTemplate = restTemplate;
         this.configure = configure;
@@ -63,6 +66,25 @@ public class planningService {
         HttpEntity<List<List<PlanningProductionOrder>>> httpEntity = new HttpEntity<>(donHangArrayList,headers);
         ResponseEntity<String> response = restTemplate.exchange(
             apiSyncPo,
+            HttpMethod.POST,
+            httpEntity,
+            new ParameterizedTypeReference<>() {
+            }
+        );
+
+        return response.getBody();
+    }
+
+    public String callApiPlanningToSyncItem(List<PlanningProductionOrder> orderList) {
+        String accessToken = configure.getAccessToken();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(accessToken);
+        System.out.println("api: "+apiSyncItemProductOrder);
+        System.out.println("token:  "+accessToken);
+        HttpEntity<List<PlanningProductionOrder>> httpEntity = new HttpEntity<>(orderList,headers);
+        ResponseEntity<String> response = restTemplate.exchange(
+            apiSyncItemProductOrder,
             HttpMethod.POST,
             httpEntity,
             new ParameterizedTypeReference<>() {

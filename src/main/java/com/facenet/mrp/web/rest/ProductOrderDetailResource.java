@@ -85,6 +85,27 @@ public class ProductOrderDetailResource {
     }
 
 
+    @PutMapping("product-order-detail/syncItem/{productOrderCode}/products/{productCode}/{isSend}")
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'S')")
+    public ResponseEntity syncProductOrderDetail (
+        @PathVariable("productCode")String productCode,
+        @PathVariable("productOrderCode")String productOrderCode,
+        @RequestBody ProductOrderDetailDto dto,
+        @PathVariable Boolean isSend
+    ) {
+        if (productCode == null || dto == null){
+            throw new CustomException(HttpStatus.BAD_REQUEST,"invalid.param");
+        }
+        productOrderDetailService.syncItemProductOrderDetail(productCode, productOrderCode, dto,isSend);
+        return ResponseEntity.ok(
+            new CommonResponse<>()
+                .isOk(true)
+                .errorCode("200")
+                .message("Cập nhật Sản phẩm thành công")
+        );
+    }
+
+
     @PutMapping("/product-orders/{productOrderCode}/product-order-detail/new-status/{productCode}/{status}")
     @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'S')")
     public ResponseEntity updateStatusProductInPO(@PathVariable String productOrderCode,@PathVariable String productCode,@PathVariable Byte status){
