@@ -10,3 +10,5 @@ services:
       - '8312:8312'
     volumes:
       - /home/ubuntu/uploads:/rd/uploads
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
