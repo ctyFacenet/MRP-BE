@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  backend:
+    container_name: rd-mrp-be
+    build:
+      dockerfile: Dockerfile-dev
+    image: rd-mrp-be
+    restart: always
+    ports:
+      - '8312:8312'
+    volumes:
+      - /home/ubuntu/uploads:/rd/uploads
