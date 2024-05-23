@@ -447,7 +447,7 @@ public class ProductOrderService {
         logger.info("start create new product order");
         for (ProductOrder productOrder : productOrders) {
             //add BTP TP vào list
-            donHangArrayList.add(mapToPlanning(productOrder));
+            donHangArrayList.add(mapToPlanning(productOrder,true));
             Set<String> productCodes = new HashSet<>();
             if (productOrder.getProductOrderDetails() == null || productOrder.getProductOrderDetails().isEmpty()) {
                 throw new CustomException("order.detail.is.must.not.empty");
@@ -507,7 +507,7 @@ public class ProductOrderService {
         }
         if(isSend){
             if(donHangArrayList.size() > 0){
-                System.out.println("----------------------------danh sách đơn hàng 1: "+donHangArrayList.size());
+                System.out.println("----------------------------danh sách đơn hàng 1: "+donHangArrayList.get(0).size());
                 syncToPlanning(donHangArrayList);
             }
         }
@@ -543,13 +543,13 @@ public class ProductOrderService {
                 .data(str));
     }
 
-    public ResponseEntity sendPlanningBeforeCreateWo(String soCode) throws ParseException {
+    public ResponseEntity sendPlanningBeforeCreateWo(String soCode,Boolean point) throws ParseException {
         ProductOrder productOrder = productOrderRepository.findAllByProductOrderCode(soCode);
         if(productOrder == null){
             return new ResponseEntity("Mã đơn hàng "+ soCode + " không tồn tại trên hệ thống",HttpStatus.OK);
         }
         List<List<PlanningProductionOrder>> data = new ArrayList<>();
-        List<PlanningProductionOrder> planningProductionOrders = mapToPlanning(productOrder);
+        List<PlanningProductionOrder> planningProductionOrders = mapToPlanning(productOrder,point);
         data.add(planningProductionOrders);
         for (List<PlanningProductionOrder> planningProductionOrders1: data){
             for(PlanningProductionOrder productionOrder : planningProductionOrders1){
@@ -574,13 +574,18 @@ public class ProductOrderService {
                 .data("SUCCESS"));
     }
 
-    private List<PlanningProductionOrder> mapToPlanning(ProductOrder productOrder) throws ParseException {
+    private List<PlanningProductionOrder> mapToPlanning(ProductOrder productOrder,Boolean point) throws ParseException {
         List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
         for (ProductOrderDetail productOrderDetails: productOrder.getProductOrderDetails()){
-            System.out.println("----------------"+productOrderDetails.getOrderDate()+"-"+productOrderDetails.getProductCode());
+            System.out.println("----------------so: "+productOrder.getProductOrderCode());
             PlanningProductionOrder donHang = new PlanningProductionOrder();
             donHang.setId(UUID.randomUUID());
-            donHang.setProductOrderId("RAL-SO-"+productOrder.getProductOrderCode());
+            if(point){// true là gửi đơn hàng từ màn thêm mới đơn hàng hoặc thêm mới ở màn tạo wo sang planning
+                 donHang.setProductOrderId("RAL-SO-"+productOrder.getProductOrderCode());
+            }else {//gửi đơn hàng từ màn quản lý đơn hàng vì mã so đã có RAL-SO- rồi
+                donHang.setProductOrderId(productOrder.getProductOrderCode());
+            }
+            System.out.println("----------------so test: "+donHang.getProductOrderId());
             donHang.setProductOrderType(productOrder.getProductOrderType());
             donHang.setPartCode(productOrder.getPartCode());
             donHang.setPartName(productOrder.getPartName());
@@ -626,9 +631,9 @@ public class ProductOrderService {
             }else {
                 donHang.setEndDate(null);
             }
-            productionOrderList.addAll(callBomForPo(productOrder,productOrderDetails));
+            productionOrderList.addAll(callBomForPo(productOrder,productOrderDetails,point));
             productionOrderList.add(donHang);
-            System.out.println("----------------------------danh sách đơn hàng 2: "+productionOrderList.toString());
+            System.out.println("----------------------------danh sách đơn hàng 2: "+productionOrderList.size());
         }
         return productionOrderList;
     }
@@ -695,7 +700,7 @@ public class ProductOrderService {
             productOrderDetail.setPriority(productOrder.getPriority());
             productOrderDetail.setOrderDate(productOrder.getOrderDate());
             productOrderDetail.setDeliverDate(productOrder.getDeliverDate());
-            productionOrderList.addAll(callBomForPo(productOrder,productOrderDetail));
+            productionOrderList.addAll(callBomForPo(productOrder,productOrderDetail,true));
             productionOrderList.add(donHang);
             System.out.println("----------------------------danh sách đơn hàng 2: "+productionOrderList.size());
         }
@@ -731,7 +736,7 @@ public class ProductOrderService {
     }
 
     //lấy danh sách btp của product code và đồng bộ cùng thành phẩm sang planning
-    private List<PlanningProductionOrder> callBomForPo(ProductOrder productOrder, ProductOrderDetail productOrderDetails) throws ParseException {
+    private List<PlanningProductionOrder> callBomForPo(ProductOrder productOrder, ProductOrderDetail productOrderDetails,Boolean point) throws ParseException {
         List<MrpDetailDTO> mrpDetailDTOS = getListBtp(productOrderDetails.getProductCode(),productOrderDetails.getBomVersion());
 
         List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
@@ -739,7 +744,11 @@ public class ProductOrderService {
             System.out.println("----------------------------: "+mrpDetailDTO.getItemCode());
             PlanningProductionOrder donHang = new PlanningProductionOrder();
             donHang.setId(UUID.randomUUID());
-            donHang.setProductOrderId("RAL-SO-"+productOrder.getProductOrderCode());
+            if(point){// true là gửi đơn hàng từ màn thêm mới đơn hàng hoặc thêm mới ở màn tạo wo sang planning
+                donHang.setProductOrderId("RAL-SO-"+productOrder.getProductOrderCode());
+            }else {//gửi đơn hàng từ màn quản lý đơn hàng vì mã so đã có RAL-SO- rồi
+                donHang.setProductOrderId(productOrder.getProductOrderCode());
+            }
             donHang.setProductOrderType(productOrder.getProductOrderType());
             donHang.setPartCode(productOrder.getPartCode());
             donHang.setPartName(productOrder.getPartName());

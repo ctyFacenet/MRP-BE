@@ -96,9 +96,9 @@ public class ProductOrderResource {
         return productOrderService.createWorkOrder(createWoFromMrpsc);
     }
 
-    @PostMapping("/send-planning-before-wo/{soCode}")
-    public ResponseEntity sendPlanningBeforeCreateWo(@PathVariable String soCode) throws ParseException {
-        return productOrderService.sendPlanningBeforeCreateWo(soCode);
+    @PostMapping("/send-planning-before-wo/{soCode}/{point}")
+    public ResponseEntity sendPlanningBeforeCreateWo(@PathVariable String soCode, @PathVariable Boolean point) throws ParseException {
+        return productOrderService.sendPlanningBeforeCreateWo(soCode,point);
     }
 
     @GetMapping("/get-work-order/{po}")
