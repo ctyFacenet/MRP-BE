@@ -1,10 +1,10 @@
 version: '3.8'
 services:
   backend:
-    container_name: rd-mrp-be
+    container_name: dev-mrp-be
     build:
       dockerfile: Dockerfile-dev
-    image: rd-mrp-be
+    image: dev-mrp-be
     restart: always
     ports:
       - '8312:8312'
