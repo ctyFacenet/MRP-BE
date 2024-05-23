@@ -243,6 +243,7 @@ planning:
     createWo: http://apsdev.mkvision.xfactory.vn/services/api/workorder/createWoMrp
     updatePo: http://apsdev.mkvision.xfactory.vn/services/api/order/update-product-order-mrp/
     deletePo: http://apsdev.mkvision.xfactory.vn/services/api/order/delete-product-order-mrp/{productOrderCode}/productCode={productCode}/type={type}
+    syncItemPo: http://apsdev.mkvision.xfactory.vn/services/api/order/sync-item-order-mrp
 keycloak_report:
   baseUrl: https://sso.xfactory.vn/auth
   realm: QLSX
