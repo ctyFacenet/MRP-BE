@@ -21,7 +21,7 @@ pipeline {
         }
         stage('Packaging') {
             steps {
-                sh "./mvnw -ntp verify -P-webapp -Pdev -Dmaven.test.skip -Dcheckstyle.skip"
+                sh "./mvnw -ntp verify -P-webapp -Pdevfn -Dmaven.test.skip -Dcheckstyle.skip"
             }
         }
         stage('Build and Run') {
