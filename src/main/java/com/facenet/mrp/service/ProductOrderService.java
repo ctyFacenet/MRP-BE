@@ -411,7 +411,8 @@ public class ProductOrderService {
         }
         if(isSend){
             if(donHangArraySendPlanning.size() > 0){
-                System.out.println("----------------------------danh sách đơn hàng gửi planning khi import excel: "+donHangArraySendPlanning.get(0));
+                System.out.println("----------------------------danh sách đơn hàng gửi planning khi import excel: "+donHangArraySendPlanning.get(0).size());
+                System.out.println("----------------------------danh sách đơn hàng gửi planning khi import excel2: "+donHangArraySendPlanning.get(1).size());
                 syncToPlanning(donHangArraySendPlanning);
             }
         }
@@ -645,6 +646,7 @@ public class ProductOrderService {
             PlanningProductionOrder donHang = new PlanningProductionOrder();
             donHang.setId(UUID.randomUUID());
             donHang.setProductOrderId(productOrder.getProductOrderCode());
+            System.out.println("-------so: " +donHang.getProductOrderId());
             donHang.setProductOrderType(productOrder.getProductOrderType());
             donHang.setPartCode(productOrder.getPartCode());
             donHang.setPartName(productOrder.getPartName());
@@ -700,10 +702,10 @@ public class ProductOrderService {
             productOrderDetail.setPriority(productOrder.getPriority());
             productOrderDetail.setOrderDate(productOrder.getOrderDate());
             productOrderDetail.setDeliverDate(productOrder.getDeliverDate());
-            productionOrderList.addAll(callBomForPo(productOrder,productOrderDetail,true));
+            productionOrderList.addAll(callBomForPo(productOrder,productOrderDetail,false));
             productionOrderList.add(donHang);
-            System.out.println("----------------------------danh sách đơn hàng 2: "+productionOrderList.size());
         }
+        System.out.println("----------------------------danh sách đơn hàng 2: "+productionOrderList.size());
         return productionOrderList;
     }
 
@@ -738,10 +740,11 @@ public class ProductOrderService {
     //lấy danh sách btp của product code và đồng bộ cùng thành phẩm sang planning
     private List<PlanningProductionOrder> callBomForPo(ProductOrder productOrder, ProductOrderDetail productOrderDetails,Boolean point) throws ParseException {
         List<MrpDetailDTO> mrpDetailDTOS = getListBtp(productOrderDetails.getProductCode(),productOrderDetails.getBomVersion());
-
+        itemList = new ArrayList<>();
         List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
+
+        System.out.println("---list btp: "+mrpDetailDTOS.size());
         for(MrpDetailDTO mrpDetailDTO: mrpDetailDTOS){
-            System.out.println("----------------------------: "+mrpDetailDTO.getItemCode());
             PlanningProductionOrder donHang = new PlanningProductionOrder();
             donHang.setId(UUID.randomUUID());
             if(point){// true là gửi đơn hàng từ màn thêm mới đơn hàng hoặc thêm mới ở màn tạo wo sang planning
