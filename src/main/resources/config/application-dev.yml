@@ -218,7 +218,7 @@ planning:
     getListWo: http://192.168.68.87:7999/services/api/workorder/find-by-ProductOrder/
     createWo: http://192.168.68.87:7999/services/api/workorder/createWoMrp
     updatePo: http://192.168.68.87:7999/services/api/order/update-product-order-mrp/
-    deletePo: http://192.168.68.87:7999/services/api/order/delete-product-order-mrp/{productOrderCode}/productCode={productCode}/type={type}
+    deletePo: http://192.168.68.87:7999/services/api/order/delete-product-order-mrp/
     syncItemPo: http://192.168.68.87:7999/services/api/order/sync-item-order-mrp
 keycloak_report:
   baseUrl: http://192.168.68.90:8080/auth
