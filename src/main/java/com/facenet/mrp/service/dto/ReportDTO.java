@@ -15,16 +15,16 @@ public class ReportDTO {
     private long totalPrCount;
     private int remainingQuantity;
     private double completionRate;
-    private int status;
+    private Integer status;
 
     public ReportDTO() {
     }
 
-    public int getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 
