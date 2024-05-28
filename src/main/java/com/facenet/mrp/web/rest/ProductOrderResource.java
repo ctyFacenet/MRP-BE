@@ -189,7 +189,7 @@ public class ProductOrderResource {
         );
     }
 
-    @PostMapping("/delete-product-order/{productOrderCode}/productCode={productCode}/type={type}")
+    @PutMapping("/delete-product-order/{productOrderCode}/productCode={productCode}/type={type}")
     public ResponseEntity deleteProductOrder(
         @PathVariable("productOrderCode")String productOrderCode,
         @PathVariable("productCode") String productCode,// xóa đơn hàng thì mặc định là -1
