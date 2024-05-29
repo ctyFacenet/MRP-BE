@@ -417,9 +417,7 @@ public class ProductOrderDetailService {
             productOrderItem.setEmployeeCode(dto.getSaleCode());//mã sale
             productOrderItem.setPriority(dto.getPriority());//mức độ ưu tiên
             productOrderItems.add(productOrderItem);
-
             productOrderItems.addAll(callBomItemToUpdate(productOrderItem,dto));
-            itemList = new ArrayList<>();//clear itemList cho lan sau su dung
             //cập nhật sp ở planning
             productOrderService.updatePoPlanning(productOrderItems,existDetail.getProductCode(),isSend);
         } catch (RuntimeException e) {
@@ -467,7 +465,6 @@ public class ProductOrderDetailService {
             donHang.setStartDate(productOrder.getStartDate());
             donHang.setEndDate(productOrder.getEndDate());
             data.addAll(callBomForPo(productOrder,existDetail,true));
-            itemList = new ArrayList<>();
             data.add(donHang);
             String check = planningService.callApiPlanningToSyncItem(data);
 
@@ -487,7 +484,8 @@ public class ProductOrderDetailService {
     }
 
     private List<PlanningProductionOrder> callBomItemToUpdate(PlanningProductionOrder planningProductionOrder, ProductOrderDetailDto productOrderDetailDto) {
-        List<MrpDetailDTO> mrpDetailDTOS = getListBtp(planningProductionOrder.getProductCode(),planningProductionOrder.getBomVersion());
+        List<MrpDetailDTO> itemListBtp = new ArrayList<>();
+        List<MrpDetailDTO> mrpDetailDTOS = getListBtp(itemListBtp,planningProductionOrder.getProductCode(),planningProductionOrder.getBomVersion());
 
         List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
         for(MrpDetailDTO mrpDetailDTO: mrpDetailDTOS){
@@ -518,8 +516,7 @@ public class ProductOrderDetailService {
         return productionOrderList;
     }
 
-    static List<MrpDetailDTO> itemList = new ArrayList<>();
-    private  List<MrpDetailDTO> getListBtp(String code, String version){
+    private List<MrpDetailDTO> getListBtp(List<MrpDetailDTO> itemListBtp,String code, String version){
         //TODO sua lai
         List<MrpDetailDTO> bomItems = coittRepository.getAllMrpProductBomList(code,version);
         List<String> list = new ArrayList<>();
@@ -527,22 +524,23 @@ public class ProductOrderDetailService {
             for (MrpDetailDTO bomItem : bomItems) {
                 if (bomItem.getGroupItemInt()== Constants.TP || bomItem.getGroupItemInt() == Constants.BTP) {
                     if(!list.contains(bomItem.getItemCode())){
-                        itemList.add(new MrpDetailDTO(bomItem));
+                        itemListBtp.add(new MrpDetailDTO(bomItem));
                         list.add(bomItem.getItemCode());
                     }
                     if(bomItem.getBomVersion() != null){
-                        getListBtp(bomItem.getItemCode(),bomItem.getBomVersion());
+                        getListBtp(itemListBtp,bomItem.getItemCode(),bomItem.getBomVersion());
                     }
                 }
             }
         }
 
-        System.out.println("-------------------lấy bom:"+itemList);
-        return itemList;
+        System.out.println("-------------------lấy bom:"+itemListBtp);
+        return itemListBtp;
     }
 
     private List<PlanningProductionOrder> callBomForPo(ProductOrder productOrder, ProductOrderDetail productOrderDetails,Boolean point) throws java.text.ParseException {
-        List<MrpDetailDTO> mrpDetailDTOS = getListBtp(productOrderDetails.getProductCode(),productOrderDetails.getBomVersion());
+        List<MrpDetailDTO> itemListBtp = new ArrayList<>();
+        List<MrpDetailDTO> mrpDetailDTOS = getListBtp(itemListBtp,productOrderDetails.getProductCode(),productOrderDetails.getBomVersion());
 
         List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
         for(MrpDetailDTO mrpDetailDTO: mrpDetailDTOS){
