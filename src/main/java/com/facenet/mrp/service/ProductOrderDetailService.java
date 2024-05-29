@@ -46,6 +46,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
+import static com.facenet.mrp.domain.mrp.QProductOrder.productOrder;
+
 @Service
 public class ProductOrderDetailService {
     private static final Logger logger = LoggerFactory.getLogger(ProductOrderDetailService.class);
@@ -99,7 +101,7 @@ public class ProductOrderDetailService {
         double missingQuantity;
         Pageable pageable = PageRequest.of(input.getPageNumber(), input.getPageSize());
         ProductOrderDetailFilter filter = input.getFilter();
-        QProductOrder qProductOrder = QProductOrder.productOrder;
+        QProductOrder qProductOrder = productOrder;
         QProductOrderDetail qProductOrderDetail = QProductOrderDetail.productOrderDetail;
         JPAQuery<ProductOrderDetail> query = new
             JPAQueryFactory(entityManager)
@@ -400,6 +402,7 @@ public class ProductOrderDetailService {
         try {
             detailRepository.save(existDetail);
             PlanningProductionOrder productOrderItem = new PlanningProductionOrder();
+            List<PlanningProductionOrder> productOrderItems = new ArrayList<>();
             productOrderItem.setProductOrderId(productOrderCode);//mã so nội bộ
             productOrderItem.setExternalPoId(dto.getProductOrderChild());//mã so
             productOrderItem.setProductCode(dto.getProductCode());//mã sp
@@ -413,8 +416,12 @@ public class ProductOrderDetailService {
             productOrderItem.setNote(dto.getNote());//ghi chú
             productOrderItem.setEmployeeCode(dto.getSaleCode());//mã sale
             productOrderItem.setPriority(dto.getPriority());//mức độ ưu tiên
+            productOrderItems.add(productOrderItem);
+
+            productOrderItems.addAll(callBomItemToUpdate(productOrderItem,dto));
+            itemList = new ArrayList<>();//clear itemList cho lan sau su dung
             //cập nhật sp ở planning
-            productOrderService.updatePoPlanning(productOrderItem,existDetail.getProductCode(),isSend);
+            productOrderService.updatePoPlanning(productOrderItems,existDetail.getProductCode(),isSend);
         } catch (RuntimeException e) {
             logger.error("UpdateProductOrderDetail error", e);
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "internal.error");
@@ -460,6 +467,7 @@ public class ProductOrderDetailService {
             donHang.setStartDate(productOrder.getStartDate());
             donHang.setEndDate(productOrder.getEndDate());
             data.addAll(callBomForPo(productOrder,existDetail,true));
+            itemList = new ArrayList<>();
             data.add(donHang);
             String check = planningService.callApiPlanningToSyncItem(data);
 
@@ -477,6 +485,39 @@ public class ProductOrderDetailService {
             throw new RuntimeException(e);
         }
     }
+
+    private List<PlanningProductionOrder> callBomItemToUpdate(PlanningProductionOrder planningProductionOrder, ProductOrderDetailDto productOrderDetailDto) {
+        List<MrpDetailDTO> mrpDetailDTOS = getListBtp(planningProductionOrder.getProductCode(),planningProductionOrder.getBomVersion());
+
+        List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
+        for(MrpDetailDTO mrpDetailDTO: mrpDetailDTOS){
+            PlanningProductionOrder donHang = new PlanningProductionOrder();
+            donHang.setProductOrderId(planningProductionOrder.getProductOrderId());//mã so nội bộ
+            donHang.setPartCode(planningProductionOrder.getPartCode());
+            donHang.setPartName(planningProductionOrder.getPartName());
+            donHang.setPriority(String.valueOf(planningProductionOrder.getPriority()));
+            donHang.setBranchCode(planningProductionOrder.getPartCode());
+            donHang.setCustomerCode(planningProductionOrder.getCustomerCode());
+            donHang.setExternalPoId(planningProductionOrder.getExternalPoId());
+            donHang.setCustomerName(planningProductionOrder.getCustomerName());
+            donHang.setBomVersion(mrpDetailDTO.getBomVersion());
+            donHang.setProductCode(mrpDetailDTO.getItemCode());
+            donHang.setProductName(mrpDetailDTO.getItemName());
+            if(mrpDetailDTO.getQuota() != null && planningProductionOrder.getQuantity() != null){
+                donHang.setQuantity((int) (planningProductionOrder.getQuantity()*mrpDetailDTO.getQuota()));
+            }
+            donHang.setEmployeeCode(planningProductionOrder.getEmployeeCode());//nv sale
+            donHang.setItemPriority(planningProductionOrder.getItemPriority());
+            donHang.setOrderDate(planningProductionOrder.getOrderDate());
+            donHang.setCompleteDate(planningProductionOrder.getCompleteDate());
+            donHang.setStartDate(planningProductionOrder.getStartDate());
+            donHang.setEndDate(planningProductionOrder.getEndDate());
+            productionOrderList.add(donHang);
+        }
+
+        return productionOrderList;
+    }
+
     static List<MrpDetailDTO> itemList = new ArrayList<>();
     private  List<MrpDetailDTO> getListBtp(String code, String version){
         //TODO sua lai

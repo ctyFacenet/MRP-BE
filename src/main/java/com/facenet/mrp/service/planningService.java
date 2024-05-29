@@ -94,16 +94,14 @@ public class planningService {
         return response.getBody();
     }
 
-    public String callApiPlanningUpdatePo(PlanningProductionOrder donHangArrayList,String productCode,Boolean isSend) {
+    public String callApiPlanningUpdatePo(List<PlanningProductionOrder> donHangArrayList,String productCode,Boolean isSend) {
         String accessToken = configure.getAccessToken();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(accessToken);
         String api = apiUpdateProductOrder+isSend+"/code="+productCode;
         System.out.println("test api: "+api);
-        List<PlanningProductionOrder> productionOrders = new ArrayList<>();
-        productionOrders.add(donHangArrayList);
-        HttpEntity<List<PlanningProductionOrder>> httpEntity = new HttpEntity<>(productionOrders,headers);
+        HttpEntity<List<PlanningProductionOrder>> httpEntity = new HttpEntity<>(donHangArrayList,headers);
         ResponseEntity<String> response = restTemplate.exchange(
             api,
             HttpMethod.POST,

@@ -290,6 +290,7 @@ public class ProductOrderService {
         try {
 
             //gửi đơn hàng sang planning nếu click send hoặc update nếu có thay đổi
+            List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
             PlanningProductionOrder productionOrder = new PlanningProductionOrder();
             productionOrder.setProductOrderId(existPo.getProductOrderCode());
             productionOrder.setProductOrderType(dto.getPoType());
@@ -298,7 +299,8 @@ public class ProductOrderService {
             productionOrder.setOrderDate(Date.from(dto.getOrderedTime()));
             productionOrder.setCompleteDate(Date.from(dto.getDeliveryTime()));
             productionOrder.setNote(dto.getNote());
-            String check = updatePoPlanning(productionOrder,"-1",isSend);
+            productionOrderList.add(productionOrder);
+            String check = updatePoPlanning(productionOrderList,"-1",isSend);
             if(check.equals("SUCCESS")){
                 productOrderRepository.save(existPo);
             }
@@ -525,7 +527,7 @@ public class ProductOrderService {
         }
     }
     //hàm gọi update đơn hàng hoặc gửi đơn hàng từ màn ql đơn hàng sang planning
-    public String updatePoPlanning(PlanningProductionOrder donHangArrayList, String productCode, Boolean isSend){
+    public String updatePoPlanning(List<PlanningProductionOrder> donHangArrayList, String productCode, Boolean isSend){
         String check = planningService.callApiPlanningUpdatePo(donHangArrayList, productCode,isSend);
         System.out.println("---------------"+check);
         if(!check.equals("SUCCESS")){
@@ -633,6 +635,7 @@ public class ProductOrderService {
                 donHang.setEndDate(null);
             }
             productionOrderList.addAll(callBomForPo(productOrder,productOrderDetails,point));
+            itemList = new ArrayList<>();
             productionOrderList.add(donHang);
             System.out.println("----------------------------danh sách đơn hàng 2: "+productionOrderList.size());
         }
@@ -703,6 +706,7 @@ public class ProductOrderService {
             productOrderDetail.setOrderDate(productOrder.getOrderDate());
             productOrderDetail.setDeliverDate(productOrder.getDeliverDate());
             productionOrderList.addAll(callBomForPo(productOrder,productOrderDetail,false));
+            itemList = new ArrayList<>();
             productionOrderList.add(donHang);
         }
         System.out.println("----------------------------danh sách đơn hàng 2: "+productionOrderList.size());
