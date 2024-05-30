@@ -467,14 +467,11 @@ public class ProductOrderDetailService {
             data.addAll(callBomForPo(productOrder,existDetail,true));
             data.add(donHang);
             String check = planningService.callApiPlanningToSyncItem(data);
-            System.out.println("-------------status:"+check);
             if(check.equals("SUCCESS")){
                 productOrder.setStatusPlanning(2);
                 existDetail.setStatusPlanning(2);
-                System.out.println("-------------test status po:"+productOrder.getStatusPlanning());
-                System.out.println("-------------test status item:"+existDetail.getStatusPlanning());
-                detailRepository.save(existDetail);
                 productOrderRepository.save(productOrder);
+                detailRepository.save(existDetail);
             }
             return check;
         } catch (RuntimeException e) {
