@@ -97,10 +97,8 @@ public class BomResource {
                                 newBom.setVersion(coittEntity.getuVersions());
                                 results.add(newBom);
                             }
-                            break;
                         }
                     }
-                    break;
                 }
             }
         }
