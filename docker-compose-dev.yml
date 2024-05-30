@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  backend:
+    container_name: dev-mrp-be
+    build:
+      dockerfile: Dockerfile
+    image: dev-mrp-be
+    restart: always
+    ports:
+      - '8312:8312'
+    volumes:
+      - /home/ubuntu/uploads:/rd/uploads
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}

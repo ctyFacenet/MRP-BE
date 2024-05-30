@@ -46,6 +46,9 @@ public class planningService {
     @Value("${planning.api.deletePo}")
     private String apiDeleteProductOrder;
 
+    @Value("${planning.api.syncItemPo}")
+    private String apiSyncItemProductOrder;
+
     public planningService(RestTemplate restTemplate, PlanningConfigure configure) {
         this.restTemplate = restTemplate;
         this.configure = configure;
@@ -72,16 +75,33 @@ public class planningService {
         return response.getBody();
     }
 
-    public String callApiPlanningUpdatePo(PlanningProductionOrder donHangArrayList,String productCode,Boolean isSend) {
+    public String callApiPlanningToSyncItem(List<PlanningProductionOrder> orderList) {
+        String accessToken = configure.getAccessToken();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(accessToken);
+        System.out.println("api: "+apiSyncItemProductOrder);
+        System.out.println("token:  "+accessToken);
+        HttpEntity<List<PlanningProductionOrder>> httpEntity = new HttpEntity<>(orderList,headers);
+        ResponseEntity<String> response = restTemplate.exchange(
+            apiSyncItemProductOrder,
+            HttpMethod.POST,
+            httpEntity,
+            new ParameterizedTypeReference<>() {
+            }
+        );
+
+        return response.getBody();
+    }
+
+    public String callApiPlanningUpdatePo(List<PlanningProductionOrder> donHangArrayList,String productCode,Boolean isSend) {
         String accessToken = configure.getAccessToken();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(accessToken);
         String api = apiUpdateProductOrder+isSend+"/code="+productCode;
         System.out.println("test api: "+api);
-        List<PlanningProductionOrder> productionOrders = new ArrayList<>();
-        productionOrders.add(donHangArrayList);
-        HttpEntity<List<PlanningProductionOrder>> httpEntity = new HttpEntity<>(productionOrders,headers);
+        HttpEntity<List<PlanningProductionOrder>> httpEntity = new HttpEntity<>(donHangArrayList,headers);
         ResponseEntity<String> response = restTemplate.exchange(
             api,
             HttpMethod.POST,

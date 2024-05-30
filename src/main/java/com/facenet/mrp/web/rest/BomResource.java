@@ -8,6 +8,7 @@ import com.facenet.mrp.service.dto.BomDTO;
 import com.facenet.mrp.service.dto.BomItemDetailDTO;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
+import com.facenet.mrp.service.dto.sap.CoittCitt1DTO;
 import com.facenet.mrp.service.model.BomFilterInput;
 import com.facenet.mrp.service.model.PageFilterInput;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @RequestMapping("/api/boms")
@@ -49,35 +51,88 @@ public class BomResource {
 
     private PageResponse<List<BomDTO>> search(PageFilterInput<BomFilterInput> input){
         PageResponse<List<BomDTO>> pageResponse = bomService.getAllBom(input);
+        List<CoittCitt1DTO> coittCitt1DTOS = repository.getAllDistinct();
+        List<CoittEntity> coittEntities = repository.getAllCoitt();
+
+        HashMap<String,List<CoittCitt1DTO>> coittCitt1HashMap = new HashMap<>();
+        ArrayList<CoittCitt1DTO> listChild;
         List<BomDTO> results = new ArrayList<>();
+
+        for (CoittCitt1DTO dto: coittCitt1DTOS){
+            if(coittCitt1HashMap.containsKey(dto.getuProNo()+"_"+dto.getuVersions())){
+                coittCitt1HashMap.get(dto.getuProNo()+"_"+dto.getuVersions()).add(dto);
+            }else{
+                listChild = new ArrayList<>();
+                listChild.add(dto);
+                coittCitt1HashMap.put(dto.getuProNo()+"_"+dto.getuVersions(),listChild);
+            }
+        }
+
         for (BomDTO bomDTO: pageResponse.getData()){
             bomDTO.setLevel(1);
             results.add(bomDTO);
-            List<Citt1Entity> entityList = repository.getAll(bomDTO.getProductCode(),bomDTO.getVersion());
-            for (Citt1Entity citt1Entity: entityList){
-                System.out.println("---------------"+citt1Entity.getuItemCode()+"-"+citt1Entity.getuVersions());
-                List<CoittEntity> coittEntity = repository.getListBTP(citt1Entity.getuItemCode(),citt1Entity.getuVersions());
-                if(!coittEntity.isEmpty()){
-                    BomDTO newBom = new BomDTO();
-                    newBom.setProductCode(coittEntity.get(0).getuProNo());
-                    newBom.setDescription(coittEntity.get(0).getuProNam());
-                    newBom.setWarehouse(coittEntity.get(0).getuWhsCod());
-                    newBom.setDocUrl(coittEntity.get(0).getuDocUrl());
-                    newBom.setLevel(2);
-                    newBom.setRoot(bomDTO.getProductCode()+"_"+bomDTO.getVersion());
-                    newBom.setCreateTime(coittEntity.get(0).getCreateDate());
-                    newBom.setFromDate(coittEntity.get(0).getuFromDate());
-                    newBom.setGroupItem(101);
-                    newBom.setQuota(coittEntity.get(0).getuQuantity());
-                    newBom.setSpeciality(coittEntity.get(0).getuSpec());
-                    newBom.setRemark(coittEntity.get(0).getRemark());
-                    newBom.setToDate(coittEntity.get(0).getuToDate());
-                    newBom.setStatus(coittEntity.get(0).getuActive());
-                    newBom.setVersion(coittEntity.get(0).getuVersions());
-                    results.add(newBom);
+            for(String key: coittCitt1HashMap.keySet()){
+                if((bomDTO.getProductCode()+ "_" + bomDTO.getVersion()).equals(key)){
+                    List<CoittCitt1DTO> dtoList = coittCitt1HashMap.get(key);
+
+                    for (CoittCitt1DTO coittCitt1DTO: dtoList){
+                        for (CoittEntity coittEntity: coittEntities){
+                            if((coittCitt1DTO.getuItemCode()+"_"+coittCitt1DTO.getuVersionsCitt1())
+                                .equals(coittEntity.getuProNo()+"_"+coittEntity.getuVersions())){
+                                BomDTO newBom = new BomDTO();
+                                newBom.setProductCode(coittEntity.getuProNo());
+                                newBom.setDescription(coittEntity.getuProNam());
+                                newBom.setWarehouse(coittEntity.getuWhsCod());
+                                newBom.setDocUrl(coittEntity.getuDocUrl());
+                                newBom.setLevel(2);
+                                newBom.setRoot(bomDTO.getProductCode()+"_"+bomDTO.getVersion());
+                                newBom.setCreateTime(coittEntity.getCreateDate());
+                                newBom.setFromDate(coittEntity.getuFromDate());
+                                newBom.setGroupItem(101);
+                                newBom.setQuota(coittEntity.getuQuantity());
+                                newBom.setSpeciality(coittEntity.getuSpec());
+                                newBom.setRemark(coittEntity.getRemark());
+                                newBom.setToDate(coittEntity.getuToDate());
+                                newBom.setStatus(coittEntity.getuActive());
+                                newBom.setVersion(coittEntity.getuVersions());
+                                results.add(newBom);
+                            }
+                        }
+                    }
                 }
             }
         }
+
+//        List<BomDTO> results = new ArrayList<>();
+//        for (BomDTO bomDTO: pageResponse.getData()){
+//            bomDTO.setLevel(1);
+//            results.add(bomDTO);
+//            List<Citt1Entity> entityList = repository.getAll(bomDTO.getProductCode(),bomDTO.getVersion());
+//            for (Citt1Entity citt1Entity: entityList){
+//                System.out.println("---------------"+citt1Entity.getuItemCode()+"-"+citt1Entity.getuVersions());
+//                List<CoittEntity> coittEntity = repository.getListBTP(citt1Entity.getuItemCode(),citt1Entity.getuVersions());
+//                if(!coittEntity.isEmpty()){
+//                    BomDTO newBom = new BomDTO();
+//                    newBom.setProductCode(coittEntity.get(0).getuProNo());
+//                    newBom.setDescription(coittEntity.get(0).getuProNam());
+//                    newBom.setWarehouse(coittEntity.get(0).getuWhsCod());
+//                    newBom.setDocUrl(coittEntity.get(0).getuDocUrl());
+//                    newBom.setLevel(2);
+//                    newBom.setRoot(bomDTO.getProductCode()+"_"+bomDTO.getVersion());
+//                    newBom.setCreateTime(coittEntity.get(0).getCreateDate());
+//                    newBom.setFromDate(coittEntity.get(0).getuFromDate());
+//                    newBom.setGroupItem(101);
+//                    newBom.setQuota(coittEntity.get(0).getuQuantity());
+//                    newBom.setSpeciality(coittEntity.get(0).getuSpec());
+//                    newBom.setRemark(coittEntity.get(0).getRemark());
+//                    newBom.setToDate(coittEntity.get(0).getuToDate());
+//                    newBom.setStatus(coittEntity.get(0).getuActive());
+//                    newBom.setVersion(coittEntity.get(0).getuVersions());
+//                    results.add(newBom);
+//                }
+//            }
+//        }
+
         return new PageResponse<List<BomDTO>>()
             .result("00", "Thành công", true)
             .data(results);

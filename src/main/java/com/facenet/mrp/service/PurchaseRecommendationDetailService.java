@@ -307,10 +307,10 @@ public class PurchaseRecommendationDetailService {
         }
         logger.info("Number of accepted {}, required accepted number {}", numberOfAccepted, userApproval.size());
         // Chưa đủ lượng đồng ý
-        if (numberOfAccepted != userApproval.size())
-            return new CommonResponse<>().success(
-                (input.getIsApproval() ? "Phê duyệt " : "Từ chối ") + "thành công "
-            );
+//        if (numberOfAccepted != userApproval.size())
+//            return new CommonResponse<>().success(
+//                (input.getIsApproval() ? "Phê duyệt " : "Từ chối ") + "thành công "
+//            );
 
         logger.info("Approval process (isApproval,{}) for items({})", input.getIsApproval(), input.getItems());
         int newStatus = input.getIsApproval() ? Constants.PurchaseRecommendationDetail.ACCEPTED : Constants.PurchaseRecommendationDetail.REJECTED;
