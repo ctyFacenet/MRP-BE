@@ -2,12 +2,14 @@ package com.facenet.mrp.repository.sap;
 
 import com.facenet.mrp.domain.sap.Citt1Entity;
 import com.facenet.mrp.domain.sap.CoittEntity;
+import com.facenet.mrp.domain.sap.OitmEntity;
 import com.facenet.mrp.service.dto.BomDTO;
 import com.facenet.mrp.service.dto.BomItemDetailDTO;
 import com.facenet.mrp.service.dto.BomItemDetailDraftDTO;
 import com.facenet.mrp.service.dto.DetailBomVersionDTO;
 import com.facenet.mrp.service.dto.mrp.CloneBomDTO;
 import com.facenet.mrp.service.dto.mrp.MrpDetailDTO;
+import com.facenet.mrp.service.dto.sap.CoittCitt1DTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -144,6 +146,11 @@ public interface CoittRepository extends JpaRepository<CoittEntity,Integer> {
         "and co.uActive = '1' ")
     List<CloneBomDTO> cloneAllMrpProductBom();
 
+    @Query("select new com.facenet.mrp.service.dto.sap.CoittCitt1DTO(a.uProNo,a.uVersions,a.docEntry,b.uItemCode,b.uVersions)"+
+        " FROM CoittEntity a join Citt1Entity b on a.docEntry = b.docEntry join OitmEntity z on z.itemCode = b.uItemCode"+
+        " where z.itmsGrpCod.itmsGrpCode = 101 order by a.docEntry")
+    List<CoittCitt1DTO> getAllDistinct();
+
     @Query(value = "select a from CoittEntity a where a.uProNo = :productCode")
     List<CoittEntity> getList(@Param("productCode") String productCode);
 
@@ -152,4 +159,7 @@ public interface CoittRepository extends JpaRepository<CoittEntity,Integer> {
 
     @Query(value = "select x from CoittEntity x where x.uProNo = :productCode and x.uVersions = :version")
     List<CoittEntity> getListBTP(@Param("productCode") String productCode, @Param("version") String version);
+
+    @Query(value = "select x from CoittEntity x")
+    List<CoittEntity> getAllCoitt();
 }
