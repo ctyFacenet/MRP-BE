@@ -155,10 +155,18 @@ public class ProductOrderRepositoryImpl implements ProductOrderCustomRepository 
             booleanBuilder.and(qProductOrder.partCode.containsIgnoreCase(filter.getSaleCode()));
         }
         if (filter.getOrderDate() != null) {
-            booleanBuilder.and(qProductOrder.orderDate.goe(filter.getOrderDate()));
+            LocalDate localDate = filter.getOrderDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear())
+                .and(qProductOrder.orderDate.month().eq(localDate.getMonthValue()))
+                .and(qProductOrder.orderDate.dayOfMonth().eq(localDate.getDayOfMonth())));
+
+//            booleanBuilder.and(qProductOrder.orderDate.eq(filter.getOrderDate()));
         }
         if (filter.getDeliveryDate() != null) {
-            booleanBuilder.and(qProductOrder.deliverDate.loe(filter.getDeliveryDate()));
+            LocalDate localDate = filter.getDeliveryDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            booleanBuilder.and(qProductOrder.deliverDate.year().eq(localDate.getYear())
+                .and(qProductOrder.deliverDate.month().eq(localDate.getMonthValue()))
+                .and(qProductOrder.deliverDate.dayOfMonth().eq(localDate.getDayOfMonth())));
         }
 
         query.where(booleanBuilder).orderBy(qProductOrder.updatedAt.desc());

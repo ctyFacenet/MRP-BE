@@ -208,7 +208,7 @@ public class ProductOrderDetailService {
      * @param dto
      * @return
      */
-    public void createNewProductOrderDetail(String poCode, ProductOrderDetailDto dto) throws IOException, ParseException {
+    public void createNewProductOrderDetail(String poCode, ProductOrderDetailDto dto) {
         ItemQuantity countChildren = new ItemQuantity();
         List<MrpDetailDTO> detailDTOS;
         //tìm po chứa product để insert
@@ -231,6 +231,16 @@ public class ProductOrderDetailService {
         //Chuyển Dto thành entity
         ProductOrderDetail orderDetail = mapper.dtoToEntity(dto);
         orderDetail.setProductOrderCode(productOrder);
+        Date orderDate = orderDetail.getOrderDate();
+        orderDate.setHours(0);
+        orderDate.setMinutes(0);
+        orderDate.setSeconds(0);
+        orderDetail.setOrderDate(orderDate);
+        Date deliveryDate = orderDetail.getDeliverDate();
+        deliveryDate.setHours(0);
+        deliveryDate.setMinutes(0);
+        deliveryDate.setSeconds(0);
+        orderDetail.setDeliverDate(deliveryDate);
         orderDetail.setStatus(1);
         orderDetail.setIsActive((byte) 1);
         orderDetail.setStatusPlanning(1);

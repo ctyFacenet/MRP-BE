@@ -132,7 +132,7 @@ public class MonitoringService {
             booleanBuilder.and(qSapOnOrderSummary.providerCode.containsIgnoreCase(filter.getVendorCode()));
         }
         if (!StringUtils.isEmpty(filter.getVendorName())) {
-            booleanBuilder.and(qSapOnOrderSummary.providerName.containsIgnoreCase(filter.getVendorCode()));
+            booleanBuilder.and(qSapOnOrderSummary.providerName.containsIgnoreCase(filter.getVendorName()));
         }
         if (!StringUtils.isEmpty(filter.getPoCreateUser())) {
             booleanBuilder.and(qSapOnOrderSummary.createPoUser.containsIgnoreCase(filter.getPoCreateUser()));

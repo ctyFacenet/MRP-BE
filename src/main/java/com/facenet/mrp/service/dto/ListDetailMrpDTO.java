@@ -1,10 +1,14 @@
 package com.facenet.mrp.service.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.sql.Timestamp;
 import java.util.Date;
 
+@Setter
+@Getter
 public class ListDetailMrpDTO {
     private String mrpSubCode;
 
@@ -38,94 +42,6 @@ public class ListDetailMrpDTO {
 
     private Date lastAccess;
 
-    public String getMrpSubCode() {
-        return mrpSubCode;
-    }
-
-    public void setMrpSubCode(String mrpSubCode) {
-        this.mrpSubCode = mrpSubCode;
-    }
-
-    public String getMrpCode() {
-        return mrpCode;
-    }
-
-    public void setMrpCode(String mrpCode) {
-        this.mrpCode = mrpCode;
-    }
-
-    public String getSoCode() {
-        return soCode;
-    }
-
-    public void setSoCode(String soCode) {
-        this.soCode = soCode;
-    }
-
-    public String getMrpDescription() {
-        return mrpDescription;
-    }
-
-    public void setMrpDescription(String mrpDescription) {
-        this.mrpDescription = mrpDescription;
-    }
-
-    public Date getTimeStart() {
-        return timeStart;
-    }
-
-    public void setTimeStart(Date timeStart) {
-        this.timeStart = timeStart;
-    }
-
-    public Date getTimeEnd() {
-        return timeEnd;
-    }
-
-    public void setTimeEnd(Date timeEnd) {
-        this.timeEnd = timeEnd;
-    }
-
-    public Byte getStatus() {
-        return status;
-    }
-
-    public void setStatus(Byte status) {
-        this.status = status;
-    }
-
-    public String getSortType() {
-        return sortType;
-    }
-
-    public void setSortType(String sortType) {
-        this.sortType = sortType;
-    }
-
-    public Timestamp getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(Timestamp createdTime) {
-        this.createdTime = createdTime;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public String getAnalysisType() {
-        return analysisType;
-    }
-
-    public void setAnalysisType(String analysisType) {
-        this.analysisType = analysisType;
-    }
-
     public ListDetailMrpDTO() {
     }
 
@@ -147,51 +63,4 @@ public class ListDetailMrpDTO {
         this.status = status;
     }
 
-    public String getAnalysisMode() {
-        return analysisMode;
-    }
-
-    public void setAnalysisMode(String analysisMode) {
-        this.analysisMode = analysisMode;
-    }
-
-    public String getAnalysisSource() {
-        return analysisSource;
-    }
-
-    public void setAnalysisSource(String analysisSource) {
-        this.analysisSource = analysisSource;
-    }
-
-    public Date getLastAccess() {
-        return lastAccess;
-    }
-
-    public void setLastAccess(Date lastAccess) {
-        this.lastAccess = lastAccess;
-    }
-
-    public Integer getAnalysisKind() {
-        return analysisKind;
-    }
-
-    public void setAnalysisKind(Integer analysisKind) {
-        this.analysisKind = analysisKind;
-    }
-
-    public String getItems() {
-        return items;
-    }
-
-    public void setItems(String items) {
-        this.items = items;
-    }
-
-    public String getWarehouseAnalysis() {
-        return warehouseAnalysis;
-    }
-
-    public void setWarehouseAnalysis(String warehouseAnalysis) {
-        this.warehouseAnalysis = warehouseAnalysis;
-    }
 }

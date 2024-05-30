@@ -326,17 +326,17 @@ public class PurchaseRecommendationDetailService {
             PurchaseHasRecommendationEntity purchaseHasRecommendationEntity = purchaseHasRecommendationRepository.getPurchaseHasRecommendationBatch(purchaseRecommendationId, batch);
             List<PurchaseRequestDetailApiDTO> purchaseRequestDetailApiList = planRepository.getAllApprovedByItems(purchaseRecommendationEntity, Constants.PurchaseRecommendationPlan.ACCEPTED, input.getItems(), batch);
             purchaseRequestDetailApiList.removeIf(detailApiDTO -> detailApiDTO.getRequiredQuantity() <= 0.0);
-            if (purchaseRequestDetailApiList.size() > 0) {
+            if (!purchaseRequestDetailApiList.isEmpty()) {
                 RestTemplate restTemplate = new RestTemplate();
                 PurchaseRequestApiDTO purchaseRequestDTO = purchaseRequestApiMapper.toDTO(purchaseRecommendationEntity, purchaseRequestDetailApiList, purchaseHasRecommendationEntity);
                 HttpEntity<PurchaseRequestApiDTO> httpEntity = new HttpEntity<>(purchaseRequestDTO);
                 String sapApiUrl = configRepository.getValueByName("SAP_PR_API").orElseThrow(RuntimeException::new);
                 try {
-                    restTemplate.exchange(
-                        sapApiUrl,
-                        HttpMethod.POST,
-                        httpEntity, String.class
-                    );
+//                    restTemplate.exchange(
+//                        sapApiUrl,
+//                        HttpMethod.POST,
+//                        httpEntity, String.class
+//                    );
                 } catch (Exception e) {
                     logger.error("Send PR to SAP failed", e);
                     planRepository.approveRecommendationPlan(
