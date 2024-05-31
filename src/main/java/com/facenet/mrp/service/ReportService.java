@@ -18,17 +18,16 @@ import com.facenet.mrp.service.utils.Constants;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.persistence.EntityManager;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ReportService {
@@ -260,7 +259,7 @@ public class ReportService {
         return prCountHM;
     }
 
-    public List<ReportDetailDTO> getDetailReport(Integer reportMode, String soCode){
+    public List<ReportDetailDTO> getDetailReport(Integer reportMode, String soCode, DetailReportDTO reportDetailDTO){
 
         List<ReportDetailDTO> reportDetailDTOS = new ArrayList<>();
         List<PlanPrForSo> planPrForSoList;
@@ -274,7 +273,12 @@ public class ReportService {
             //Todo: query voi don hang FC
 
         }else {
-            reportDetailDTOS = mrpRequiredQuantityRepository.getAllMaterialRequiredQuantity(soCode);
+            reportDetailDTOS = mrpRequiredQuantityRepository.getAllMaterialRequiredQuantityV2(
+                soCode,
+                '%' + reportDetailDTO.getMrpCode().trim() + '%',
+                '%' + reportDetailDTO.getItemCode().trim() + '%',
+                '%' + reportDetailDTO.getItemName().trim() + '%'
+            );
             System.err.println("reportDetailDTOS: " + reportDetailDTOS.size());
             System.err.println("reportDetailDTOS: " + reportDetailDTOS.isEmpty());
 
@@ -285,7 +289,10 @@ public class ReportService {
         }
 
         //lấy mã NCC được chọn của các vật tư được khuyến nghị
-        vendorCodeForDetailReports = purchaseRecommendationDetailRepository.getVendorBySoCodeForDetailReport(soCode);
+        vendorCodeForDetailReports = purchaseRecommendationDetailRepository.getVendorBySoCodeForDetailReport(
+            soCode,
+            '%' + reportDetailDTO.getVendorCode() + '%'
+        );
 
         if (vendorCodeForDetailReports != null && !vendorCodeForDetailReports.isEmpty()){
             for (VendorCodeForDetailReport item : vendorCodeForDetailReports){
@@ -295,16 +302,16 @@ public class ReportService {
         //Lấy tên NCC từ mã NCC vừa lấy được và ghep vào cùng một danh sách
         if (!vendorCodeSet.isEmpty()){
             vendorInfoList = ocrdRepository.getVendorList(vendorCodeSet);
+            vendorInfoList = vendorInfoList.stream().filter(v-> v.getVendorName().contains(reportDetailDTO.getVendorName())).toList();
+            Map<String, VendorCodeForDetailReport> hashMap = vendorInfoList.stream().collect(Collectors.toMap(VendorCodeForDetailReport::getVendorCode, v->v));
 
-            if (vendorInfoList != null && !vendorInfoList.isEmpty()){
+            if (!vendorInfoList.isEmpty()){
                 for (VendorCodeForDetailReport vendorCodeForDetailReport : vendorCodeForDetailReports){
-                    for (VendorCodeForDetailReport ocrdItem : vendorInfoList){
-                        if (vendorCodeForDetailReport.getVendorCode().equals(ocrdItem.getVendorCode())){
-                            vendorCodeForDetailReport.setVendorName(ocrdItem.getVendorName());
-                            break;
-                        }
+                    if (hashMap.containsKey(vendorCodeForDetailReport.getVendorCode())) {
+                        vendorCodeForDetailReport.setVendorName(hashMap.get(vendorCodeForDetailReport.getVendorCode()).getVendorName());
                     }
                 }
+                vendorCodeForDetailReports = vendorCodeForDetailReports.stream().filter(v->v.getVendorName()!= null).toList();
             }
         }
 

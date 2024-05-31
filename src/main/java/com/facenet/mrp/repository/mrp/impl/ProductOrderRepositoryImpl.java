@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -168,15 +169,31 @@ public class ProductOrderRepositoryImpl implements ProductOrderCustomRepository 
                 .and(qProductOrder.deliverDate.month().eq(localDate.getMonthValue()))
                 .and(qProductOrder.deliverDate.dayOfMonth().eq(localDate.getDayOfMonth())));
         }
-
         query.where(booleanBuilder).orderBy(qProductOrder.updatedAt.desc());
         List<ProductOrder> result = query.fetch();
+        List<ProductOrder> resultDto = new ArrayList<>();
+        result.forEach(productOrder -> {
+            // Xử lý bị lỗi GMT +7 chưa đc, xử lý chưa triệt để, nếu config đc là tốt nhất
+            Date orderDate = productOrder.getOrderDate();
+            Calendar cal2 = Calendar.getInstance();
+            cal2.setTime(orderDate);
+            cal2.add(Calendar.HOUR, -7); // Dành cho GMT 7
+            Date oneHourBack = cal2.getTime();
+            productOrder.setOrderDate(oneHourBack);
+
+            Date deliveryDate = productOrder.getDeliverDate();
+            Calendar cal3 = Calendar.getInstance();
+            cal3.setTime(deliveryDate);
+            cal3.add(Calendar.HOUR, -7); // Dành cho GMT 7
+            Date sevenHourBack = cal3.getTime();
+            productOrder.setDeliverDate(sevenHourBack);
+
+            resultDto.add(productOrder);
+        });
         if (CollectionUtils.isEmpty(result)) {
             throw new CustomException("record.notfound");
         } else {
-            return result;
+            return resultDto;
         }
     }
-
-
 }

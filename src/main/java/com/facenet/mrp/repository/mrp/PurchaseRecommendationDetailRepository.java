@@ -140,11 +140,15 @@ public interface PurchaseRecommendationDetailRepository extends JpaRepository<Pu
         "where p.purchaseRecommendationId = d.purchaseRecommendationId " +
         "and d.moqPriceId = m.itemPriceId " +
         "and d.moqPriceId is not null " +
+        "and m.vendorCode = :vendorCode " +
         "and p.mrpPoId = :soCode " +
         "and p.isActive = true " +
         "and d.isActive = true " +
         "and m.isActive = 1 ")
-    List<VendorCodeForDetailReport> getVendorBySoCodeForDetailReport(@Param("soCode")String soCode);
+    List<VendorCodeForDetailReport> getVendorBySoCodeForDetailReport(
+        @Param("soCode")String soCode,
+        @Param("vendorCode")String vendorCode
+        );
 
     @Query("select new com.facenet.mrp.producer_kafka.InfoItemDTO(b.mrpPoId,b.mrpSubCode,a.itemCode,a.itemDescription,b.startTime,b.endTime) from PurchaseRecommendationDetailEntity a join PurchaseRecommendationEntity b on a.purchaseRecommendationId = b.purchaseRecommendationId where a.isActive = true and b.isActive = true and b.endTime > :date")
     List<InfoItemDTO> getAllItemOnTime(@Param("date") Date date);

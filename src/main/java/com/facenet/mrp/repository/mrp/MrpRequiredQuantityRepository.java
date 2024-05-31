@@ -18,6 +18,21 @@ public interface MrpRequiredQuantityRepository extends JpaRepository<MrpRequired
         "group by r.itemCode, r.mrpSubCode")
     List<ReportDetailDTO> getAllMaterialRequiredQuantity(@Param("soCode")String soCode);
 
+    @Query("select new com.facenet.mrp.service.dto.ReportDetailDTO(r.mrpSubCode, r.itemCode, r.itemName, r.reqQuantity) from MrpRequiredQuantityEntity r " +
+        "where r.isActive = true " +
+        "and r.mrpSubCode LIKE :mrpCode " +
+        "and r.soCode LIKE :soCode " +
+        "and r.itemCode LIKE :itemCode " +
+        "and r.itemName LIKE :itemName " +
+        "and r.itemGroup = 'NVL' " +
+        "group by r.itemCode, r.mrpSubCode")
+    List<ReportDetailDTO> getAllMaterialRequiredQuantityV2(
+        @Param("soCode")String soCode,
+        @Param("mrpCode")String mrpCode,
+        @Param("itemCode")String itemCode,
+        @Param("itemName")String itemName
+    );
+
     @Modifying
     @Query("update MrpRequiredQuantityEntity m set m.isActive = false " +
         "where m.mrpSubCode = :mrpSubCode")

@@ -2,6 +2,7 @@ package com.facenet.mrp.web.rest;
 
 import com.facenet.mrp.service.AnalysisDetailReportService;
 import com.facenet.mrp.service.ReportService;
+import com.facenet.mrp.service.dto.DetailReportDTO;
 import com.facenet.mrp.service.dto.ReportComparisonDTO;
 import com.facenet.mrp.service.dto.ReportDTO;
 import com.facenet.mrp.service.dto.ReportDetailDTO;
@@ -53,12 +54,12 @@ public class ReportResource {
     }
 
     @PostMapping("report-detail/{reportMode}/{soCode}")
-    public ResponseEntity getReport(@PathVariable("reportMode")Integer reportMode, @PathVariable("soCode")String soCode){
+    public ResponseEntity getReport(@PathVariable("reportMode")Integer reportMode, @PathVariable("soCode")String soCode, @RequestBody DetailReportDTO reportDetailDTO){
         return ResponseEntity.ok(new CommonResponse<List<ReportDetailDTO>>()
             .isOk(true)
             .message("Thành công")
             .errorCode("00")
-            .data(reportService.getDetailReport(reportMode, soCode))
+            .data(reportService.getDetailReport(reportMode, soCode, reportDetailDTO))
         );
     }
 
