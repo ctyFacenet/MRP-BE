@@ -32,6 +32,7 @@ public class WebConfigurer implements ServletContextInitializer {
         this.jHipsterProperties = jHipsterProperties;
     }
 
+
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
         if (env.getActiveProfiles().length != 0) {
@@ -40,6 +41,7 @@ public class WebConfigurer implements ServletContextInitializer {
 
         log.info("Web application fully configured");
     }
+
 
     @Bean
     public CorsFilter corsFilter() {
@@ -55,3 +57,17 @@ public class WebConfigurer implements ServletContextInitializer {
         return new CorsFilter(source);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
