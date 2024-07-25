@@ -33,7 +33,6 @@ public class KeycloakAdminConfig {
 
     @Bean
     public Keycloak getKeycloak() {
-        logger.info(realm + clientId + username + password);
         return KeycloakBuilder.builder()
             .grantType(OAuth2Constants.PASSWORD)
             .serverUrl(serverUrl)
