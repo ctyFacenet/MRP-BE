@@ -30,6 +30,9 @@ public class KeycloakUserResource {
     @GetMapping("/approval-users")
     public CommonResponse getApprovalUsers() {
         RealmResource realmResource = keycloak.realm(realm);
+        String token = keycloak.tokenManager().getAccessTokenString();
+        System.out.println("Access Token: " + token);
+
         return new CommonResponse<>()
             .success()
             .data(realmResource.roles().get(role).getUserMembers());
