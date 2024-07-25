@@ -11,12 +11,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @RestController
 @RequestMapping("/api/users")
 public class KeycloakUserResource {
     private final Keycloak keycloak;
-
+    private static final Logger logger = LogManager.getLogger(KeycloakUserResource.class);
     @Value("${keycloak.approval.realm}")
     private String realm;
 
@@ -31,7 +33,7 @@ public class KeycloakUserResource {
     public CommonResponse getApprovalUsers() {
         RealmResource realmResource = keycloak.realm(realm);
         String token = keycloak.tokenManager().getAccessTokenString();
-        System.out.println("Access Token: " + token);
+        logger.info("Access Token: " + token);
 
         return new CommonResponse<>()
             .success()
