@@ -123,6 +123,8 @@ public class Constants {
     public static final String PR_TYPE = "PR";
     public static final String GRPO_TYPE = "GRPO";
 
+    public static final String Phu_tung_nhua = "PTN_TON_LOAI";
+
     public static final int DAY_MODE = 0;
     public static final int WEEK_MODE = 1;
     public static final int MONTH_MODE = 2;

@@ -300,10 +300,11 @@ public class ProductOrderService {
             productionOrder.setCompleteDate(Date.from(dto.getDeliveryTime()));
             productionOrder.setNote(dto.getNote());
             productionOrderList.add(productionOrder);
-            String check = updatePoPlanning(productionOrderList,"-1",isSend);
-            if(check.equals("SUCCESS")){
-                productOrderRepository.save(existPo);
-            }
+//            String check = updatePoPlanning(productionOrderList,"-1",isSend);
+//            if(check.equals("SUCCESS")){
+//                productOrderRepository.save(existPo);
+//            }
+            productOrderRepository.save(existPo);
 
         } catch (CustomException e) {
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "internal.error");

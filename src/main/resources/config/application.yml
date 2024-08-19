@@ -268,6 +268,10 @@ report:
   base-url: http://localhost:9089/api
   get-mrp-integration-url: ${report.base-url}/work_orders/mrp-integration
 
+appsheet:
+  appId: 41c94994-e075-4e0a-90de-8cbafabe4a02
+  applicationAccessKey: V2-KpC2D-q24Yx-DHrGx-IABZ7-31gkh-1WMw4-NImVx-ek5a7
+
 cache-mrp:
   expire: 6
 

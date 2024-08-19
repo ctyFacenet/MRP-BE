@@ -428,8 +428,8 @@ public class ProductOrderDetailService {
             productOrderItem.setPriority(dto.getPriority());//mức độ ưu tiên
             productOrderItems.add(productOrderItem);
             productOrderItems.addAll(callBomItemToUpdate(productOrderItem,dto));
-            //cập nhật sp ở planning
-            productOrderService.updatePoPlanning(productOrderItems,existDetail.getProductCode(),isSend);
+//            //cập nhật sp ở planning
+//            productOrderService.updatePoPlanning(productOrderItems,existDetail.getProductCode(),isSend);
         } catch (RuntimeException e) {
             logger.error("UpdateProductOrderDetail error", e);
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "internal.error");
