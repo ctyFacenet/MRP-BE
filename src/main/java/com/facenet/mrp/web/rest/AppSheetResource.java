@@ -17,7 +17,7 @@ public class AppSheetResource {
     @Autowired
     private AppSheetService appSheetService;
 
-    @GetMapping("/materials")
+    @GetMapping("/warehouse")
     public List<MaterialDTO> getProducts() {
         return appSheetService.getData();
     }
