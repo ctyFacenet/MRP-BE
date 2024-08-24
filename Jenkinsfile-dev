@@ -2,14 +2,14 @@ pipeline {
     agent {label "MRP_DEV"}
 
     environment {
-        SPRING_PROFILES_ACTIVE = 'devfn'
+        SPRING_PROFILES_ACTIVE = 'dev'
     }
 
     stages{
         stage("Check old image") {
             steps {
-                sh 'docker rm -f mks-mrp-be|| echo "this container does not exist" '
-                sh 'docker image rm -f mks-mrp-be || echo "this image dose not exist" '
+                sh 'docker rm -f mks-mrp-be-xp|| echo "this container does not exist" '
+                sh 'docker image rm -f mks-mrp-be-xp || echo "this image dose not exist" '
             }
         }
         stage('Clean') {
