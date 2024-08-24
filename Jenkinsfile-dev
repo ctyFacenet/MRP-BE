@@ -2,7 +2,7 @@ pipeline {
     agent {label "MRP_DEV"}
 
     environment {
-        SPRING_PROFILES_ACTIVE = 'devfn'
+        SPRING_PROFILES_ACTIVE = 'dev'
     }
 
     stages{
