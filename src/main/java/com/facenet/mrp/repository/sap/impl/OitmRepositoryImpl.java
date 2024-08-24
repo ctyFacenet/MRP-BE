@@ -87,10 +87,10 @@ public class OitmRepositoryImpl implements OitmCustomRepository {
 
     private List<Predicate> getPredicates(Root<OitmEntity> oitm,CriteriaBuilder cb, OitmFilter oitmFilter){
         List<Predicate> predicates = new ArrayList<>();
-        if (!StringUtils.isEmpty(oitmFilter.getPartNumber())) {
-            predicates.add(cb.like(
-                cb.lower(oitm.get(OitmEntity_.U_PART_NUMBER)), "%" + oitmFilter.getPartNumber().toUpperCase() + "%"));
-        }
+//        if (!StringUtils.isEmpty(oitmFilter.getPartNumber())) {
+//            predicates.add(cb.like(
+//                cb.lower(oitm.get(OitmEntity_.U_PART_NUMBER)), "%" + oitmFilter.getPartNumber().toUpperCase() + "%"));
+//        }
         if (!StringUtils.isEmpty(oitmFilter.getProductId())) {
             predicates.add(cb.like(
                 cb.lower(oitm.get(OitmEntity_.ITEM_CODE)), "%" + oitmFilter.getProductId().toLowerCase() + "%"));

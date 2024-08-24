@@ -1,7 +1,10 @@
 package com.facenet.mrp.service.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
 public class BomItemDetailDTO {
     private Integer materialGroup;
     private String materialCode;
@@ -48,6 +51,16 @@ public class BomItemDetailDTO {
         this.vendor = vendor;
         this.version = version;
         this.remark = remark;
+    }
+
+    public BomItemDetailDTO(Integer materialGroup, String materialCode, String materialDescription, Double quantity, String unit, String warehouse, String issueMethod) {
+        this.materialGroup = materialGroup;
+        this.materialCode = materialCode;
+        this.materialDescription = materialDescription;
+        this.quantity = quantity;
+        this.unit = unit;
+        this.warehouse = warehouse;
+        this.issueMethod = issueMethod;
     }
 
     public String getMaterialGroup() {

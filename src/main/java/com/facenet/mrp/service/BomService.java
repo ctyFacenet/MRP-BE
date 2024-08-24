@@ -1,9 +1,10 @@
 package com.facenet.mrp.service;
 
 import com.facenet.mrp.domain.sap.CoittEntity;
-import com.facenet.mrp.domain.sap.QCoittEntity;
 import com.facenet.mrp.domain.sap.QOitmEntity;
+import com.facenet.mrp.domain.sap.QOittEntity;
 import com.facenet.mrp.repository.sap.CoittRepository;
+import com.facenet.mrp.repository.sap.Itt1Repository;
 import com.facenet.mrp.service.dto.BomDTO;
 import com.facenet.mrp.service.dto.BomItemDetailDTO;
 import com.facenet.mrp.service.dto.BomItemDetailDraftDTO;
@@ -31,10 +32,12 @@ public class BomService {
 
     private final EntityManager entityManager;
     private final CoittRepository coittRepository;
+    private final Itt1Repository itt1Repository;
 
-    public BomService(@Qualifier("sapEntityManager") EntityManager entityManager, CoittRepository coittRepository) {
+    public BomService(@Qualifier("sapEntityManager") EntityManager entityManager, CoittRepository coittRepository, Itt1Repository itt1Repository) {
         this.entityManager = entityManager;
         this.coittRepository = coittRepository;
+        this.itt1Repository = itt1Repository;
     }
 
     /**
@@ -45,45 +48,33 @@ public class BomService {
     public PageResponse<List<BomDTO>> getAllBom(PageFilterInput<BomFilterInput> bomDTO) {
         Pageable pageable = PageRequest.of(bomDTO.getPageNumber(), bomDTO.getPageSize());
         BomFilterInput filter = bomDTO.getFilter();
-        QCoittEntity qCoittEntity = QCoittEntity.coittEntity;
+        QOittEntity qOittEntity = QOittEntity.oittEntity;
         QOitmEntity qOitmEntity = QOitmEntity.oitmEntity;
         JPAQuery<BomDTO> query = new JPAQueryFactory(entityManager)
             .select(new QBomDTO(
-                qCoittEntity.uQuantity,
-                qCoittEntity.uProNo,
-                qCoittEntity.uProNam,
-                qCoittEntity.uVersions,
-                qCoittEntity.uSpec,
-                qCoittEntity.uRemark,
-                qCoittEntity.uDocUrl,
-                qCoittEntity.uFromDate,
-                qCoittEntity.uToDate,
-                qCoittEntity.createDate,
-                qCoittEntity.uActive,
+                qOittEntity.qauntity,
+                qOittEntity.code,
+                qOitmEntity.itemName,
+                qOittEntity.createDate,
+                qOittEntity.uStatus,
                 qOitmEntity.onHand,
-                qCoittEntity.uWhsCod,
+                qOittEntity.toWH,
                 qOitmEntity.itmsGrpCod.itmsGrpCode
             ))
-            .from(qCoittEntity)
-            .innerJoin(qOitmEntity).on(qCoittEntity.uProNo.eq(qOitmEntity.itemCode))
+            .from(qOittEntity)
+            .innerJoin(qOitmEntity).on(qOittEntity.code.eq(qOitmEntity.itemCode))
             .limit(pageable.getPageSize())
             .offset(pageable.getOffset());
         BooleanBuilder booleanBuilder = new BooleanBuilder();
-        booleanBuilder.and(qCoittEntity.uStatus.eq("A"));
+        booleanBuilder.and(qOittEntity.uStatus.eq("0"));
         if (!StringUtils.isEmpty(filter.getProductCode())) {
-            booleanBuilder.and(qCoittEntity.uProNo.containsIgnoreCase(filter.getProductCode()));
+            booleanBuilder.and(qOittEntity.code.containsIgnoreCase(filter.getProductCode()));
         }
         if (!StringUtils.isEmpty(filter.getDescription())) {
-            booleanBuilder.and(qCoittEntity.uProNam.containsIgnoreCase(filter.getDescription()));
-        }
-        if (filter.getFromDate() != null) {
-            booleanBuilder.and(qCoittEntity.uFromDate.eq(filter.getFromDate()));
-        }
-        if (filter.getToDate() != null) {
-            booleanBuilder.and(qCoittEntity.uToDate.eq(filter.getToDate()));
+            booleanBuilder.and(qOitmEntity.itemName.containsIgnoreCase(filter.getDescription()));
         }
         if (filter.getCreateTime() != null) {
-            booleanBuilder.and(qCoittEntity.createDate.eq(filter.getCreateTime()));
+            booleanBuilder.and(qOittEntity.createDate.eq(filter.getCreateTime()));
         }
         if (filter.getType() != null) {
             booleanBuilder.and(qOitmEntity.itmsGrpCod.itmsGrpCode.eq(filter.getType()));
@@ -104,8 +95,25 @@ public class BomService {
      * @return
      */
 
-    public CommonResponse<List<BomItemDetailDTO>> getBomDetail(String productCode, String version) {
-        List<BomItemDetailDTO> result = coittRepository.getAllItemsOfBom(productCode, version);
+//    public CommonResponse<List<BomItemDetailDTO>> getBomDetail(String productCode, String version) {
+//        List<BomItemDetailDTO> result = coittRepository.getAllItemsOfBom(productCode, version);
+//
+//        List<String> itemList = new ArrayList<>();
+//        List<BomItemDetailDTO> list = new ArrayList<>();
+//        for(BomItemDetailDTO item: result){
+//            if(!itemList.contains(item.getMaterialCode())){
+//                itemList.add(item.getMaterialCode());
+//                list.add(item);
+//            }
+//        }
+//        if (result == null || result.isEmpty()) throw new CustomException("record.notfound");
+//        return new CommonResponse<List<BomItemDetailDTO>>()
+//            .result("00", "Thành công", true)
+//            .data(list);
+//    }
+
+    public CommonResponse<List<BomItemDetailDTO>> getBomDetail(String productCode) {
+        List<BomItemDetailDTO> result = itt1Repository.getAllItemsOfBom(productCode);
 
         List<String> itemList = new ArrayList<>();
         List<BomItemDetailDTO> list = new ArrayList<>();

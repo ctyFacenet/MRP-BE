@@ -49,6 +49,18 @@ public class BomDTO {
         this.groupItem = groupItem;
     }
 
+    @QueryProjection
+    public BomDTO(Double quota,String productCode, String description, Date createTime, String status, Long quantity, String warehouse,Integer groupItem) {
+        this.productCode = productCode;
+        this.description = description;
+        this.createTime = createTime;
+        this.status = status;
+        this.quantity = quantity;
+        this.warehouse = warehouse;
+        this.quota = quota;
+        this.groupItem = groupItem;
+    }
+
     public BomDTO(Double quota,String productCode, String description, String version, String speciality, String remark, String docUrl, Date fromDate, Date toDate, Date createTime, String status, String warehouse,Integer groupItem,Integer level) {
         this.productCode = productCode;
         this.description = description;

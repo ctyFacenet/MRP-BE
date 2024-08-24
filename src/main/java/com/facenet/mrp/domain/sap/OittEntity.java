@@ -1,14 +1,14 @@
 package com.facenet.mrp.domain.sap;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.sql.Date;
 @Entity
 @Table(name = "OITT")
 public class OittEntity {
     private String code;
     private String treeType;
     private Long priceList;
-    private Long qauntity;
+    private Double qauntity;
     private String useFthrWhs;
     private Date createDate;
     private Date updateDate;
@@ -65,11 +65,11 @@ public class OittEntity {
     }
     @Basic
     @Column(name = "Qauntity")
-    public Long getQauntity() {
+    public Double getQauntity() {
         return qauntity;
     }
 
-    public void setQauntity(Long qauntity) {
+    public void setQauntity(Double qauntity) {
         this.qauntity = qauntity;
     }
 
