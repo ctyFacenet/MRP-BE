@@ -122,6 +122,20 @@ public class ListVendorDTO {
         this.frozenFor = frozenFor;
     }
 
+    @QueryProjection
+    public ListVendorDTO(String vendorCode, String vendorName, String otherName, String email, String address, String transactionMoney, String phoneNumber, String faxNumber, String validFor, String frozenFor) {
+        this.vendorCode = vendorCode;
+        this.vendorName = vendorName;
+        this.otherName = otherName;
+        this.email = email;
+        this.address = address;
+        this.transactionMoney = transactionMoney;
+        this.phoneNumber = phoneNumber;
+        this.faxNumber = faxNumber;
+        this.validFor = validFor;
+        this.frozenFor = frozenFor;
+    }
+
     @Override
     public String toString() {
         return "ListVendorDTO{" +
