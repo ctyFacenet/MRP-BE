@@ -1,19 +1,17 @@
 package com.facenet.mrp.thread;
 
 import com.facenet.mrp.repository.sap.CoittRepository;
+import com.facenet.mrp.repository.sap.OittRepository;
 import com.facenet.mrp.service.dto.mrp.CloneBomDTO;
 import com.facenet.mrp.service.dto.mrp.MrpDetailDTO;
 import com.facenet.mrp.service.utils.Utils;
-import org.mapstruct.ap.shaded.freemarker.ext.util.IdentityHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,14 +20,16 @@ import java.util.concurrent.ConcurrentMap;
 @Component
 public class CloneBomService {
     private final static Logger log = LoggerFactory.getLogger(CloneBomService.class);
-    private final CoittRepository coittRepository;
+//    private final CoittRepository coittRepository;
+    private final OittRepository oittRepository;
     private final ConcurrentMap<String, List<MrpDetailDTO>> bomTree = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, MrpDetailDTO> product = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, List<String>> item = new ConcurrentHashMap<>();
 
 
-    public CloneBomService(CoittRepository coittRepository) {
-        this.coittRepository = coittRepository;
+    public CloneBomService(OittRepository oittRepository) {
+//        this.coittRepository = coittRepository;
+        this.oittRepository = oittRepository;
     }
     @Scheduled(fixedDelay = 60 * 60 * 1000)
     public void cloneBom(){
@@ -43,7 +43,7 @@ public class CloneBomService {
 
         bomTree.clear();
         product.clear();
-        List<CloneBomDTO> cloneBomDTOFromSAP = coittRepository.cloneAllMrpProductBom();
+        List<CloneBomDTO> cloneBomDTOFromSAP = oittRepository.cloneAllMrpProductBom();
 //        System.err.println("coittRepository: " + cloneBomDTOFromSAP.size());
         if (!CollectionUtils.isEmpty(cloneBomDTOFromSAP)){
             for (CloneBomDTO dto : cloneBomDTOFromSAP){

@@ -8,6 +8,7 @@ import com.facenet.mrp.domain.sap.CoittEntity;
 import com.facenet.mrp.repository.MrpAnalysisCache;
 import com.facenet.mrp.repository.mrp.*;
 import com.facenet.mrp.repository.sap.CoittRepository;
+import com.facenet.mrp.repository.sap.OittRepository;
 import com.facenet.mrp.security.SecurityUtils;
 import com.facenet.mrp.service.dto.*;
 import com.facenet.mrp.service.dto.mrp.ItemQuantity;
@@ -78,6 +79,8 @@ public class ProductOrderService {
 
     @Autowired
     private CoittRepository coittRepository;
+    @Autowired
+    private OittRepository oittRepository;
 
     private final ProductOrderMapper productOrderMapper;
 
@@ -501,7 +504,7 @@ public class ProductOrderService {
                 productCodes.add(productCodeVersion);
 
                 //query lấy children của sản phẩm TP
-                detailDTOS = coittRepository.getAllMrpProductBom(product.getProductCode(), product.getBomVersion());
+                detailDTOS = oittRepository.getAllMrpProductBom(product.getProductCode());
                 log.info("children của sản phẩm: {}", detailDTOS);
 
                 //Cho vào hàm đệ quy để tìm các NVl/BTp con trong TP
@@ -743,7 +746,7 @@ public class ProductOrderService {
     //lấy danh sách btp của product code và đồng bộ cùng thành phẩm sang planning
     private List<PlanningProductionOrder> callBomForPo(ProductOrder productOrder, ProductOrderDetail productOrderDetails,Boolean point) throws ParseException {
         List<MrpDetailDTO> itemListBtp = new ArrayList<>();
-        List<MrpDetailDTO> mrpDetailDTOS = getListBtp(itemListBtp,productOrderDetails.getProductCode(),productOrderDetails.getBomVersion());
+        List<MrpDetailDTO> mrpDetailDTOS = getListBtp(itemListBtp,productOrderDetails.getProductCode());
         List<PlanningProductionOrder> productionOrderList = new ArrayList<>();
 
         System.out.println("---list btp: "+mrpDetailDTOS.size());
@@ -811,9 +814,9 @@ public class ProductOrderService {
     }
 
     //hàm đệ quy lấy tất cả btp
-    private  List<MrpDetailDTO> getListBtp(List<MrpDetailDTO> itemListBtp,String code, String version){
+    private  List<MrpDetailDTO> getListBtp(List<MrpDetailDTO> itemListBtp,String code){
         //TODO sua lai
-        List<MrpDetailDTO> bomItems = coittRepository.getAllMrpProductBomList(code,version);
+        List<MrpDetailDTO> bomItems = oittRepository.getAllMrpProductBomList(code);
         List<String> list = new ArrayList<>();
         if (!CollectionUtils.isEmpty(bomItems)) {
             for (MrpDetailDTO bomItem : bomItems) {
@@ -823,7 +826,7 @@ public class ProductOrderService {
                         list.add(bomItem.getItemCode());
                     }
                     if(bomItem.getBomVersion() != null){
-                        getListBtp(itemListBtp,bomItem.getItemCode(),bomItem.getBomVersion());
+                        getListBtp(itemListBtp,bomItem.getItemCode());
                     }
                 }
             }
@@ -843,7 +846,7 @@ public class ProductOrderService {
             //TODO: need to change to BTP.equals
             if (mrpDetailDTO.getGroupItemInt() != null && mrpDetailDTO.getGroupItemInt() == Constants.BTP) {
                 //query lấy children của BTP
-                childrenDetail = coittRepository.getAllMrpProductBom(mrpDetailDTO.getItemCode(), mrpDetailDTO.getBomVersion());
+                childrenDetail = oittRepository.getAllMrpProductBom(mrpDetailDTO.getItemCode());
                 log.info("children của sản phẩm: {}", detailDTOS);
 
                 getChildrenCountOfProduct(countChildren, childrenDetail);
