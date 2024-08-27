@@ -895,11 +895,7 @@ public class ProductOrderService {
         List<String> listProductHadBom = new ArrayList<>();
         for (ProductOrderDetail item : list
         ) {
-            if (item.getBomVersion() == null || item.getBomVersion().equals("")) {
-                continue;
-            } else {
-                listProductHadBom.add(item.getProductCode());
-            }
+            listProductHadBom.add(item.getProductCode());
         }
         if (listProductHadBom.size() > 0) {
             Integer in = productOrderRepository.sendAnalysisPO(productOrderCode, SecurityUtils.getCurrentUserLogin().orElse(""));
