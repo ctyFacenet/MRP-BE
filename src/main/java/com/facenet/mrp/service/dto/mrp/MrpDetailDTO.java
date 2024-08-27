@@ -87,6 +87,13 @@ public class MrpDetailDTO {
         this.groupItem = groupItem;
     }
 
+    public MrpDetailDTO(String itemCode, String itemName, Double quota, Integer groupItem) {
+        this.groupItem = groupItem;
+        this.itemCode = itemCode;
+        this.itemName = itemName;
+        this.quota = quota;
+    }
+
     public String getParentPath() {
         return parentPath;
     }

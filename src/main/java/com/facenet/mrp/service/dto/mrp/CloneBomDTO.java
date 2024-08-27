@@ -38,6 +38,17 @@ public class CloneBomDTO {
         this.childBomVersion = childBomVersion;
     }
 
+    public CloneBomDTO(Integer parentGroupItem, String parentItemCode, String parentItemName, Double parentQuota, Integer childGroupItem, String childItemCode, String childItemName, Double childQuota) {
+        this.parentGroupItem = parentGroupItem;
+        this.parentItemCode = parentItemCode;
+        this.parentItemName = parentItemName;
+        this.parentQuota = parentQuota;
+        this.childGroupItem = childGroupItem;
+        this.childItemCode = childItemCode;
+        this.childItemName = childItemName;
+        this.childQuota = childQuota;
+    }
+
     public Integer getChildGroupItem() {
         return childGroupItem;
     }
