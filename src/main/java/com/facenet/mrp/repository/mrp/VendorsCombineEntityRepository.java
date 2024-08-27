@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface VendorsCombineEntityRepository extends JpaRepository<VendorsCombineEntity, Integer>, JpaSpecificationExecutor<VendorsCombineEntity> {
     void deleteAllBySap(int sap);
+    boolean existsByCode(String code);
 }

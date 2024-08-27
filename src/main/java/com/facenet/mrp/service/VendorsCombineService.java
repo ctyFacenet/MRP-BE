@@ -85,6 +85,12 @@ public class VendorsCombineService {
 
     // Thêm mới vendor
     public VendorsCombineEntityDto createVendor(VendorsCombineEntityDto vendorsCombineEntityDto) {
+        // Kiểm tra trùng mã code
+        if (vendorsCombineEntityRepository.existsByCode(vendorsCombineEntityDto.getCode())) {
+            throw new IllegalArgumentException("Vendor code already exists: " + vendorsCombineEntityDto.getCode());
+        }
+
+        // Nếu không trùng mã code, tiếp tục tạo vendor
         VendorsCombineEntity vendorsCombineEntity = vendorsCombineEntityMapper.toEntity(vendorsCombineEntityDto);
         vendorsCombineEntity = vendorsCombineEntityRepository.save(vendorsCombineEntity);
         return vendorsCombineEntityMapper.toDto(vendorsCombineEntity);
