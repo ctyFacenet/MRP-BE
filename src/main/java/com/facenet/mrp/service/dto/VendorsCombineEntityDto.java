@@ -10,20 +10,25 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VendorsCombineEntityDto implements Serializable {
-    int id;
-    String code;
-    String name;
-    Integer active;
-    String email;
-    String address;
-    String taxCode;
-    Integer sap;
+    private Integer id;
+    private String code;
+    private String name;
+    private Integer active;
+    private String email;
+    private String address;
+    private String taxCode;
+    private Integer sap;
+    private String phone;
+    private String otherName;
+    private String fax;
+    private String currency;
 
-    public int getId() {
+
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -81,5 +86,45 @@ public class VendorsCombineEntityDto implements Serializable {
 
     public void setSap(Integer sap) {
         this.sap = sap;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public String getTaxCode() {
+        return taxCode;
+    }
+
+    public void setTaxCode(String taxCode) {
+        this.taxCode = taxCode;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getOtherName() {
+        return otherName;
+    }
+
+    public void setOtherName(String otherName) {
+        this.otherName = otherName;
+    }
+
+    public String getFax() {
+        return fax;
+    }
+
+    public void setFax(String fax) {
+        this.fax = fax;
     }
 }

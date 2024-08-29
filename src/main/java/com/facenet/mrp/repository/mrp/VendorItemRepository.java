@@ -21,4 +21,5 @@ public interface VendorItemRepository extends JpaRepository<VendorItemEntity, St
     Boolean existsByItemCodeAndVendorCode(String itemCode, String vendorCode);
 
     VendorItemEntity findByItemCodeAndVendorCode(String itemCode, String vendor);
+    List<VendorItemEntity> findAllBySap(int sap);
 }
