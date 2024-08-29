@@ -24,6 +24,19 @@ public class VendorsCombineEntity {
     @Basic
     @Column(name = "address")
     private String address;
+
+    @Basic
+    @Column(name = "phone")
+    private String phone;
+    @Basic
+    @Column(name = "currency")
+    private String currency;
+    @Basic
+    @Column(name = "other_name")
+    private String otherName;
+    @Basic
+    @Column(name = "fax")
+    private String fax;
     @Basic
     @Column(name = "taxcode")
     private String taxcode;
@@ -93,5 +106,37 @@ public class VendorsCombineEntity {
 
     public void setSap(Integer sap) {
         this.sap = sap;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public String getOtherName() {
+        return otherName;
+    }
+
+    public void setOtherName(String otherName) {
+        this.otherName = otherName;
+    }
+
+    public String getFax() {
+        return fax;
+    }
+
+    public void setFax(String fax) {
+        this.fax = fax;
     }
 }

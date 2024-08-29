@@ -3,7 +3,7 @@ package com.facenet.mrp.domain.mrp;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "vendor_item", schema = "material_requirements_planning", catalog = "")
+@Table(name = "vendor_item_2", schema = "material_requirements_planning", catalog = "")
 @IdClass(VendorItemEntityPK.class)
 public class VendorItemEntity {
     @Id
@@ -15,6 +15,17 @@ public class VendorItemEntity {
 
     @Column(name = "time_used")
     private Integer timeUsed = 0;
+
+    @Column(name = "sap")
+    private Integer sap;
+
+    public Integer getSap() {
+        return sap;
+    }
+
+    public void setSap(Integer sap) {
+        this.sap = sap;
+    }
 
     public VendorItemEntity() {
     }

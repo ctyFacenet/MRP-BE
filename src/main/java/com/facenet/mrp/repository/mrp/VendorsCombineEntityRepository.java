@@ -7,8 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface VendorsCombineEntityRepository extends JpaRepository<VendorsCombineEntity, Integer>, JpaSpecificationExecutor<VendorsCombineEntity> {
-    void deleteAllBySap(int sap);
+    List<VendorsCombineEntity> findAllBySap(int sap);
     boolean existsByCode(String code);
 }
