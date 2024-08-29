@@ -1,7 +1,7 @@
 package com.facenet.mrp.web.rest;
 
-import com.facenet.mrp.service.VendorsCombineService;
-import com.facenet.mrp.service.dto.VendorsCombineEntityDto;
+import com.facenet.mrp.service.VendorService;
+import com.facenet.mrp.service.dto.mrp.VendorEntityDto;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.model.PageFilterInput;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,28 +16,28 @@ import java.util.Optional;
 @RequestMapping("/api/vendors-combine")
 public class VendorsCombineResource {
     @Autowired
-    private VendorsCombineService vendorsCombineService;
+    private VendorService vendorsCombineService;
 
     // API: Lấy danh sách vendors với phân trang và lọc động
     @PostMapping("/get-vendors")
-    public CommonResponse<Page<VendorsCombineEntityDto>> getAllVendors(@RequestBody PageFilterInput<VendorsCombineEntityDto> input) {
-        Page<VendorsCombineEntityDto> result = vendorsCombineService.getAllVendors(input);
+    public CommonResponse<Page<VendorEntityDto>> getAllVendors(@RequestBody PageFilterInput<VendorEntityDto> input) {
+        Page<VendorEntityDto> result = vendorsCombineService.getAllVendors(input);
         return new CommonResponse<>().success().data(result);
     }
 
     // API: Thêm mới vendor
     @PostMapping
-    public ResponseEntity<VendorsCombineEntityDto> createVendor(@RequestBody VendorsCombineEntityDto vendorsCombineEntityDto) {
-        VendorsCombineEntityDto createdVendor = vendorsCombineService.createVendor(vendorsCombineEntityDto);
+    public ResponseEntity<VendorEntityDto> createVendor(@RequestBody VendorEntityDto VendorEntityDto) {
+        VendorEntityDto createdVendor = vendorsCombineService.createVendor(VendorEntityDto);
         return new ResponseEntity<>(createdVendor, HttpStatus.CREATED);
     }
 
     // API: Cập nhật vendor
     @PutMapping("/{id}")
-    public ResponseEntity<VendorsCombineEntityDto> updateVendor(
+    public ResponseEntity<VendorEntityDto> updateVendor(
         @PathVariable int id,
-        @RequestBody VendorsCombineEntityDto vendorsCombineEntityDto) {
-        Optional<VendorsCombineEntityDto> updatedVendor = vendorsCombineService.updateVendor(id, vendorsCombineEntityDto);
+        @RequestBody VendorEntityDto VendorEntityDto) {
+        Optional<VendorEntityDto> updatedVendor = vendorsCombineService.updateVendor(id, VendorEntityDto);
         return updatedVendor
             .map(vendor -> new ResponseEntity<>(vendor, HttpStatus.OK))
             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));

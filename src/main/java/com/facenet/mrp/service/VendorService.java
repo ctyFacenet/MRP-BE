@@ -2,26 +2,23 @@ package com.facenet.mrp.service;
 
 import com.facenet.mrp.domain.mrp.ItemEntity;
 import com.facenet.mrp.domain.mrp.VendorItemEntity;
-import com.facenet.mrp.domain.mrp.VendorsCombineEntity;
+import com.facenet.mrp.domain.mrp.VendorEntity;
 import com.facenet.mrp.domain.sap.QOcrdEntity;
 import com.facenet.mrp.repository.mrp.ItemRepository;
 import com.facenet.mrp.repository.mrp.VendorItemRepository;
-import com.facenet.mrp.repository.mrp.VendorsCombineEntityRepository;
+import com.facenet.mrp.repository.mrp.VendorEntityRepository;
 import com.facenet.mrp.repository.sap.OitmEntityRepository;
 import com.facenet.mrp.repository.sap.Pdn1Repository;
-import com.facenet.mrp.service.dto.DataVendorAndSale;
 import com.facenet.mrp.service.dto.ListVendorDTO;
 import com.facenet.mrp.service.dto.QListVendorDTO;
-import com.facenet.mrp.service.dto.VendorsCombineEntityDto;
 import com.facenet.mrp.service.dto.mrp.ItemEntityDto;
+import com.facenet.mrp.service.dto.mrp.VendorEntityDto;
 import com.facenet.mrp.service.dto.mrp.VendorItemEntityDto;
-import com.facenet.mrp.service.dto.response.PageResponse;
-import com.facenet.mrp.service.mapper.VendorsCombineEntityMapper;
+import com.facenet.mrp.service.mapper.VendorEntityMapper;
 import com.facenet.mrp.service.model.PageFilterInput;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
@@ -41,12 +38,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.criteria.Predicate;
 
 @Service
-public class VendorsCombineService {
+public class VendorService {
     @Autowired
-    private VendorsCombineEntityRepository vendorsCombineEntityRepository;
+    private VendorEntityRepository VendorEntityRepository;
 
     @Autowired
-    private VendorsCombineEntityMapper vendorsCombineEntityMapper;
+    private VendorEntityMapper VendorEntityMapper;
 
     @Autowired
     private ListSaleService listSaleService;
@@ -68,22 +65,22 @@ public class VendorsCombineService {
     private OitmEntityRepository oitmEntityRepository;
 
     // Lấy danh sách vendors có phân trang
-    public Page<VendorsCombineEntityDto> getAllVendors(PageFilterInput<VendorsCombineEntityDto> input) {
+    public Page<VendorEntityDto> getAllVendors(PageFilterInput<VendorEntityDto> input) {
         Pageable pageable = PageRequest.of(input.getPageNumber(), input.getPageSize());
-        Specification<VendorsCombineEntity> spec = getVendorsSpecification(input.getFilter());
-        Page<VendorsCombineEntity> vendorsPage = vendorsCombineEntityRepository.findAll(spec, pageable);
-        return vendorsPage.map(vendorsCombineEntityMapper::toDto);
+        Specification<VendorEntity> spec = getVendorsSpecification(input.getFilter());
+        Page<VendorEntity> vendorsPage = VendorEntityRepository.findAll(spec, pageable);
+        return vendorsPage.map(VendorEntityMapper::toDto);
     }
 
-    public static Specification<VendorsCombineEntity> getVendorsSpecification(VendorsCombineEntityDto filter) {
+    public static Specification<VendorEntity> getVendorsSpecification(VendorEntityDto filter) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(criteriaBuilder.equal(root.get("active"), 1));
-            if (filter.getCode() != null && !filter.getCode().isEmpty()) {
-                predicates.add(criteriaBuilder.like(root.get("code"), "%" + filter.getCode() + "%"));
+            if (filter.getVendorCode() != null && !filter.getVendorCode().isEmpty()) {
+                predicates.add(criteriaBuilder.like(root.get("code"), "%" + filter.getVendorCode() + "%"));
             }
-            if (filter.getName() != null && !filter.getName().isEmpty()) {
-                predicates.add(criteriaBuilder.like(root.get("name"), "%" + filter.getName() + "%"));
+            if (filter.getVendorName() != null && !filter.getVendorName().isEmpty()) {
+                predicates.add(criteriaBuilder.like(root.get("name"), "%" + filter.getVendorName() + "%"));
             }
             if (filter.getActive() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("active"), filter.getActive()));
@@ -106,35 +103,35 @@ public class VendorsCombineService {
     }
 
     // Thêm mới vendor
-    public VendorsCombineEntityDto createVendor(VendorsCombineEntityDto vendorsCombineEntityDto) {
+    public VendorEntityDto createVendor(VendorEntityDto VendorEntityDto) {
         // Kiểm tra trùng mã code
-        if (vendorsCombineEntityRepository.existsByCode(vendorsCombineEntityDto.getCode())) {
-            throw new IllegalArgumentException("Vendor code already exists: " + vendorsCombineEntityDto.getCode());
+        if (VendorEntityRepository.existsByVendorCode(VendorEntityDto.getVendorCode())) {
+            throw new IllegalArgumentException("Vendor code already exists: " + VendorEntityDto.getVendorCode());
         }
 
         // Nếu không trùng mã code, tiếp tục tạo vendor
-        VendorsCombineEntity vendorsCombineEntity = vendorsCombineEntityMapper.toEntity(vendorsCombineEntityDto);
-        vendorsCombineEntity = vendorsCombineEntityRepository.save(vendorsCombineEntity);
-        return vendorsCombineEntityMapper.toDto(vendorsCombineEntity);
+        VendorEntity VendorEntity = VendorEntityMapper.toEntity(VendorEntityDto);
+        VendorEntity = VendorEntityRepository.save(VendorEntity);
+        return VendorEntityMapper.toDto(VendorEntity);
     }
 
     // Cập nhật vendor
-    public Optional<VendorsCombineEntityDto> updateVendor(int id, VendorsCombineEntityDto vendorsCombineEntityDto) {
-        return vendorsCombineEntityRepository.findById(id)
+    public Optional<VendorEntityDto> updateVendor(int id, VendorEntityDto VendorEntityDto) {
+        return VendorEntityRepository.findById(id)
             .map(existingVendor -> {
                 // Chỉ cập nhật các trường có thay đổi (khác null)
-                VendorsCombineEntity updatedVendor = vendorsCombineEntityMapper.partialUpdate(vendorsCombineEntityDto, existingVendor);
+                VendorEntity updatedVendor = VendorEntityMapper.partialUpdate(VendorEntityDto, existingVendor);
                 // Lưu thay đổi vào database
-                updatedVendor = vendorsCombineEntityRepository.save(updatedVendor);
+                updatedVendor = VendorEntityRepository.save(updatedVendor);
                 // Trả về DTO sau khi cập nhật
-                return vendorsCombineEntityMapper.toDto(updatedVendor);
+                return VendorEntityMapper.toDto(updatedVendor);
             });
     }
     @Scheduled(fixedDelay = 30 * 60 * 1000)
     @Transactional
     public void syncVendorsFromSap() {
-        // Bước 1: Lấy tất cả các bản ghi hiện có trong bảng VendorsCombineEntity có cột sap = 1
-        List<VendorsCombineEntity> existingVendors = vendorsCombineEntityRepository.findAllBySap(1);
+        // Bước 1: Lấy tất cả các bản ghi hiện có trong bảng VendorEntity có cột sap = 1
+        List<VendorEntity> existingVendors = VendorEntityRepository.findAllBySap(1);
 
         // Bước 2: Lấy dữ liệu từ SAP
         List<ListVendorDTO> vendorsFromSap = getAllVendor();
@@ -145,23 +142,23 @@ public class VendorsCombineService {
             .collect(Collectors.toSet());
 
         // Bước 4: Xóa tất cả các bản ghi có cột sap = 1 nhưng không có trong danh sách code từ SAP
-        List<VendorsCombineEntity> vendorsToDelete = existingVendors.stream()
-            .filter(vendor -> !sapCodes.contains(vendor.getCode()))
+        List<VendorEntity> vendorsToDelete = existingVendors.stream()
+            .filter(vendor -> !sapCodes.contains(vendor.getVendorCode()))
             .collect(Collectors.toList());
-        vendorsCombineEntityRepository.deleteAll(vendorsToDelete);
+        VendorEntityRepository.deleteAll(vendorsToDelete);
 
         // Bước 5: Cập nhật hoặc thêm mới các bản ghi dựa trên danh sách từ SAP
-        List<VendorsCombineEntity> vendorsToSave = vendorsFromSap.stream()
+        List<VendorEntity> vendorsToSave = vendorsFromSap.stream()
             .map(dto -> {
                 // Tìm bản ghi hiện có với code tương ứng
-                VendorsCombineEntity existingVendor = existingVendors.stream()
-                    .filter(vendor -> vendor.getCode().equals(dto.getVendorCode()))
+                VendorEntity existingVendor = existingVendors.stream()
+                    .filter(vendor -> vendor.getVendorCode().equals(dto.getVendorCode()))
                     .findFirst()
-                    .orElse(new VendorsCombineEntity());
+                    .orElse(new VendorEntity());
 
                 // Cập nhật thông tin
-                existingVendor.setCode(dto.getVendorCode());
-                existingVendor.setName(dto.getVendorName());
+                existingVendor.setVendorCode(dto.getVendorCode());
+                existingVendor.setVendorName(dto.getVendorName());
                 existingVendor.setEmail(dto.getEmail());
                 existingVendor.setAddress(dto.getAddress());
                 existingVendor.setTaxcode(dto.getTaxCode());
@@ -177,7 +174,7 @@ public class VendorsCombineService {
             .collect(Collectors.toList());
 
         // Lưu dữ liệu vào database
-        vendorsCombineEntityRepository.saveAll(vendorsToSave);
+        VendorEntityRepository.saveAll(vendorsToSave);
     }
 
     public List<ListVendorDTO> getAllVendor(){
