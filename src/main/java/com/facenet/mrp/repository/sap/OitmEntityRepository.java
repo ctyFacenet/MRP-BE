@@ -2,6 +2,7 @@ package com.facenet.mrp.repository.sap;
 
 import com.facenet.mrp.domain.sap.OitmEntity;
 import com.facenet.mrp.service.dto.ItemWithTypeDTO;
+import com.facenet.mrp.service.dto.mrp.ItemEntityDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -21,4 +22,7 @@ public interface OitmEntityRepository extends JpaRepository<OitmEntity, String> 
             Collectors.toMap(ItemWithTypeDTO::getItemCode, Function.identity())
         );
     }
+
+    @Query("select new com.facenet.mrp.service.dto.mrp.ItemEntityDto(o.itemCode, o.itemName) from OitmEntity o")
+    List<ItemEntityDto> findAllItemsFromSap();
 }

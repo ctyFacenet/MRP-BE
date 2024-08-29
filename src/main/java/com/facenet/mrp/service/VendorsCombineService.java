@@ -1,15 +1,19 @@
 package com.facenet.mrp.service;
 
+import com.facenet.mrp.domain.mrp.ItemEntity;
 import com.facenet.mrp.domain.mrp.VendorItemEntity;
 import com.facenet.mrp.domain.mrp.VendorsCombineEntity;
 import com.facenet.mrp.domain.sap.QOcrdEntity;
+import com.facenet.mrp.repository.mrp.ItemRepository;
 import com.facenet.mrp.repository.mrp.VendorItemRepository;
 import com.facenet.mrp.repository.mrp.VendorsCombineEntityRepository;
+import com.facenet.mrp.repository.sap.OitmEntityRepository;
 import com.facenet.mrp.repository.sap.Pdn1Repository;
 import com.facenet.mrp.service.dto.DataVendorAndSale;
 import com.facenet.mrp.service.dto.ListVendorDTO;
 import com.facenet.mrp.service.dto.QListVendorDTO;
 import com.facenet.mrp.service.dto.VendorsCombineEntityDto;
+import com.facenet.mrp.service.dto.mrp.ItemEntityDto;
 import com.facenet.mrp.service.dto.mrp.VendorItemEntityDto;
 import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.mapper.VendorsCombineEntityMapper;
@@ -56,6 +60,12 @@ public class VendorsCombineService {
 
     @Autowired
     private VendorItemRepository vendorItemRepository;
+
+    @Autowired
+    private ItemRepository itemRepository;
+
+    @Autowired
+    private OitmEntityRepository oitmEntityRepository;
 
     // Lấy danh sách vendors có phân trang
     public Page<VendorsCombineEntityDto> getAllVendors(PageFilterInput<VendorsCombineEntityDto> input) {
@@ -237,6 +247,47 @@ public class VendorsCombineService {
 
         // Lưu dữ liệu vào database
         vendorItemRepository.saveAll(vendorItemsToSave);
+    }
+
+    @Scheduled(fixedDelay = 30 * 60 * 1000)
+    @Transactional
+    public void syncItemsFromSap() {
+        // Bước 1: Lấy tất cả các bản ghi hiện có trong bảng ItemEntity
+        List<ItemEntity> existingItems = itemRepository.findAll();
+
+        // Bước 2: Lấy dữ liệu từ SAP
+        List<ItemEntityDto> itemsFromSap = oitmEntityRepository.findAllItemsFromSap();
+
+        // Bước 3: Tạo một tập hợp các item code từ danh sách mới nhận được từ SAP
+        Set<String> sapItemCodes = itemsFromSap.stream()
+            .map(ItemEntityDto::getItemCode)
+            .collect(Collectors.toSet());
+
+        // Bước 4: Xóa tất cả các bản ghi không có trong danh sách code từ SAP
+        List<ItemEntity> itemsToDelete = existingItems.stream()
+            .filter(item -> !sapItemCodes.contains(item.getItemCode()))
+            .collect(Collectors.toList());
+        itemRepository.deleteAll(itemsToDelete);
+
+        // Bước 5: Cập nhật hoặc thêm mới các bản ghi dựa trên danh sách từ SAP
+        List<ItemEntity> itemsToSave = itemsFromSap.stream()
+            .map(dto -> {
+                // Tìm bản ghi hiện có với itemCode tương ứng
+                ItemEntity existingItem = existingItems.stream()
+                    .filter(item -> item.getItemCode().equals(dto.getItemCode()))
+                    .findFirst()
+                    .orElse(new ItemEntity());
+
+                // Cập nhật thông tin
+                existingItem.setItemCode(dto.getItemCode());
+                existingItem.setItemName(dto.getItemName());
+
+                return existingItem;
+            })
+            .collect(Collectors.toList());
+
+        // Lưu dữ liệu vào database
+        itemRepository.saveAll(itemsToSave);
     }
 
 }
