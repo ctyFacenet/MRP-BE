@@ -5,7 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "item", schema = "material_requirements_planning", catalog = "")
+@Table(name = "item_2", schema = "material_requirements_planning", catalog = "")
 public class ItemEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "itemSeqGen")
     @GenericGenerator(name = "itemSeqGen", strategy = "increment")
