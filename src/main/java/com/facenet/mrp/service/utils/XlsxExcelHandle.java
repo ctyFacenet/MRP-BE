@@ -342,17 +342,17 @@ public class XlsxExcelHandle {
             donHang.setEndDate(endTime);
         }
 
-        if (row.getCell(12).getCellType() == CellType.BLANK)
+        if (row.getCell(12) == null || row.getCell(12).getCellType() == CellType.BLANK)
             donHang.setSupplyType("MRP");
         else
             donHang.setSupplyType(getStringCellValue(row.getCell(12)));
 
-        if (row.getCell(13).getCellType() == CellType.BLANK)
+        if (row.getCell(13) == null || row.getCell(13).getCellType() == CellType.BLANK)
             donHang.setPriorityProduct(1);
         else
             donHang.setPriorityProduct(ExcelUtils.getIntegerCellValue(row.getCell(13)));
 
-        if (row.getCell(14).getCellType() == CellType.BLANK)
+        if (row.getCell(14) == null || row.getCell(14).getCellType() == CellType.BLANK)
             donHang.setPriority(1);
         else
             donHang.setPriority(ExcelUtils.getIntegerCellValue(row.getCell(14)));

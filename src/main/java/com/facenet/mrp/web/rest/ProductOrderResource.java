@@ -80,8 +80,8 @@ public class ProductOrderResource {
                 .errorCode("00")
                 .message("Import đơn hàng thành công"));
     }
-     @PostMapping("/new-product-order/{isSend}")
-     @PreAuthorize("hasAnyAuthority('DHSX')")
+    @PostMapping("/new-product-order/{isSend}")
+    @PreAuthorize("hasAnyAuthority('DHSX')")
     public ResponseEntity createNewProductOrder(@Valid @RequestBody List<ProductOrder> productOrder, @PathVariable Boolean isSend) throws ParseException {
         productOrderService.createNewProductOrder(productOrder,isSend);
         return ResponseEntity.ok(
