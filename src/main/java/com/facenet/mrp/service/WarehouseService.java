@@ -41,7 +41,7 @@ public class WarehouseService {
         Sheet sheet = workbook.getSheetAt(0);
 
         List<WarehouseEntity> warehouseEntities = new ArrayList<>();
-        Set<String> itemCodes = new HashSet<>();
+        Set<String> itemCodesFromFile = new HashSet<>();
 
         for (Row row : sheet) {
             if (row.getRowNum() == 0) {
@@ -54,7 +54,7 @@ public class WarehouseService {
             }
 
             String itemCode = getCellValueAsString(row.getCell(1));
-            itemCodes.add(itemCode);
+            itemCodesFromFile.add(itemCode);
 
             WarehouseEntity entity = new WarehouseEntity();
             entity.setWarehouse(type);
@@ -69,19 +69,42 @@ public class WarehouseService {
         workbook.close();
 
         // Fetch existing item codes
-        Map<String, ItemEntity> existingItems = itemRepository.getAllByItemCodeInMap(itemCodes);
-
+        Map<String, ItemEntity> existingItems = itemRepository.getAllByItemCodeInMap(itemCodesFromFile);
+        Set<String> validItemCodes = existingItems.keySet();
         // Filter out the warehouse entities with non-existing item codes
         List<WarehouseEntity> validWarehouseEntities = warehouseEntities.stream()
             .filter(entity -> existingItems.containsKey(entity.getItemCode()))
             .collect(Collectors.toList());
 
-        // Delete existing records for the warehouse type
-        if(type == Constants.Warehouse.Hoa_an || type == Constants.Warehouse.Cty){
-            warehouseRepository.deleteAllByWarehouse(type);
+        // Fetch existing warehouse entities by warehouse type
+        List<WarehouseEntity> existingWarehouseEntities = warehouseRepository.findAllByWarehouse(type);
+        Map<String, WarehouseEntity> existingWarehouseEntitiesMap = existingWarehouseEntities.stream()
+            .collect(Collectors.toMap(WarehouseEntity::getItemCode, entity -> entity));
+
+        // Update existing entities and prepare new entities
+        List<WarehouseEntity> entitiesToSave = new ArrayList<>();
+        for (WarehouseEntity entity : validWarehouseEntities) {
+            if (existingWarehouseEntitiesMap.containsKey(entity.getItemCode())) {
+                // Update existing entity
+                WarehouseEntity existingEntity = existingWarehouseEntitiesMap.get(entity.getItemCode());
+                existingEntity.setItemName(entity.getItemName());
+                existingEntity.setUnit(entity.getUnit());
+                existingEntity.setRemain(entity.getRemain());
+                entitiesToSave.add(existingEntity);
+            } else {
+                // Add new entity
+                entitiesToSave.add(entity);
+            }
         }
 
-        warehouseRepository.saveAll(validWarehouseEntities);
+        // Identify entities to delete
+        List<WarehouseEntity> entitiesToDelete = existingWarehouseEntities.stream()
+            .filter(existingEntity -> !validItemCodes.contains(existingEntity.getItemCode()))
+            .collect(Collectors.toList());
+
+        // Perform database operations
+        warehouseRepository.deleteAll(entitiesToDelete);
+        warehouseRepository.saveAll(entitiesToSave);
     }
 
     private String getCellValueAsString(Cell cell) {
