@@ -114,6 +114,13 @@ public class Constants {
         int SENT_MRP = 2;
     }
 
+    public interface Warehouse {
+        int SAP = 0;
+        int Phu_tung_nhua = 1;
+        int Hoa_an = 2;
+        int Cty = 3;
+    }
+
     public interface MrpAnalysis {
         String SAP_QUANTITY_STRING = "Số lượng trên kho SAP";
     }
