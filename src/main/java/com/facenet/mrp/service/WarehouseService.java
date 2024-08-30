@@ -4,12 +4,22 @@ import com.facenet.mrp.domain.mrp.ItemEntity;
 import com.facenet.mrp.domain.mrp.WarehouseEntity;
 import com.facenet.mrp.repository.mrp.ItemRepository;
 import com.facenet.mrp.repository.mrp.WarehouseEntityRepository;
+import com.facenet.mrp.service.dto.mrp.WarehouseEntityDto;
+import com.facenet.mrp.service.dto.response.PageResponse;
+import com.facenet.mrp.service.mapper.WarehouseEntityMapper;
+import com.facenet.mrp.service.model.PageFilterInput;
+import com.facenet.mrp.service.utils.Constants;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.criteria.Predicate;
+import org.springframework.data.domain.Pageable;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,9 +28,11 @@ import java.util.stream.Collectors;
 public class WarehouseService {
     private final WarehouseEntityRepository warehouseRepository;
     private final ItemRepository itemRepository;
-    public WarehouseService(WarehouseEntityRepository warehouseRepository, ItemRepository itemRepository) {
+    private final WarehouseEntityMapper warehouseEntityMapper;
+    public WarehouseService(WarehouseEntityRepository warehouseRepository, ItemRepository itemRepository, WarehouseEntityMapper warehouseEntityMapper) {
         this.warehouseRepository = warehouseRepository;
         this.itemRepository = itemRepository;
+        this.warehouseEntityMapper = warehouseEntityMapper;
     }
 
     @Transactional
@@ -65,9 +77,10 @@ public class WarehouseService {
             .collect(Collectors.toList());
 
         // Delete existing records for the warehouse type
-        warehouseRepository.deleteAllByWarehouse(type);
+        if(type == Constants.Warehouse.Hoa_an || type == Constants.Warehouse.Cty){
+            warehouseRepository.deleteAllByWarehouse(type);
+        }
 
-        // Save only the valid warehouse entities
         warehouseRepository.saveAll(validWarehouseEntities);
     }
 
@@ -101,5 +114,44 @@ public class WarehouseService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public PageResponse<List<WarehouseEntityDto>> getAll(PageFilterInput<WarehouseEntityDto> input) {
+        Pageable pageable = PageRequest.of(input.getPageNumber(), input.getPageSize());
+        Specification<WarehouseEntity> spec = createSpecification(input.getFilter());
 
+        Page<WarehouseEntity> page = warehouseRepository.findAll(spec, pageable);
+
+        PageResponse<List<WarehouseEntityDto>> response = new PageResponse<>(page.getTotalElements());
+        response.setData(page.map(warehouseEntityMapper::toDto).getContent());
+        response.result("00", "Success", true);
+        return response;
+    }
+
+    private Specification<WarehouseEntity> createSpecification(WarehouseEntityDto filter) {
+        return (root, query, criteriaBuilder) -> {
+            // Add conditions based on the filter
+            Predicate predicate = criteriaBuilder.conjunction();
+
+            if (filter.getWarehouse() != null) {
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("warehouse"), filter.getWarehouse()));
+            }
+            if (filter.getItemCode() != null && !filter.getItemCode().isEmpty()) {
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("itemCode"), "%" + filter.getItemCode() + "%"));
+            }
+            if (filter.getItemName() != null && !filter.getItemName().isEmpty()) {
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("itemName"), "%" + filter.getItemName() + "%"));
+            }
+            if (filter.getRemain() != null) {
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("remain"), filter.getRemain()));
+            }
+            if (filter.getUnit() != null && !filter.getUnit().isEmpty()) {
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("unit"), "%" + filter.getUnit() + "%"));
+            }
+            if (filter.getColor() != null && !filter.getColor().isEmpty()) {
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("color"), "%" + filter.getColor() + "%"));
+            }
+
+            return predicate;
+        };
+    }
 }

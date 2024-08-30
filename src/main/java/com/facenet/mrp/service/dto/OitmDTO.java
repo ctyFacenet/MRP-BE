@@ -14,14 +14,13 @@ public class OitmDTO {
     private Long totalInStock;
     private String groupName;
     private String status;
-    private String color;
 
     public OitmDTO(OitmEntity oitmEntity){
         this.productId = oitmEntity.getItemCode();
         this.name = oitmEntity.getItemName();
         this.groupName = oitmEntity.getuIGroupName();
         this.group = oitmEntity.getItmsGrpCod() == null ? null : oitmEntity.getItmsGrpCod().getItmsGrpName();
-        this.type = oitmEntity.getuSubgrName();
+        this.type = oitmEntity.getuSubgr();
         this.unit = oitmEntity.getBuyUnitMsr();
         this.technicalName = oitmEntity.getuTechName();
         this.status = oitmEntity.getAsstStatus();
@@ -97,13 +96,5 @@ public class OitmDTO {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getColor() {
-        return color;
-    }
-
-    public void setColor(String color) {
-        this.color = color;
     }
 }
