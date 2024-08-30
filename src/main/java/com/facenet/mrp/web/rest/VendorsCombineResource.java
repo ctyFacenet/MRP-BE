@@ -3,13 +3,16 @@ package com.facenet.mrp.web.rest;
 import com.facenet.mrp.service.VendorService;
 import com.facenet.mrp.service.dto.mrp.VendorEntityDto;
 import com.facenet.mrp.service.dto.response.CommonResponse;
+import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.model.PageFilterInput;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -20,9 +23,20 @@ public class VendorsCombineResource {
 
     // API: Lấy danh sách vendors với phân trang và lọc động
     @PostMapping("/get-vendors")
-    public CommonResponse<Page<VendorEntityDto>> getAllVendors(@RequestBody PageFilterInput<VendorEntityDto> input) {
-        Page<VendorEntityDto> result = vendorsCombineService.getAllVendors(input);
-        return new CommonResponse<>().success().data(result);
+    @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'MH','SUPPLIER','VIEW','VIEWSC')")
+    public CommonResponse getAllVendors(@RequestBody PageFilterInput<VendorEntityDto> input) {
+        CommonResponse commonResponse = new CommonResponse();
+        try {
+            PageResponse<List<VendorEntityDto>> result = vendorsCombineService.getAllVendors(input);
+
+            if (result == null) {
+                return commonResponse.result("404", "Không tìm thấy tài nguyên!", false);
+            }
+
+            return result;
+        } catch (Exception e) {
+            return commonResponse.result("500", "Có lỗi server!", false);
+        }
     }
 
     // API: Thêm mới vendor

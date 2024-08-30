@@ -14,6 +14,7 @@ import com.facenet.mrp.service.dto.QListVendorDTO;
 import com.facenet.mrp.service.dto.mrp.ItemEntityDto;
 import com.facenet.mrp.service.dto.mrp.VendorEntityDto;
 import com.facenet.mrp.service.dto.mrp.VendorItemEntityDto;
+import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.mapper.VendorEntityMapper;
 import com.facenet.mrp.service.model.PageFilterInput;
 import com.querydsl.core.BooleanBuilder;
@@ -65,11 +66,18 @@ public class VendorService {
     private OitmEntityRepository oitmEntityRepository;
 
     // Lấy danh sách vendors có phân trang
-    public Page<VendorEntityDto> getAllVendors(PageFilterInput<VendorEntityDto> input) {
+    public PageResponse<List<VendorEntityDto>> getAllVendors(PageFilterInput<VendorEntityDto> input) {
         Pageable pageable = PageRequest.of(input.getPageNumber(), input.getPageSize());
         Specification<VendorEntity> spec = getVendorsSpecification(input.getFilter());
         Page<VendorEntity> vendorsPage = VendorEntityRepository.findAll(spec, pageable);
-        return vendorsPage.map(VendorEntityMapper::toDto);
+
+        // Chuyển đổi Page<VendorEntity> thành Page<VendorEntityDto>
+        Page<VendorEntityDto> vendorsDtoPage = vendorsPage.map(VendorEntityMapper::toDto);
+
+        // Tạo PageResponse với tổng số bản ghi
+        return new PageResponse<List<VendorEntityDto>>(vendorsDtoPage.getTotalElements())
+            .data(vendorsDtoPage.getContent())
+            .result("00", "Success", true);
     }
 
     public static Specification<VendorEntity> getVendorsSpecification(VendorEntityDto filter) {
