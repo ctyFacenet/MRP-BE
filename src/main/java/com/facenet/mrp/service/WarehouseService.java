@@ -206,6 +206,13 @@ public class WarehouseService {
                 return detail;
             })
             .collect(Collectors.toList());
+        if (khoHoaAnDetails.isEmpty()) {
+            InventoryDetailDTO defaultDetail = new InventoryDetailDTO();
+            defaultDetail.setVendorId("KHA");
+            defaultDetail.setVendorName("Kho Hòa An");
+            setDefaultValuesIfNull(defaultDetail);
+            khoHoaAnDetails.add(defaultDetail);
+        }
         inventoryDetails.addAll(khoHoaAnDetails);
 
         // Get details for type 3 (Kho vật tư công ty)
@@ -218,6 +225,13 @@ public class WarehouseService {
                 return detail;
             })
             .collect(Collectors.toList());
+        if (khoVatTuCongTyDetails.isEmpty()) {
+            InventoryDetailDTO defaultDetail = new InventoryDetailDTO();
+            defaultDetail.setVendorId("KVTCT");
+            defaultDetail.setVendorName("Kho vật tư công ty");
+            setDefaultValuesIfNull(defaultDetail);
+            khoVatTuCongTyDetails.add(defaultDetail);
+        }
         inventoryDetails.addAll(khoVatTuCongTyDetails);
 
         return inventoryDetails;
