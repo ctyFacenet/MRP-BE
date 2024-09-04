@@ -74,6 +74,10 @@ public class InventoryDetailDTO {
         this.total = total;
     }
 
+    public InventoryDetailDTO(long inStockTotal) {
+        this.inStockTotal = inStockTotal;
+    }
+
     @Override
     public String toString() {
         return "ReceiptDTO{" +
