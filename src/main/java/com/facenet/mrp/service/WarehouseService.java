@@ -263,34 +263,4 @@ public class WarehouseService {
             .map(warehouseEntityMapper::toDto)
             .collect(Collectors.toList());
     }
-
-    @Transactional(readOnly = true)
-    public List<OitmDTO> getOitmWithWarehouseStock(RequestInput<OitmFilter> requestInput) {
-        // Fetch the OitmDTO list
-        Page<OitmEntity> oitmEntities = oitmService.getOitmList(requestInput);
-        List<OitmDTO> oitmDTOList = oitmMapper.mapList(oitmEntities.getContent());
-
-        // Get a list of productIds (itemCodes) from the OitmDTO list
-        List<String> productIds = oitmDTOList.stream()
-            .map(OitmDTO::getProductId)
-            .collect(Collectors.toList());
-
-        // Fetch warehouse data for these productIds
-        List<WarehouseEntityDto> warehouseEntities = getAllByItemCodes(productIds);
-
-        // Aggregate total stock from warehouse for each productId
-        Map<String, Long> totalStockByProductId = warehouseEntities.stream()
-            .collect(Collectors.groupingBy(
-                WarehouseEntityDto::getItemCode,
-                Collectors.summingLong(WarehouseEntityDto::getRemain)
-            ));
-
-        // Update the OitmDTO with the aggregated total stock
-        oitmDTOList.forEach(oitmDTO -> {
-            Long totalStock = totalStockByProductId.getOrDefault(oitmDTO.getProductId(), 0L);
-            oitmDTO.setTotalInStock(oitmDTO.getTotalInStock() + totalStock);
-        });
-
-        return oitmDTOList;
-    }
 }
