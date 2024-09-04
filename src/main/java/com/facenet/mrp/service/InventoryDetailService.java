@@ -1,6 +1,7 @@
 package com.facenet.mrp.service;
 
 import com.facenet.mrp.repository.mrp.MqqPriceRepository;
+import com.facenet.mrp.repository.mrp.VendorEntityRepository;
 import com.facenet.mrp.repository.sap.InventoryDetailRepository;
 import com.facenet.mrp.repository.sap.OcrdRepository;
 import com.facenet.mrp.service.dto.InventoryDetailDTO;
@@ -34,10 +35,13 @@ public class InventoryDetailService {
     private OcrdRepository ocrdRepository;
 
     @Autowired
+    private VendorEntityRepository vendorEntityRepository;
+
+    @Autowired
     private InventoryDetailRepository inventoryDetailRepository;
     /**
      * lấy thông tin tồn kho chi tiết theo mã hàng hóa
-     * @param ItemCode
+     * @param itemCode
      * @return
      */
 //    public List<InventoryDetailDTO> getInventoryDetail(String ItemCode){
@@ -119,7 +123,7 @@ public class InventoryDetailService {
         System.err.println("vendorCodeList: " + vendorCodeList.size());
 
         //Lấy thông tin vendor trong SAP
-        List<VendorCodeForDetailReport> vendorInfos = ocrdRepository.getVendorList(vendorCodeList);
+        List<VendorCodeForDetailReport> vendorInfos = vendorEntityRepository.getVendorList(vendorCodeList);
         if (vendorInfos != null && !vendorInfos.isEmpty()){
             for (InventorySupplierDTO result : inventorySupplierDTOList) {
                 for (VendorCodeForDetailReport vendorInfo : vendorInfos){
