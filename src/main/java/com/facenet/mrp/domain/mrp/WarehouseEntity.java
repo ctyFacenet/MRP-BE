@@ -20,7 +20,7 @@ public class WarehouseEntity {
     private String itemName;
     @Basic
     @Column(name = "remain")
-    private Double remain;
+    private Long remain;
     @Basic
     @Column(name = "unit")
     private String unit;
@@ -75,11 +75,11 @@ public class WarehouseEntity {
         this.itemName = itemName;
     }
 
-    public Double getRemain() {
+    public Long getRemain() {
         return remain;
     }
 
-    public void setRemain(Double remain) {
+    public void setRemain(Long remain) {
         this.remain = remain;
     }
 

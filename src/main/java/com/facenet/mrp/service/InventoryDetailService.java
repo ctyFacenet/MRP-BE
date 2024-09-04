@@ -14,9 +14,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author: trần đình thành
@@ -30,6 +28,9 @@ public class InventoryDetailService {
     private MqqPriceRepository mqqPriceRepository;
 
     @Autowired
+    private WarehouseService warehouseService;
+
+    @Autowired
     private OcrdRepository ocrdRepository;
 
     @Autowired
@@ -39,15 +40,33 @@ public class InventoryDetailService {
      * @param ItemCode
      * @return
      */
-    public List<InventoryDetailDTO> getInventoryDetail(String ItemCode){
-        log.info("------Start get inventory detail by itemcode-------");
-        if(StringUtils.isEmpty(ItemCode)){
-            log.error("tham số truyền vào không đúng!");
-            return null;
+//    public List<InventoryDetailDTO> getInventoryDetail(String ItemCode){
+//        log.info("------Start get inventory detail by itemcode-------");
+//        if(StringUtils.isEmpty(ItemCode)){
+//            log.error("tham số truyền vào không đúng!");
+//            return null;
+//        }
+//        List<InventoryDetailDTO> list = inventoryDetailRepository.getInventoryDetailByItemCode(ItemCode);
+//        log.info("------end get inventory detail by itemcode-------");
+//        return list;
+//    }
+    public List<InventoryDetailDTO> getInventoryDetail(String itemCode) {
+        log.info("------Start get inventory detail by item code-------");
+
+        if (StringUtils.isEmpty(itemCode)) {
+            log.error("Tham số truyền vào không đúng!");
+            return Collections.emptyList();
         }
-        List<InventoryDetailDTO> list = inventoryDetailRepository.getInventoryDetailByItemCode(ItemCode);
-        log.info("------end get inventory detail by itemcode-------");
-        return list;
+
+        // Initialize the list that will store all inventory details
+        List<InventoryDetailDTO> finalList = new ArrayList<>();
+        List<InventoryDetailDTO> list = inventoryDetailRepository.getInventoryDetailByItemCode(itemCode);
+        finalList.addAll(list);
+        // Add inventory details for other warehouse
+        List<InventoryDetailDTO> otherWarehouseDetails = warehouseService.getInventoryDetails(itemCode);
+        finalList.addAll(otherWarehouseDetails);
+        log.info("------End get inventory detail by item code-------");
+        return finalList;
     }
     /**
      * lấy thông tin nhà cung cấp theo mã hàng hóa

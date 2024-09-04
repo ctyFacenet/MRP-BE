@@ -17,7 +17,7 @@ public class WarehouseEntityDto implements Serializable {
     Integer warehouse;
     String itemCode;
     String itemName;
-    Double remain;
+    Long remain;
     String unit;
     String color;
     String type;
@@ -58,11 +58,11 @@ public class WarehouseEntityDto implements Serializable {
         this.itemName = itemName;
     }
 
-    public Double getRemain() {
+    public Long getRemain() {
         return remain;
     }
 
-    public void setRemain(Double remain) {
+    public void setRemain(Long remain) {
         this.remain = remain;
     }
 

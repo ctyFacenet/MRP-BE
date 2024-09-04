@@ -2,15 +2,22 @@ package com.facenet.mrp.service;
 
 import com.facenet.mrp.domain.mrp.ItemEntity;
 import com.facenet.mrp.domain.mrp.WarehouseEntity;
+import com.facenet.mrp.domain.sap.OitmEntity;
 import com.facenet.mrp.repository.mrp.ItemRepository;
 import com.facenet.mrp.repository.mrp.WarehouseEntityRepository;
+import com.facenet.mrp.service.dto.InventoryDetailDTO;
+import com.facenet.mrp.service.dto.OitmDTO;
 import com.facenet.mrp.service.dto.mrp.WarehouseEntityDto;
 import com.facenet.mrp.service.dto.response.PageResponse;
+import com.facenet.mrp.service.mapper.OitmMapper;
 import com.facenet.mrp.service.mapper.WarehouseEntityMapper;
+import com.facenet.mrp.service.model.OitmFilter;
 import com.facenet.mrp.service.model.PageFilterInput;
+import com.facenet.mrp.service.model.RequestInput;
 import com.facenet.mrp.service.utils.Constants;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,6 +35,12 @@ import java.util.stream.Collectors;
 public class WarehouseService {
     private final WarehouseEntityRepository warehouseRepository;
     private final ItemRepository itemRepository;
+
+    @Autowired
+    OitmService oitmService;
+
+    @Autowired
+    OitmMapper oitmMapper;
     private final WarehouseEntityMapper warehouseEntityMapper;
     public WarehouseService(WarehouseEntityRepository warehouseRepository, ItemRepository itemRepository, WarehouseEntityMapper warehouseEntityMapper) {
         this.warehouseRepository = warehouseRepository;
@@ -61,7 +74,7 @@ public class WarehouseService {
             entity.setItemCode(itemCode);
             entity.setItemName(getCellValueAsString(row.getCell(2)));
             entity.setUnit(getCellValueAsString(row.getCell(3)));
-            entity.setRemain(getCellValueAsDouble(row.getCell(4)));
+            entity.setRemain(getCellValueAsLong(row.getCell(4)));
 
             warehouseEntities.add(entity);
         }
@@ -120,20 +133,22 @@ public class WarehouseService {
         }
     }
 
-    private Double getCellValueAsDouble(Cell cell) {
+    private long getCellValueAsLong(Cell cell) {
         if (cell == null) {
-            return 0.0;
+            return 0L;
         }
         if (cell.getCellType() == CellType.NUMERIC) {
-            return cell.getNumericCellValue();
+            // Convert numeric value to long
+            return (long) cell.getNumericCellValue();
         } else if (cell.getCellType() == CellType.STRING) {
             try {
-                return Double.parseDouble(cell.getStringCellValue());
+                // Parse string as double and convert to long
+                return (long) Double.parseDouble(cell.getStringCellValue());
             } catch (NumberFormatException e) {
-                return 0.0;
+                return 0L;
             }
         } else {
-            return 0.0;
+            return 0L;
         }
     }
 
@@ -176,5 +191,92 @@ public class WarehouseService {
 
             return predicate;
         };
+    }
+
+    public List<InventoryDetailDTO> getInventoryDetails(String itemCode) {
+        List<InventoryDetailDTO> inventoryDetails = new ArrayList<>();
+
+        // Get details for type 2 (Kho Hòa An)
+        List<InventoryDetailDTO> khoHoaAnDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, 2)
+            .stream()
+            .map(detail -> {
+                detail.setVendorId("KHA");
+                detail.setVendorName("Kho Hòa An");
+                setDefaultValuesIfNull(detail);
+                return detail;
+            })
+            .collect(Collectors.toList());
+        inventoryDetails.addAll(khoHoaAnDetails);
+
+        // Get details for type 3 (Kho vật tư công ty)
+        List<InventoryDetailDTO> khoVatTuCongTyDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, 3)
+            .stream()
+            .map(detail -> {
+                detail.setVendorId("KVTCT");
+                detail.setVendorName("Kho vật tư công ty");
+                setDefaultValuesIfNull(detail);
+                return detail;
+            })
+            .collect(Collectors.toList());
+        inventoryDetails.addAll(khoVatTuCongTyDetails);
+
+        return inventoryDetails;
+    }
+
+    private void setDefaultValuesIfNull(InventoryDetailDTO detail) {
+        if (detail.getInStockTotal() == 0) {
+            detail.setInStockTotal(0);
+        }
+        if (detail.getOnOrder() == 0) {
+            detail.setOnOrder(0);
+        }
+        if (detail.getInStockMinimum() == 0) {
+            detail.setInStockMinimum(0);
+        }
+        if (detail.getTotal() == 0) {
+            detail.setTotal(0);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<WarehouseEntityDto> getAllByItemCodes(List<String> itemCodes) {
+        Specification<WarehouseEntity> spec = (root, query, criteriaBuilder) ->
+            root.get("itemCode").in(itemCodes);
+
+        List<WarehouseEntity> warehouseEntities = warehouseRepository.findAll(spec);
+
+        return warehouseEntities.stream()
+            .map(warehouseEntityMapper::toDto)
+            .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<OitmDTO> getOitmWithWarehouseStock(RequestInput<OitmFilter> requestInput) {
+        // Fetch the OitmDTO list
+        Page<OitmEntity> oitmEntities = oitmService.getOitmList(requestInput);
+        List<OitmDTO> oitmDTOList = oitmMapper.mapList(oitmEntities.getContent());
+
+        // Get a list of productIds (itemCodes) from the OitmDTO list
+        List<String> productIds = oitmDTOList.stream()
+            .map(OitmDTO::getProductId)
+            .collect(Collectors.toList());
+
+        // Fetch warehouse data for these productIds
+        List<WarehouseEntityDto> warehouseEntities = getAllByItemCodes(productIds);
+
+        // Aggregate total stock from warehouse for each productId
+        Map<String, Long> totalStockByProductId = warehouseEntities.stream()
+            .collect(Collectors.groupingBy(
+                WarehouseEntityDto::getItemCode,
+                Collectors.summingLong(WarehouseEntityDto::getRemain)
+            ));
+
+        // Update the OitmDTO with the aggregated total stock
+        oitmDTOList.forEach(oitmDTO -> {
+            Long totalStock = totalStockByProductId.getOrDefault(oitmDTO.getProductId(), 0L);
+            oitmDTO.setTotalInStock(oitmDTO.getTotalInStock() + totalStock);
+        });
+
+        return oitmDTOList;
     }
 }

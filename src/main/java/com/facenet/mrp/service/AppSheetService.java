@@ -65,7 +65,7 @@ public class AppSheetService {
                 WarehouseEntity entity = new WarehouseEntity();
                 entity.setWarehouse(Constants.Warehouse.Phu_tung_nhua);
                 entity.setItemName(material.getGhepChungloaiMausac());
-                entity.setRemain(material.getTon() != null ? Double.parseDouble(material.getTon()) : 0.0);
+                entity.setRemain(material.getTon() != null ? Long.parseLong(material.getTon()) : 0L);
                 entity.setUnit("Cái");
                 entity.setColor(material.getMauSac());
                 entity.setType(material.getChungLoai());

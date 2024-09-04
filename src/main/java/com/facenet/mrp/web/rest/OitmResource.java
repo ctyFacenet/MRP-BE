@@ -4,6 +4,7 @@ import com.facenet.mrp.domain.sap.OitmEntity;
 import com.facenet.mrp.repository.sap.OitmRepository;
 import com.facenet.mrp.security.SecurityUtils;
 import com.facenet.mrp.service.OitmService;
+import com.facenet.mrp.service.WarehouseService;
 import com.facenet.mrp.service.dto.OitmDTO;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
@@ -29,27 +30,52 @@ public class OitmResource {
     OitmService oitmService;
 
     @Autowired
+    private WarehouseService warehouseService;
+
+    @Autowired
     OitmMapper oitmMapper;
 
     @Autowired
     OitmRepository oitmRepository;
 
+//    @PostMapping("/in-stock-products")
+//    public ResponseEntity getOitm(@RequestBody RequestInput<OitmFilter> requestInput){
+//        if ("p".equals(requestInput.getFilter().getSapType())) {
+//            if (!SecurityUtils.hasCurrentUserAnyOfAuthorities("DHSX", "KHDH", "K", "TK", "TKKT", "HT", "MH", "INVENTORY", "VIEW"))
+//                throw new CustomException(HttpStatus.UNAUTHORIZED, "access.denied");
+//        } else {
+//            if (!SecurityUtils.hasCurrentUserAnyOfAuthorities("DHSX", "KHDH", "TK", "QLSX", "HT", "MH","INVENTORY", "VIEW"))
+//                throw new CustomException(HttpStatus.UNAUTHORIZED, "access.denied");
+//        }
+//        Page<OitmEntity> oitmEntityList = oitmService.getOitmList(requestInput);
+//        List<OitmDTO> result = oitmMapper.mapList(oitmEntityList.getContent());
+//        return ResponseEntity.ok(new PageResponse<List<OitmDTO>>()
+//            .errorCode("00")
+//            .message("Success")
+//            .isOk(true)
+//            .dataCount(oitmEntityList.getTotalElements())
+//            .data(result));
+//    }
+
     @PostMapping("/in-stock-products")
-    public ResponseEntity getOitm(@RequestBody RequestInput<OitmFilter> requestInput){
+    public ResponseEntity<?> getOitmWithWarehouseStock(@RequestBody RequestInput<OitmFilter> requestInput) {
         if ("p".equals(requestInput.getFilter().getSapType())) {
-            if (!SecurityUtils.hasCurrentUserAnyOfAuthorities("DHSX", "KHDH", "K", "TK", "TKKT", "HT", "MH", "INVENTORY", "VIEW"))
+            if (!SecurityUtils.hasCurrentUserAnyOfAuthorities("DHSX", "KHDH", "K", "TK", "TKKT", "HT", "MH", "INVENTORY", "VIEW")) {
                 throw new CustomException(HttpStatus.UNAUTHORIZED, "access.denied");
+            }
         } else {
-            if (!SecurityUtils.hasCurrentUserAnyOfAuthorities("DHSX", "KHDH", "TK", "QLSX", "HT", "MH","INVENTORY", "VIEW"))
+            if (!SecurityUtils.hasCurrentUserAnyOfAuthorities("DHSX", "KHDH", "TK", "QLSX", "HT", "MH", "INVENTORY", "VIEW")) {
                 throw new CustomException(HttpStatus.UNAUTHORIZED, "access.denied");
+            }
         }
-        Page<OitmEntity> oitmEntityList = oitmService.getOitmList(requestInput);
-        List<OitmDTO> result = oitmMapper.mapList(oitmEntityList.getContent());
+
+        List<OitmDTO> result = warehouseService.getOitmWithWarehouseStock(requestInput);
+
         return ResponseEntity.ok(new PageResponse<List<OitmDTO>>()
             .errorCode("00")
             .message("Success")
             .isOk(true)
-            .dataCount(oitmEntityList.getTotalElements())
+            .dataCount(result.size())
             .data(result));
     }
     @PostMapping("/in-stock-products-v2")
