@@ -370,7 +370,7 @@ public class ProductOrderService {
 
                 //Count so NVl trong TP
                 //query lấy children của sản phẩm TP
-                detailDTOS = coittRepository.getAllMrpProductBom(order.getProductCode(), order.getBomVersion());
+                detailDTOS = oittRepository.getAllMrpProductBom(order.getProductCode());
                 logger.info("children của sản phẩm: {}", detailDTOS);
 
                 //Cho vào hàm đệ quy để tìm các NVl/BTp con trong TP
