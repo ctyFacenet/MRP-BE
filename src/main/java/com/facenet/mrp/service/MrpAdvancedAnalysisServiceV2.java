@@ -34,6 +34,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class MrpAdvancedAnalysisServiceV2 {
@@ -55,12 +56,14 @@ public class MrpAdvancedAnalysisServiceV2 {
     private final ForecastOrderDetailRepository forecastOrderDetailRepository;
     private final Prq1Repository prq1Repository;
     private final Por1Repository por1Repository;
+    private final WarehouseEntityRepository warehouseEntityRepository;
 
     public MrpAdvancedAnalysisServiceV2(CloneBomService bomService, MrpAnalysisCache mrpAnalysisCache, MrpAnalyticsMapper mrpAnalyticsMapper, ProductOrderDetailRepository poDetailRepository, MrpRepository mrpRepository, ItemHoldRepository itemHoldRepository, OitwRepository oitwRepository, MrpSubRepository mrpSubRepository, MrpBomDetailRepository mrpBomDetailRepository,
                                         ProductOrderRepository productOrderRepository, PurchaseRecommendationPlanRepository purchaseRecommendationPlanRepository,
                                         ForecastOrderDetailRepository forecastOrderDetailRepository,
                                         Prq1Repository prq1Repository,
-                                        Por1Repository por1Repository) {
+                                        Por1Repository por1Repository,
+                                        WarehouseEntityRepository warehouseEntityRepository) {
         this.bomService = bomService;
         this.mrpAnalysisCache = mrpAnalysisCache;
         this.mrpAnalyticsMapper = mrpAnalyticsMapper;
@@ -75,6 +78,7 @@ public class MrpAdvancedAnalysisServiceV2 {
         this.forecastOrderDetailRepository = forecastOrderDetailRepository;
         this.prq1Repository = prq1Repository;
         this.por1Repository = por1Repository;
+        this.warehouseEntityRepository = warehouseEntityRepository;
     }
 
     /**
@@ -144,8 +148,34 @@ public class MrpAdvancedAnalysisServiceV2 {
         Map<String, Double> inStockQuantityMap = new HashMap<>();
         if (input.getAnalysisOption().contains("kho")) {
             List<CurrentInventory> inStockQuantity = oitwRepository.getAllCurrentInventoryByWhs(input.getListAnalysisWhs());
-            inStockQuantityMap = inStockQuantity.stream().collect(Collectors.toMap(CurrentInventory::getItemCode, CurrentInventory::getCurrentQuantity));
+            // Define the typeList to hold warehouse types (e.g., 2 for KHA, 3 for KVTCT)
+            List<Integer> typeList = new ArrayList<>();
+
+            // Check for "KVTCT" and "KHA" in input.getListAnalysisWhs()
+            if (input.getListAnalysisWhs().contains("KVTCT")) {
+                typeList.add(3); // Add type 3 for "KVTCT"
+            }
+            if (input.getListAnalysisWhs().contains("KHA")) {
+                typeList.add(2); // Add type 2 for "KHA"
+            }
+
+            // Proceed with fetching the inventory data if types are available
+            if (!typeList.isEmpty()) {
+                List<CurrentInventory> inStockQuantity2 = warehouseEntityRepository.getAllCurrentInventory(typeList);
+
+                // Merge the two lists based on item code
+                inStockQuantityMap = Stream.concat(inStockQuantity.stream(), inStockQuantity2.stream())
+                    .collect(Collectors.toMap(
+                        CurrentInventory::getItemCode,
+                        CurrentInventory::getCurrentQuantity,
+                        Double::sum // Merge quantities by summing them if they have the same item code
+                    ));
+            } else {
+                inStockQuantityMap = inStockQuantity.stream()
+                    .collect(Collectors.toMap(CurrentInventory::getItemCode, CurrentInventory::getCurrentQuantity));
+            }
         }
+
 
         // Get MRP Bom
         Map<String, List<MrpDetailDTO>> additionalItemInBomMap = new HashMap<>();
