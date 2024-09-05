@@ -277,4 +277,4 @@ cache-mrp:
 
 file:
   file-path:
-    absolute-path: D:\mrp\be\static\
+    absolute-path: /home/ubuntu/mrp/be/static/
