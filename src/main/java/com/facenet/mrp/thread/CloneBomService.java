@@ -47,7 +47,7 @@ public class CloneBomService {
 //        System.err.println("coittRepository: " + cloneBomDTOFromSAP.size());
         if (!CollectionUtils.isEmpty(cloneBomDTOFromSAP)){
             for (CloneBomDTO dto : cloneBomDTOFromSAP){
-                key = Utils.toItemKey(dto.getParentItemCode(), dto.getParentBomVersion());
+                key = Utils.toItemKey(dto.getParentItemCode(), "1.0");
                 itemParentKey = Utils.toItemKey(dto.getParentItemCode(), dto.getParentItemName());
                 itemChildKey =Utils.toItemKey(dto.getParentItemCode(), dto.getParentItemName());
 //                System.err.println(itemChildKey);

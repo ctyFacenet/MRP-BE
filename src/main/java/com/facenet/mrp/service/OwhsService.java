@@ -17,9 +17,22 @@ public class OwhsService {
     }
 
     public CommonResponse<List<OwhsEntity>> getAllWarehouses() {
+        List<OwhsEntity> warehouses = owhsRepository.findAll();
+
+        // Manually add KVTCT and KHA warehouses
+        OwhsEntity khoVatTuCongTy = new OwhsEntity();
+        khoVatTuCongTy.setWhsCode("KVTCT");
+        khoVatTuCongTy.setWhsName("Kho vật tư công ty");
+        warehouses.add(khoVatTuCongTy);
+
+        OwhsEntity khoHoaAn = new OwhsEntity();
+        khoHoaAn.setWhsCode("KHA");
+        khoHoaAn.setWhsName("Kho Hòa An");
+        warehouses.add(khoHoaAn);
+
         return new CommonResponse<>()
             .success()
-            .data(owhsRepository.findAll());
+            .data(warehouses);
     }
 
     public List<String> getAllWhsCode(){
@@ -29,6 +42,9 @@ public class OwhsService {
         if (owhsEntities != null && !owhsEntities.isEmpty()){
             owhsEntities.stream().forEach(item -> whsCodes.add(item.getWhsCode()));
         }
+        whsCodes.add("KVTCT"); // Kho vật tư công ty
+        whsCodes.add("KHA");   // Kho Hòa An
+
         return whsCodes;
     }
 }
