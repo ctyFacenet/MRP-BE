@@ -23,7 +23,7 @@ public interface WarehouseEntityRepository extends JpaRepository<WarehouseEntity
 
     @Query(value = "select new com.facenet.mrp.service.dto.mrp.CurrentInventory(itemCode , sum(remain))" +
         " from WarehouseEntity" +
-        " where type in (:typeList)" +
+        " where warehouse in (:warehouseList)" +
         " group by itemCode")
-    List<CurrentInventory> getAllCurrentInventory(@Param("typeList") List<Integer> typeList);
+    List<CurrentInventory> getAllCurrentInventory(@Param("warehouseList") List<Integer> warehouseList);
 }

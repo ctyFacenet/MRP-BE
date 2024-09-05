@@ -148,20 +148,20 @@ public class MrpAdvancedAnalysisServiceV2 {
         Map<String, Double> inStockQuantityMap = new HashMap<>();
         if (input.getAnalysisOption().contains("kho")) {
             List<CurrentInventory> inStockQuantity = oitwRepository.getAllCurrentInventoryByWhs(input.getListAnalysisWhs());
-            // Define the typeList to hold warehouse types (e.g., 2 for KHA, 3 for KVTCT)
-            List<Integer> typeList = new ArrayList<>();
+            // Define the warehouseList to hold warehouse types (e.g., 2 for KHA, 3 for KVTCT)
+            List<Integer> warehouseList = new ArrayList<>();
 
             // Check for "KVTCT" and "KHA" in input.getListAnalysisWhs()
             if (input.getListAnalysisWhs().contains("KVTCT")) {
-                typeList.add(3); // Add type 3 for "KVTCT"
+                warehouseList.add(3); // Add type 3 for "KVTCT"
             }
             if (input.getListAnalysisWhs().contains("KHA")) {
-                typeList.add(2); // Add type 2 for "KHA"
+                warehouseList.add(2); // Add type 2 for "KHA"
             }
 
             // Proceed with fetching the inventory data if types are available
-            if (!typeList.isEmpty()) {
-                List<CurrentInventory> inStockQuantity2 = warehouseEntityRepository.getAllCurrentInventory(typeList);
+            if (!warehouseList.isEmpty()) {
+                List<CurrentInventory> inStockQuantity2 = warehouseEntityRepository.getAllCurrentInventory(warehouseList);
 
                 // Merge the two lists based on item code
                 inStockQuantityMap = Stream.concat(inStockQuantity.stream(), inStockQuantity2.stream())
