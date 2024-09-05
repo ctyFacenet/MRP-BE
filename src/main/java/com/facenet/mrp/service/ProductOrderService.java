@@ -386,7 +386,7 @@ public class ProductOrderService {
                 orderItem.setProductCode(order.getProductCode());
                 orderItem.setProductName(order.getProductName());
                 orderItem.setQuantity(order.getQuantity());
-                orderItem.setBomVersion(order.getBomVersion());
+                orderItem.setBomVersion("1.0");
                 orderItem.setOrderDate(order.getStartDate());
                 orderItem.setDeliverDate(order.getEndDate());
                 orderItem.setPriority(order.getPriorityProduct());
@@ -602,7 +602,7 @@ public class ProductOrderService {
             donHang.setExternalPoId(productOrderDetails.getProductOrderChild());
             donHang.setCustomerCode(productOrderDetails.getCustomerCode());
             donHang.setCustomerName(productOrderDetails.getCustomerName());
-            donHang.setBomVersion(productOrderDetails.getBomVersion());
+            donHang.setBomVersion("1.0");
             donHang.setProductCode(productOrderDetails.getProductCode());
             donHang.setProductName(productOrderDetails.getProductName());
             donHang.setQuantity(productOrderDetails.getQuantity());
@@ -662,7 +662,7 @@ public class ProductOrderService {
             donHang.setExternalPoId(productOrder.getProductCodeChild());
             donHang.setCustomerCode(productOrder.getCustomerId());
             donHang.setCustomerName(productOrder.getCustomerName());
-            donHang.setBomVersion(productOrder.getBomVersion());
+            donHang.setBomVersion("1.0");
             donHang.setProductCode(productOrder.getProductCode());
             donHang.setProductName(productOrder.getProductName());
             donHang.setQuantity(productOrder.getQuantity());
@@ -699,7 +699,7 @@ public class ProductOrderService {
             }
             ProductOrderDetail productOrderDetail = new ProductOrderDetail();
             productOrderDetail.setProductCode(productOrder.getProductCode());
-            productOrderDetail.setBomVersion(productOrder.getBomVersion());
+            productOrderDetail.setBomVersion("1.0");
             productOrderDetail.setQuantity(productOrder.getQuantity());
             productOrderDetail.setCustomerCode(productOrder.getCustomerId());
             productOrderDetail.setCustomerName(productOrder.getCustomerName());
@@ -767,7 +767,7 @@ public class ProductOrderService {
             donHang.setCustomerCode(productOrderDetails.getCustomerCode());
             donHang.setExternalPoId(productOrderDetails.getProductOrderChild());
             donHang.setCustomerName(productOrderDetails.getCustomerName());
-            donHang.setBomVersion(mrpDetailDTO.getBomVersion());
+            donHang.setBomVersion("1.0");
             donHang.setProductCode(mrpDetailDTO.getItemCode());
             donHang.setProductName(mrpDetailDTO.getItemName());
 
