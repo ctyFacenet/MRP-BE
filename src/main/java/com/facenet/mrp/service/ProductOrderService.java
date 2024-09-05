@@ -407,7 +407,7 @@ public class ProductOrderService {
 
                 productOrderDetails.add(orderItem);
             }
-            validateBomVersion(productOrderDetails, productCodes);
+            //validateBomVersion(productOrderDetails, productCodes);
             logger.info("sumQuantity = {}", sumQuantity);
             ProductOrder productOrder = orderList.get(0);
             productOrderDetails.forEach(productOrderDetail -> productOrderDetail.setProductOrderCode(productOrder));
