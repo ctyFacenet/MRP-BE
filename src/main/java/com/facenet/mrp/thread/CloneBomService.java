@@ -48,6 +48,7 @@ public class CloneBomService {
         if (!CollectionUtils.isEmpty(cloneBomDTOFromSAP)){
             for (CloneBomDTO dto : cloneBomDTOFromSAP){
                 key = Utils.toItemKey(dto.getParentItemCode(), "1.0");
+                log.info(key);
                 itemParentKey = Utils.toItemKey(dto.getParentItemCode(), dto.getParentItemName());
                 itemChildKey =Utils.toItemKey(dto.getParentItemCode(), dto.getParentItemName());
 //                System.err.println(itemChildKey);
@@ -56,7 +57,7 @@ public class CloneBomService {
                     , dto.getChildItemName()
                     , dto.getAltItemCode()
                     , dto.getChildQuota()
-                    , dto.getChildBomVersion()
+                    , "1.0"
                     , dto.getChildGroupItem()
                 );
                 List<MrpDetailDTO> bomList = bomTree.get(key);
@@ -71,7 +72,7 @@ public class CloneBomService {
                         dto.getParentItemCode()
                         , dto.getParentItemName()
                         , dto.getParentQuota()
-                        , dto.getParentBomVersion()
+                        , "1.0"
                         , dto.getParentGroupItem()
                     );
 
