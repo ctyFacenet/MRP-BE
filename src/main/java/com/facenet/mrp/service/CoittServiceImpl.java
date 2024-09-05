@@ -71,17 +71,17 @@ public class CoittServiceImpl implements CoittService {
         log.info("------Start get list Bom by productCode-------");
         if (StringUtils.isEmpty(productCode)) throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.param");
 
-        ArrayList<String> list = new ArrayList<>();
-        List<CoittEntity> listCoitt = coittRepository.getListBomVersionByCode(productCode);
-        for (CoittEntity l : listCoitt) {
-            list.add(l.getuVersions().trim());
-        }
+//        ArrayList<String> list = new ArrayList<>();
+//        List<CoittEntity> listCoitt = coittRepository.getListBomVersionByCode(productCode);
+//        for (CoittEntity l : listCoitt) {
+//            list.add(l.getuVersions().trim());
+//        }
 
         OitmEntity item = oitmRepository.getByItemCode(productCode);
         if (item == null) throw new CustomException(HttpStatus.NOT_FOUND, "record.notfound");
-        if (!CollectionUtils.isEmpty(listCoitt)) {
-            listBom.setBomVersions(list);
-        }
+//        if (!CollectionUtils.isEmpty(listCoitt)) {
+//            listBom.setBomVersions(list);
+//        }
 
         listBom.setProName(item.getItemName());
         listBom.setItemGroup(item.getItmsGrpCod().getItmsGrpCode());
