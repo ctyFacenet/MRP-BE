@@ -293,8 +293,8 @@ public class HistoryMrpService {
     public void saveMrpResult(AdvancedMrpDTO mrpDTO, boolean isHold) throws JsonProcessingException, ParseException {
 
         // Define the file path
-        String filePath = absolutePath + mrpDTO.getMrpSubCode();
-
+        String filePath = absolutePath + File.separator + mrpDTO.getMrpSubCode();
+        log.info("File save in {}", filePath);
         try {
             // Convert the Data object to JSON
             ObjectMapper objectMapper = new ObjectMapper();
