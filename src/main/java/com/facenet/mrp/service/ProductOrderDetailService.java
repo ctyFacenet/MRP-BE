@@ -5,6 +5,7 @@ import com.facenet.mrp.repository.mrp.ForecastOrderDetailRepository;
 import com.facenet.mrp.repository.mrp.ProductOrderDetailRepository;
 import com.facenet.mrp.repository.mrp.ProductOrderRepository;
 import com.facenet.mrp.repository.sap.CoittRepository;
+import com.facenet.mrp.repository.sap.OittRepository;
 import com.facenet.mrp.repository.sap.OitwRepository;
 import com.facenet.mrp.security.SecurityUtils;
 import com.facenet.mrp.service.dto.ForecastOrderDetailDTO;
@@ -72,6 +73,8 @@ public class ProductOrderDetailService {
 
     @Autowired
     private planningService planningService;
+    @Autowired
+    private OittRepository oittRepository;
 
     public ProductOrderDetailService(ForrecastOrderMapper forrecastOrderMapper, ProductOrderDetailRepository detailRepository, ProductOrderRepository productOrderRepository, OitwRepository oitwRepository, ProductOrderDetailMapper mapper, @Qualifier("mrpEntityManager") EntityManager entityManager, ForecastOrderDetailRepository forecastOrderDetailRepository, ProductOrderService productOrderService, CoittRepository coittRepository) {
         this.forrecastOrderMapper = forrecastOrderMapper;
@@ -226,7 +229,7 @@ public class ProductOrderDetailService {
         }
         //Count so NVl trong TP
         //query lấy children của sản phẩm TP
-        detailDTOS = coittRepository.getAllMrpProductBom(dto.getProductCode(), dto.getBomVersion());
+        detailDTOS = oittRepository.getAllMrpProductBom(dto.getProductCode());
         logger.info("children của sản phẩm: {}", detailDTOS);
         //Cho vào hàm đệ quy để tìm các NVl/BTp con trong TP
         countChildren.setQuantity(0.0);

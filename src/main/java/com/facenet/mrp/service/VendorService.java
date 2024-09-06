@@ -85,10 +85,10 @@ public class VendorService {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(criteriaBuilder.equal(root.get("active"), 1));
             if (filter.getVendorCode() != null && !filter.getVendorCode().isEmpty()) {
-                predicates.add(criteriaBuilder.like(root.get("code"), "%" + filter.getVendorCode() + "%"));
+                predicates.add(criteriaBuilder.like(root.get("vendorCode"), "%" + filter.getVendorCode() + "%"));
             }
             if (filter.getVendorName() != null && !filter.getVendorName().isEmpty()) {
-                predicates.add(criteriaBuilder.like(root.get("name"), "%" + filter.getVendorName() + "%"));
+                predicates.add(criteriaBuilder.like(root.get("vendorName"), "%" + filter.getVendorName() + "%"));
             }
             if (filter.getActive() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("active"), filter.getActive()));
