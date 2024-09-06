@@ -295,20 +295,30 @@ public class HistoryMrpService {
         // Define the file path
         String filePath = absolutePath + File.separator + mrpDTO.getMrpSubCode();
         log.info("File save in {}", filePath);
+
         try {
+            // Ensure the directory exists
+            File file = new File(filePath);
+            File parentDir = file.getParentFile();
+            if (!parentDir.exists()) {
+                if (parentDir.mkdirs()) {
+                    log.info("Created directory: {}", parentDir.getAbsolutePath());
+                } else {
+                    log.error("Failed to create directory: {}", parentDir.getAbsolutePath());
+                }
+            }
+
             // Convert the Data object to JSON
             ObjectMapper objectMapper = new ObjectMapper();
             String jsonData = objectMapper.writeValueAsString(new CommonResponse<>().success().data(mrpDTO));
 
             // Write JSON data to a Gzip file
             try (FileOutputStream fileOutputStream = new FileOutputStream(filePath);
-//                 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
                  GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream);
-                 Writer writer = new OutputStreamWriter(gzipOutputStream, StandardCharsets.UTF_8)
-            ) {
+                 Writer writer = new OutputStreamWriter(gzipOutputStream, StandardCharsets.UTF_8)) {
+
                 // Write the JSON data in UTF-8 encoding to Gzip output stream
                 writer.write(jsonData);
-//                gzipOutputStream.write(jsonData.getBytes());
             }
 
         } catch (Exception e) {
