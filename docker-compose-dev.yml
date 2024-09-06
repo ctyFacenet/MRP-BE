@@ -10,6 +10,6 @@ services:
       - '8313:8313'
     volumes:
       - /home/ubuntu/uploads:/rd/uploads
-      - /home/ubuntu/mrp/be/static:/rd/static
+      - /home/ubuntu/mrp/be/static:/home/ubuntu/mrp/be/static
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
