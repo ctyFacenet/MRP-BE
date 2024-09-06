@@ -272,7 +272,7 @@ public class HistoryMrpService {
 
         String filePath = resultMrpJsonEntity.getDataResultJson();
         File file = new File(filePath);
-
+        log.info("File kết quả: {}", file);
         if (!file.exists()) {
             // Handle the case if the file does not exist
             throw new CustomException(HttpStatus.NOT_FOUND, "record.notfound");
