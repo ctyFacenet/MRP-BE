@@ -352,7 +352,7 @@ public class MrpAdvancedAnalysisServiceV2 {
                     calStartTime.add(Calendar.DATE, 3);
                 }
 
-            } else if (analysisPeriod.equalsIgnoreCase("2 tuần")) {
+            } else if (analysisPeriod.equalsIgnoreCase("quý")) {
                 calCheck.setTime(calStartTime.getTime());
                 if (calCheck.getTime().before(calEndTime.getTime())) {
                     mrpResultDTO = new MrpResultDTO();
@@ -363,9 +363,9 @@ public class MrpAdvancedAnalysisServiceV2 {
                     calExactAnalysisTime.setTime(calStartTime.getTime());
                     timeList.add(calExactAnalysisTime);
 
-                    //Nếu trong vòng lặp check sau khi + 14  ngày sẽ lơn hơn ngày cuối cùng
+                    //Nếu trong vòng lặp check sau khi + 90  ngày sẽ lơn hơn ngày cuối cùng
                     // thì add ngày cuối vào luôn và break
-                    calCheck.add(Calendar.DATE, 14);
+                    calCheck.add(Calendar.DATE, 90);
                     if (calCheck.getTime().after(calEndTime.getTime()) || simpleDateFormat.format(calCheck.getTime()).equals(simpleDateFormat.format(calEndTime.getTime()))) {
                         mrpResultDTO = new MrpResultDTO();
                         mrpResultDTO.setLandmark(simpleDateFormat.format(calEndTime.getTime()));
@@ -377,7 +377,7 @@ public class MrpAdvancedAnalysisServiceV2 {
                         break;
                     }
 
-                    calStartTime.add(Calendar.DATE, 14);
+                    calStartTime.add(Calendar.DATE, 90);
                 }
             }
         }
@@ -842,10 +842,38 @@ public class MrpAdvancedAnalysisServiceV2 {
         if (advancedMrpDTO.getAnalysisWhs().contains("kho")) {
             //Lấy số lượng hiện trạng tồn kho của list NVL
             List<CurrentInventory> inStockQuantity = oitwRepository.getAllCurrentInventoryByWhs(advancedMrpDTO.getWarehouseAnalysis());
-            inStockQuantityMap = inStockQuantity.stream().collect(Collectors.toMap(CurrentInventory::getItemCode, CurrentInventory::getCurrentQuantity));
+            // Define the warehouseList to hold warehouse types (e.g., 2 for KHA, 3 for KVTCT)
+            List<Integer> warehouseList = new ArrayList<>();
+
+            // Check for "KVTCT" and "KHA" in input.getListAnalysisWhs()
+            if (advancedMrpDTO.getWarehouseAnalysis().contains("KVTCT")) {
+                warehouseList.add(3); // Add type 3 for "KVTCT"
+            }
+            if (advancedMrpDTO.getWarehouseAnalysis().contains("KHA")) {
+                warehouseList.add(2); // Add type 2 for "KHA"
+            }
+
+            // Proceed with fetching the inventory data if types are available
+            if (!warehouseList.isEmpty()) {
+                List<CurrentInventory> inStockQuantity2 = warehouseEntityRepository.getAllCurrentInventory(warehouseList);
+
+                // Merge the two lists based on item code
+                inStockQuantityMap = Stream.concat(inStockQuantity.stream(), inStockQuantity2.stream())
+                    .collect(Collectors.toMap(
+                        CurrentInventory::getItemCode,
+                        CurrentInventory::getCurrentQuantity,
+                        Double::sum // Merge quantities by summing them if they have the same item code
+                    ));
+            } else {
+                inStockQuantityMap = inStockQuantity.stream()
+                    .collect(Collectors.toMap(CurrentInventory::getItemCode, CurrentInventory::getCurrentQuantity));
+            }
 
             List<CurrentWarehouseInventory> currentWarehouseInventories = oitwRepository.getAllCurrentInventoryWithWhs();
-            inStockQuantityMapWithWhsCode = currentWarehouseInventories.stream().collect(Collectors.groupingBy(CurrentInventory::getItemCode));
+            List<CurrentWarehouseInventory> currentWarehouseInventories2 = warehouseEntityRepository.getAllCurrentInventoryWithWhs();
+            List<CurrentWarehouseInventory> combinedInventory = new ArrayList<>(currentWarehouseInventories);
+            combinedInventory.addAll(currentWarehouseInventories2);
+            inStockQuantityMapWithWhsCode = combinedInventory.stream().collect(Collectors.groupingBy(CurrentInventory::getItemCode));
         }
 
         //Phân tích từng sản phẩm

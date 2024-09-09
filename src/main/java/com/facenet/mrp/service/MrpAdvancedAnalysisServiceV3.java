@@ -1,10 +1,7 @@
 package com.facenet.mrp.service;
 
 import com.facenet.mrp.repository.MrpAnalysisCache;
-import com.facenet.mrp.repository.mrp.ItemHoldRepository;
-import com.facenet.mrp.repository.mrp.MrpBomDetailRepository;
-import com.facenet.mrp.repository.mrp.MrpOrderQuantityRepository;
-import com.facenet.mrp.repository.mrp.PurchaseRecommendationPlanRepository;
+import com.facenet.mrp.repository.mrp.*;
 import com.facenet.mrp.repository.sap.OitwRepository;
 import com.facenet.mrp.repository.sap.Por1Repository;
 import com.facenet.mrp.repository.sap.Prq1Repository;
@@ -36,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class MrpAdvancedAnalysisServiceV3 {
@@ -51,8 +49,10 @@ public class MrpAdvancedAnalysisServiceV3 {
     private final Por1Repository por1Repository;
     private final MrpOrderQuantityRepository mrpOrderQuantityRepository;
 
+    private final WarehouseEntityRepository warehouseEntityRepository;
 
-    public MrpAdvancedAnalysisServiceV3(CloneBomService bomService, MrpAnalysisCache mrpAnalysisCache, ItemHoldRepository itemHoldRepository, OitwRepository oitwRepository, MrpBomDetailRepository mrpBomDetailRepository, PurchaseRecommendationPlanRepository purchaseRecommendationPlanRepository, Prq1Repository prq1Repository, Por1Repository por1Repository, MrpOrderQuantityRepository mrpOrderQuantityRepository) {
+
+    public MrpAdvancedAnalysisServiceV3(CloneBomService bomService, MrpAnalysisCache mrpAnalysisCache, ItemHoldRepository itemHoldRepository, OitwRepository oitwRepository, MrpBomDetailRepository mrpBomDetailRepository, PurchaseRecommendationPlanRepository purchaseRecommendationPlanRepository, Prq1Repository prq1Repository, Por1Repository por1Repository, MrpOrderQuantityRepository mrpOrderQuantityRepository, WarehouseEntityRepository warehouseEntityRepository) {
         this.bomService = bomService;
         this.mrpAnalysisCache = mrpAnalysisCache;
         this.itemHoldRepository = itemHoldRepository;
@@ -62,6 +62,7 @@ public class MrpAdvancedAnalysisServiceV3 {
         this.prq1Repository = prq1Repository;
         this.por1Repository = por1Repository;
         this.mrpOrderQuantityRepository = mrpOrderQuantityRepository;
+        this.warehouseEntityRepository = warehouseEntityRepository;
     }
 
     public AdvancedMrpDTO pagingCache(String ssId, int page, int pageSize, AnalyticsSearchRequest filter) {
@@ -219,10 +220,38 @@ public class MrpAdvancedAnalysisServiceV3 {
         if (advancedMrpDTO.getAnalysisWhs().contains("kho")) {
             //Lấy số lượng hiện trạng tồn kho của list NVL
             List<CurrentInventory> inStockQuantity = oitwRepository.getAllCurrentInventoryByWhs(advancedMrpDTO.getWarehouseAnalysis());
-            inStockQuantityMap = inStockQuantity.stream().collect(Collectors.toMap(CurrentInventory::getItemCode, CurrentInventory::getCurrentQuantity));
+            // Define the warehouseList to hold warehouse types (e.g., 2 for KHA, 3 for KVTCT)
+            List<Integer> warehouseList = new ArrayList<>();
+
+            // Check for "KVTCT" and "KHA" in input.getListAnalysisWhs()
+            if (advancedMrpDTO.getWarehouseAnalysis().contains("KVTCT")) {
+                warehouseList.add(3); // Add type 3 for "KVTCT"
+            }
+            if (advancedMrpDTO.getWarehouseAnalysis().contains("KHA")) {
+                warehouseList.add(2); // Add type 2 for "KHA"
+            }
+
+            // Proceed with fetching the inventory data if types are available
+            if (!warehouseList.isEmpty()) {
+                List<CurrentInventory> inStockQuantity2 = warehouseEntityRepository.getAllCurrentInventory(warehouseList);
+
+                // Merge the two lists based on item code
+                inStockQuantityMap = Stream.concat(inStockQuantity.stream(), inStockQuantity2.stream())
+                    .collect(Collectors.toMap(
+                        CurrentInventory::getItemCode,
+                        CurrentInventory::getCurrentQuantity,
+                        Double::sum // Merge quantities by summing them if they have the same item code
+                    ));
+            } else {
+                inStockQuantityMap = inStockQuantity.stream()
+                    .collect(Collectors.toMap(CurrentInventory::getItemCode, CurrentInventory::getCurrentQuantity));
+            }
 
             List<CurrentWarehouseInventory> currentWarehouseInventories = oitwRepository.getAllCurrentInventoryWithWhs();
-            inStockQuantityMapWithWhsCode = currentWarehouseInventories.stream().collect(Collectors.groupingBy(CurrentInventory::getItemCode));
+            List<CurrentWarehouseInventory> currentWarehouseInventories2 = warehouseEntityRepository.getAllCurrentInventoryWithWhs();
+            List<CurrentWarehouseInventory> combinedInventory = new ArrayList<>(currentWarehouseInventories);
+            combinedInventory.addAll(currentWarehouseInventories2);
+            inStockQuantityMapWithWhsCode = combinedInventory.stream().collect(Collectors.groupingBy(CurrentInventory::getItemCode));
         }
 
         //Phân tích từng sản phẩm

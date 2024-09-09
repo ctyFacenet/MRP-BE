@@ -4,6 +4,7 @@ import com.facenet.mrp.domain.mrp.*;
 import com.facenet.mrp.repository.mrp.ForecastOrderDetailRepository;
 import com.facenet.mrp.repository.mrp.ProductOrderDetailRepository;
 import com.facenet.mrp.repository.mrp.ProductOrderRepository;
+import com.facenet.mrp.repository.mrp.WarehouseEntityRepository;
 import com.facenet.mrp.repository.sap.CoittRepository;
 import com.facenet.mrp.repository.sap.OittRepository;
 import com.facenet.mrp.repository.sap.OitwRepository;
@@ -46,6 +47,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.facenet.mrp.domain.mrp.QProductOrder.productOrder;
 
@@ -75,6 +77,8 @@ public class ProductOrderDetailService {
     private planningService planningService;
     @Autowired
     private OittRepository oittRepository;
+    @Autowired
+    private WarehouseEntityRepository warehouseEntityRepository;
 
     public ProductOrderDetailService(ForrecastOrderMapper forrecastOrderMapper, ProductOrderDetailRepository detailRepository, ProductOrderRepository productOrderRepository, OitwRepository oitwRepository, ProductOrderDetailMapper mapper, @Qualifier("mrpEntityManager") EntityManager entityManager, ForecastOrderDetailRepository forecastOrderDetailRepository, ProductOrderService productOrderService, CoittRepository coittRepository) {
         this.forrecastOrderMapper = forrecastOrderMapper;
@@ -178,7 +182,26 @@ public class ProductOrderDetailService {
             result
                 .forEach(productOrderDetail -> poCodeList.add(productOrderDetail.getProductCode()));
 
-            List<CurrentInventory> currentInventoryList = oitwRepository.getAllInStockQuantityByItemCode(poCodeList);
+            List<CurrentInventory> currentInventoryList1 = oitwRepository.getAllInStockQuantityByItemCode(poCodeList);
+            List<CurrentInventory> currentInventoryList2 = warehouseEntityRepository.getAllInStockQuantityByItemCode(poCodeList);
+
+            // Tạo một Map để lưu tổng số lượng theo itemCode
+            Map<String, Double> combinedInventoryMap = new HashMap<>();
+
+            // Thêm số lượng từ danh sách đầu tiên vào Map
+            for (CurrentInventory item : currentInventoryList1) {
+                combinedInventoryMap.merge(item.getItemCode(), item.getCurrentQuantity(), Double::sum);
+            }
+
+            // Thêm số lượng từ danh sách thứ hai vào Map
+            for (CurrentInventory item : currentInventoryList2) {
+                combinedInventoryMap.merge(item.getItemCode(), item.getCurrentQuantity(), Double::sum);
+            }
+
+            // Chuyển đổi Map thành danh sách
+            List<CurrentInventory> currentInventoryList = combinedInventoryMap.entrySet().stream()
+                .map(entry -> new CurrentInventory(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
 
             for (String poCode : poCodeList) {
                 for (CurrentInventory item : currentInventoryList) {
@@ -655,7 +678,26 @@ public class ProductOrderDetailService {
                 productOrderDetailPage.getContent()
                     .forEach(forecastOrderDetail -> poCodeList.add(forecastOrderDetail.getItemCode()));
 
-                List<CurrentInventory> currentInventoryList = oitwRepository.getAllInStockQuantityByItemCode(poCodeList);
+                List<CurrentInventory> currentInventoryList1 = oitwRepository.getAllInStockQuantityByItemCode(poCodeList);
+                List<CurrentInventory> currentInventoryList2 = warehouseEntityRepository.getAllInStockQuantityByItemCode(poCodeList);
+
+                // Tạo một Map để lưu tổng số lượng theo itemCode
+                Map<String, Double> combinedInventoryMap = new HashMap<>();
+
+                // Thêm số lượng từ danh sách đầu tiên vào Map
+                for (CurrentInventory item : currentInventoryList1) {
+                    combinedInventoryMap.merge(item.getItemCode(), item.getCurrentQuantity(), Double::sum);
+                }
+
+                // Thêm số lượng từ danh sách thứ hai vào Map
+                for (CurrentInventory item : currentInventoryList2) {
+                    combinedInventoryMap.merge(item.getItemCode(), item.getCurrentQuantity(), Double::sum);
+                }
+
+                // Chuyển đổi Map thành danh sách
+                List<CurrentInventory> currentInventoryList = combinedInventoryMap.entrySet().stream()
+                    .map(entry -> new CurrentInventory(entry.getKey(), entry.getValue()))
+                    .collect(Collectors.toList());
 
                 for (String poCode : poCodeList) {
                     for (CurrentInventory item : currentInventoryList) {
@@ -774,7 +816,26 @@ public class ProductOrderDetailService {
                 productOrderDetailPage.getContent()
                     .forEach(productOrderDetail -> poCodeList.add(productOrderDetail.getProductCode()));
 
-                List<CurrentInventory> currentInventoryList = oitwRepository.getAllInStockQuantityByItemCode(poCodeList);
+                List<CurrentInventory> currentInventoryList1 = oitwRepository.getAllInStockQuantityByItemCode(poCodeList);
+                List<CurrentInventory> currentInventoryList2 = warehouseEntityRepository.getAllInStockQuantityByItemCode(poCodeList);
+
+                // Tạo một Map để lưu tổng số lượng theo itemCode
+                Map<String, Double> combinedInventoryMap = new HashMap<>();
+
+                // Thêm số lượng từ danh sách đầu tiên vào Map
+                for (CurrentInventory item : currentInventoryList1) {
+                    combinedInventoryMap.merge(item.getItemCode(), item.getCurrentQuantity(), Double::sum);
+                }
+
+                // Thêm số lượng từ danh sách thứ hai vào Map
+                for (CurrentInventory item : currentInventoryList2) {
+                    combinedInventoryMap.merge(item.getItemCode(), item.getCurrentQuantity(), Double::sum);
+                }
+
+                // Chuyển đổi Map thành danh sách
+                List<CurrentInventory> currentInventoryList = combinedInventoryMap.entrySet().stream()
+                    .map(entry -> new CurrentInventory(entry.getKey(), entry.getValue()))
+                    .collect(Collectors.toList());
 
                 for (String poCode : poCodeList) {
                     for (CurrentInventory item : currentInventoryList) {

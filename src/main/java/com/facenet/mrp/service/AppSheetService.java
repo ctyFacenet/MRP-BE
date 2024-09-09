@@ -64,11 +64,10 @@ public class AppSheetService {
             .map(material -> {
                 WarehouseEntity entity = new WarehouseEntity();
                 entity.setWarehouse(Constants.Warehouse.Phu_tung_nhua);
-                entity.setItemName(material.getGhepChungloaiMausac());
+                entity.setItemName(material.getChungLoai());
                 entity.setRemain(material.getTon() != null ? Long.parseLong(material.getTon()) : 0L);
                 entity.setUnit("Cái");
                 entity.setColor(material.getMauSac());
-                entity.setType(material.getChungLoai());
                 return entity;
             })
             .collect(Collectors.toList());

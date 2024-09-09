@@ -49,12 +49,14 @@ public class MrpAdvancedAnalysisService {
     private final ForecastOrderDetailRepository forecastOrderDetailRepository;
     private final Prq1Repository prq1Repository;
     private final Por1Repository por1Repository;
+    private final WarehouseEntityRepository warehouseEntityRepository;
 
     public MrpAdvancedAnalysisService(CoittRepository coittRepository, MrpAnalyticsMapper mrpAnalyticsMapper, ProductOrderDetailRepository poDetailRepository, MrpRepository mrpRepository, SapOnOrderSummaryRepository soosRepository, ItemHoldRepository itemHoldRepository, OitwRepository oitwRepository, MrpSubRepository mrpSubRepository, MrpBomDetailRepository mrpBomDetailRepository,
                                       ProductOrderRepository productOrderRepository, PurchaseRecommendationPlanRepository purchaseRecommendationPlanRepository,
                                       ForecastOrderDetailRepository forecastOrderDetailRepository,
                                       Prq1Repository prq1Repository,
-                                      Por1Repository por1Repository) {
+                                      Por1Repository por1Repository,
+                                      WarehouseEntityRepository warehouseEntityRepository) {
         this.coittRepository = coittRepository;
         this.mrpAnalyticsMapper = mrpAnalyticsMapper;
         this.poDetailRepository = poDetailRepository;
@@ -69,6 +71,7 @@ public class MrpAdvancedAnalysisService {
         this.forecastOrderDetailRepository = forecastOrderDetailRepository;
         this.prq1Repository = prq1Repository;
         this.por1Repository = por1Repository;
+        this.warehouseEntityRepository = warehouseEntityRepository;
     }
 
     /**
@@ -406,7 +409,23 @@ public class MrpAdvancedAnalysisService {
 
         List<String> itemCodeList = detailDTOS.stream().map(MrpDetailDTO::getItemCode).collect(Collectors.toList());
         List<CurrentInventory> inStockQuantity = oitwRepository.getAllCurrentInventoryByWhs(itemCodeList, listWhs);
-        Map<String, Double> inStockQuantityMap = inStockQuantity.stream().collect(Collectors.toMap(CurrentInventory::getItemCode, CurrentInventory::getCurrentQuantity));
+        List<CurrentInventory> inStockQuantity2 = warehouseEntityRepository.getAllCurrentInventoryByWhs(itemCodeList, listWhs);
+        // Tạo Map từ inStockQuantity, nhóm theo itemCode
+        Map<String, Double> inStockQuantityMap = inStockQuantity.stream()
+            .collect(Collectors.toMap(
+                CurrentInventory::getItemCode,
+                CurrentInventory::getCurrentQuantity
+            ));
+
+        // Cộng thêm các itemCode và currentQuantity từ inStockQuantity2
+        for (CurrentInventory inventory : inStockQuantity2) {
+            String itemCode = inventory.getItemCode();
+            Double quantity = inventory.getCurrentQuantity();
+
+            // Nếu itemCode đã tồn tại trong map, cộng thêm currentQuantity
+            inStockQuantityMap.merge(itemCode, quantity, Double::sum);
+        }
+//        Map<String, Double> inStockQuantityMap = inStockQuantity.stream().collect(Collectors.toMap(CurrentInventory::getItemCode, CurrentInventory::getCurrentQuantity));
 
         //Vòng lặp đệ quy để kiểm tra các mức NVL và BTP
         for (MrpDetailDTO mrpDetailDTO : detailDTOS) {
@@ -1300,14 +1319,33 @@ public class MrpAdvancedAnalysisService {
 
         if (analysisOptions.contains("kho")) {
             //Lấy số lượng hiện trạng tồn kho của list NVL
-            List<CurrentInventory> currentInventory = oitwRepository.getAllCurrentInventoryByWhs(listItemCode, listWhs);
+            List<CurrentInventory> currentInventory1 = oitwRepository.getAllCurrentInventoryByWhs(listItemCode, listWhs);
+            List<CurrentInventory> currentInventory2 = warehouseEntityRepository.getAllCurrentInventoryByWhs(listItemCode, listWhs);
+            // Kết hợp hai danh sách
+            List<CurrentInventory> finalInventoryList = new ArrayList<>(currentInventory1);
+            finalInventoryList.addAll(currentInventory2);
+
+            // Nhóm theo itemCode và cộng tổng số lượng
+            Map<String, Double> summedInventoryMap = finalInventoryList.stream()
+                .collect(Collectors.groupingBy(
+                    CurrentInventory::getItemCode,
+                    Collectors.summingDouble(CurrentInventory::getCurrentQuantity)
+                ));
+
+            // Chuyển đổi kết quả về dạng List<CurrentInventory>
+            List<CurrentInventory> currentInventory = summedInventoryMap.entrySet().stream()
+                .map(entry -> new CurrentInventory(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
             log.info("số lượng hiện trạng tồn kho của list NVL va BTP: {}", currentInventory.size());
             for (CurrentInventory ci : currentInventory) {
                 currentInventoryHM.put(ci.getItemCode(), ci.getCurrentQuantity());
             }
 
             List<CurrentWarehouseInventory> currentWarehouseInventories = oitwRepository.getAllCurrentInventoryWithWhs(listItemCode, listWhs);
-            currentWarehouseInventoryMap = currentWarehouseInventories.stream().collect(Collectors.groupingBy(CurrentInventory::getItemCode));
+            List<CurrentWarehouseInventory> currentWarehouseInventories2 = warehouseEntityRepository.getAllCurrentInventoryWithWhs(listItemCode, listWhs);
+            List<CurrentWarehouseInventory> combinedInventory = new ArrayList<>(currentWarehouseInventories);
+            combinedInventory.addAll(currentWarehouseInventories2);
+            currentWarehouseInventoryMap = combinedInventory.stream().collect(Collectors.groupingBy(CurrentInventory::getItemCode));
         }
 
         //Vòng lặp để set các thông tin của từng NVL
@@ -1962,7 +2000,25 @@ public class MrpAdvancedAnalysisService {
 
         //Lấy số lượng hiện trạng tồn kho của list sản phẩm
         if (analysisOptions.contains("kho")) {
-            currentInventory = oitwRepository.getAllCurrentInventoryByWhs(productCodeList, whsCode);
+            //Lấy số lượng hiện trạng tồn kho của list NVL
+            List<CurrentInventory> currentInventory1 = oitwRepository.getAllCurrentInventoryByWhs(productCodeList, whsCode);
+            List<CurrentInventory> currentInventory2 = warehouseEntityRepository.getAllCurrentInventoryByWhs(productCodeList, whsCode);
+            // Kết hợp hai danh sách
+            List<CurrentInventory> finalInventoryList = new ArrayList<>(currentInventory1);
+            finalInventoryList.addAll(currentInventory2);
+
+            // Nhóm theo itemCode và cộng tổng số lượng
+            Map<String, Double> summedInventoryMap = finalInventoryList.stream()
+                .collect(Collectors.groupingBy(
+                    CurrentInventory::getItemCode,
+                    Collectors.summingDouble(CurrentInventory::getCurrentQuantity)
+                ));
+
+            // Chuyển đổi kết quả về dạng List<CurrentInventory>
+            currentInventory = summedInventoryMap.entrySet().stream()
+                .map(entry -> new CurrentInventory(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
+//            currentInventory = oitwRepository.getAllCurrentInventoryByWhs(productCodeList, whsCode);
             log.info("currentInventory.size(): {}", currentInventory.size());
             log.info("productCodeList: {}", productCodeList);
             log.info("whsCodes: {}", whsCode);

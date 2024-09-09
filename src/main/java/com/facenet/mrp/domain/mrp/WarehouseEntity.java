@@ -42,6 +42,9 @@ public class WarehouseEntity {
     @Basic
     @Column(name = "status")
     private String status;
+    @Basic
+    @Column(name = "whs_code")
+    private String whsCode;
 
     public int getId() {
         return id;
@@ -137,6 +140,14 @@ public class WarehouseEntity {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getWhsCode() {
+        return whsCode;
+    }
+
+    public void setWhsCode(String whsCode) {
+        this.whsCode = whsCode;
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.facenet.mrp.service;
 import com.facenet.mrp.domain.mrp.ItemHoldEntity;
 import com.facenet.mrp.domain.mrp.PurchaseRecommendationEntity;
 import com.facenet.mrp.repository.mrp.ItemHoldRepository;
+import com.facenet.mrp.repository.mrp.WarehouseEntityRepository;
 import com.facenet.mrp.repository.sap.OitwRepository;
 import com.facenet.mrp.service.dto.DetailItemSyntheticDTO;
 import com.facenet.mrp.service.dto.ItemHoldDTO;
@@ -26,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class HoldItemService {
@@ -33,11 +35,14 @@ public class HoldItemService {
     private final ItemHoldRepository itemHoldRepository;
     private final ItemHoldMapper itemHoldMapper;
     private final OitwRepository oitwRepository;
+    private final WarehouseEntityRepository warehouseEntityRepository;
 
-    public HoldItemService(ItemHoldRepository itemHoldRepository, ItemHoldMapper itemHoldMapper, OitwRepository oitwRepository) {
+    public HoldItemService(ItemHoldRepository itemHoldRepository, ItemHoldMapper itemHoldMapper, OitwRepository oitwRepository,
+                           WarehouseEntityRepository warehouseEntityRepository) {
         this.itemHoldRepository = itemHoldRepository;
         this.itemHoldMapper = itemHoldMapper;
         this.oitwRepository = oitwRepository;
+        this.warehouseEntityRepository = warehouseEntityRepository;
     }
 
     public List<ItemHoldDTO> getItemHold(String itemCode) {
@@ -62,7 +67,23 @@ public class HoldItemService {
         }
 
         List<CurrentInventory> inStockQuantity = oitwRepository.getInStockQuantityByItemCodeAndWhs(itemCode, input.getWarehouses());
-        result.forEach(itemHoldDTO -> itemHoldDTO.setCurrentInventory(inStockQuantity.get(0).getCurrentQuantity()));
+        List<CurrentInventory> inStockQuantity2 = warehouseEntityRepository.getInStockQuantityByItemCodeAndWhs(itemCode, input.getWarehouses());
+        // Kết hợp hai danh sách
+        List<CurrentInventory> combinedInventory = new ArrayList<>(inStockQuantity);
+        combinedInventory.addAll(inStockQuantity2);
+
+        // Nhóm theo itemCode và cộng tổng số lượng
+        Map<String, Double> summedInventoryMap = combinedInventory.stream()
+            .collect(Collectors.groupingBy(
+                CurrentInventory::getItemCode,
+                Collectors.summingDouble(CurrentInventory::getCurrentQuantity)
+            ));
+
+        // Chuyển đổi kết quả về dạng List<CurrentInventory>
+        List<CurrentInventory> finalInventoryList = summedInventoryMap.entrySet().stream()
+            .map(entry -> new CurrentInventory(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList());
+        result.forEach(itemHoldDTO -> itemHoldDTO.setCurrentInventory(finalInventoryList.get(0).getCurrentQuantity()));
         return result;
     }
 

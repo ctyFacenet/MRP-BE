@@ -71,6 +71,11 @@ public class WarehouseService {
 
             WarehouseEntity entity = new WarehouseEntity();
             entity.setWarehouse(type);
+            if(type == Constants.Warehouse.Hoa_an){
+                entity.setWhsCode("KHA");
+            } else if(type == Constants.Warehouse.Cty){
+                entity.setWhsCode("KVTCT");
+            }
             entity.setItemCode(itemCode);
             entity.setItemName(getCellValueAsString(row.getCell(2)));
             entity.setUnit(getCellValueAsString(row.getCell(3)));
