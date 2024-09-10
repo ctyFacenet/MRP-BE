@@ -332,8 +332,8 @@ public class MrpAdvancedAnalysisServiceV3 {
                         case "1/2 tuần":
                             lastDate = DateUtils.addDays(currentDate, -3);
                             break;
-                        case "2 Tuần":
-                            lastDate = DateUtils.addDays(currentDate, -14);
+                        case "Quý":
+                            lastDate = DateUtils.addDays(currentDate, -90);
                             break;
                         case "Tháng":
                             lastDate = DateUtils.addMonths(currentDate, -1);
@@ -561,8 +561,8 @@ public class MrpAdvancedAnalysisServiceV3 {
                 case "1/2 tuần":
                     lastDate = DateUtils.addDays(currentDate, -3);
                     break;
-                case "2 Tuần":
-                    lastDate = DateUtils.addDays(currentDate, -14);
+                case "Quý":
+                    lastDate = DateUtils.addDays(currentDate, -90);
                     break;
                 case "Tháng":
                     lastDate = DateUtils.addMonths(currentDate, -1);
@@ -660,8 +660,8 @@ public class MrpAdvancedAnalysisServiceV3 {
                 case "1/2 tuần":
                     listTime.add(DateUtils.addDays(date, -3));
                     break;
-                case "2 Tuần":
-                    listTime.add(DateUtils.addDays(date, -14));
+                case "Quý":
+                    listTime.add(DateUtils.addDays(date, -90));
                     break;
                 case "Tháng":
                     listTime.add(DateUtils.addMonths(date, -1));
@@ -731,8 +731,8 @@ public class MrpAdvancedAnalysisServiceV3 {
                 case "1/2 tuần":
                     dateIte.add(Calendar.DATE, 3);
                     break;
-                case "2 Tuần":
-                    dateIte.add(Calendar.DATE, 14);
+                case "Quý":
+                    dateIte.add(Calendar.DATE, 90);
                     break;
                 case "Tháng":
                     dateIte.add(Calendar.MONTH, 1);

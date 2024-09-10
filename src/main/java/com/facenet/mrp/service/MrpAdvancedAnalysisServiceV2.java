@@ -614,8 +614,8 @@ public class MrpAdvancedAnalysisServiceV2 {
 //                }
                     calCheck.add(Calendar.DATE, -(materialPreparationTime * 3));
                     break;
-                case "2 tuần":
-                    calCheck.add(Calendar.DATE, -(materialPreparationTime * 14));
+                case "quý":
+                    calCheck.add(Calendar.DATE, -(materialPreparationTime * 90));
                     break;
                 case "tháng":
                     calCheck.add(Calendar.MONTH, -materialPreparationTime);
@@ -1168,7 +1168,7 @@ public class MrpAdvancedAnalysisServiceV2 {
                     totalCheckStartTime.add(Calendar.DATE, 3);
                 }
 
-            } else if (analysisPeriod.equalsIgnoreCase("2 tuần")) {
+            } else if (analysisPeriod.equalsIgnoreCase("quý")) {
 //                if (totalCheckStartTime.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY || simpleDateFormat.format(totalCheckStartTime.getTime()).equals(simpleDateFormat.format(totalCheckEndTime.getTime()))) {
 //                    for (String exactTimeTp : listAnalysisTime.keySet()) {
 //                        if (exactTimeTp.equals(simpleDateFormat.format(totalCheckStartTime.getTime()))) {
@@ -1821,7 +1821,7 @@ public class MrpAdvancedAnalysisServiceV2 {
                     }
                     totalCheckStartTime.add(Calendar.DATE, 3);
                 }
-            } else if (analysisPeriod.equalsIgnoreCase("2 tuần")) {
+            } else if (analysisPeriod.equalsIgnoreCase("quý")) {
 //                if (totalCheckStartTime.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY || simpleDateFormat.format(totalCheckStartTime.getTime()).equals(simpleDateFormat.format(totalCheckEndTime.getTime()))) {
 //                    if ((prAnalysisHM.get(mrpDetailNVL.getItemCode()) != null && !prAnalysisHM.get(mrpDetailNVL.getItemCode()).isEmpty()) || (poAnalysisHM.get(mrpDetailNVL.getItemCode()) != null && !poAnalysisHM.get(mrpDetailNVL.getItemCode()).isEmpty())) {
 //                        for (ItemQuantityWithDate checkDate : prAnalysisHM.get(mrpDetailNVL.getItemCode())) {
@@ -1912,7 +1912,7 @@ public class MrpAdvancedAnalysisServiceV2 {
                     mrpResultDTOList.add(mrpResultDTO);
                     beforeDate.setTime(totalCheckStartTime.getTime().getTime());
 
-                    calCheck.add(Calendar.DATE, 14);
+                    calCheck.add(Calendar.DATE, 90);
                     if (calCheck.getTime().after(totalCheckEndTime.getTime()) || simpleDateFormat.format(calCheck.getTime()).equals(simpleDateFormat.format(totalCheckEndTime.getTime()))){
                         mrpResultDTO = new MrpResultDTO();
                         for (String exactTimeTp : listAnalysisTime.keySet()) {
@@ -1941,7 +1941,7 @@ public class MrpAdvancedAnalysisServiceV2 {
                         beforeDate.setTime(totalCheckEndTime.getTime().getTime());
                         break;
                     }
-                    totalCheckStartTime.add(Calendar.DATE, 14);
+                    totalCheckStartTime.add(Calendar.DATE, 90);
                 }
             }
 
@@ -2096,9 +2096,9 @@ public class MrpAdvancedAnalysisServiceV2 {
 //                }
             }
 
-        } else if (input.getAnalysisPeriod().equalsIgnoreCase("2 tuần")) {
+        } else if (input.getAnalysisPeriod().equalsIgnoreCase("quý")) {
             for (int i = 0; i < 4; i++) {
-                currentTime.add(Calendar.DATE, -(input.getMaterialPreparationTime() * 14));
+                currentTime.add(Calendar.DATE, -(input.getMaterialPreparationTime() * 90));
 
                 listExactTime.add(simpleDateFormat.format(currentTime.getTime()));
 //                if (currentTime.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
