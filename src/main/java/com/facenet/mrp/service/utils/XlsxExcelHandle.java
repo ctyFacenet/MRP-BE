@@ -6,10 +6,7 @@ package com.facenet.mrp.service.utils;
 
 
 import com.facenet.mrp.domain.mrp.*;
-import com.facenet.mrp.repository.mrp.LeadTimeRepository;
-import com.facenet.mrp.repository.mrp.MqqPriceRepository;
-import com.facenet.mrp.repository.mrp.ParamRepository;
-import com.facenet.mrp.repository.mrp.ProductOrderRepository;
+import com.facenet.mrp.repository.mrp.*;
 import com.facenet.mrp.service.dto.KeyDictionaryDTO;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.model.MqqPriceExcelModel;
@@ -47,14 +44,17 @@ public class XlsxExcelHandle {
     private final LeadTimeRepository leadTimeRepository;
     private final ParamRepository paramRepository;
     private final ProductOrderRepository productOrderRepository;
+    private final ItemRepository itemRepository;
 
     public XlsxExcelHandle(MqqPriceRepository mqqPriceRepository, LeadTimeRepository leadTimeRepository,
                            ParamRepository paramRepository,
-                           ProductOrderRepository productOrderRepository) {
+                           ProductOrderRepository productOrderRepository,
+                           ItemRepository itemRepository) {
         this.mqqPriceRepository = mqqPriceRepository;
         this.leadTimeRepository = leadTimeRepository;
         this.paramRepository = paramRepository;
         this.productOrderRepository = productOrderRepository;
+        this.itemRepository = itemRepository;
     }
 
     private static XSSFCellStyle createStyleForTitle(XSSFWorkbook workbook) {
@@ -309,13 +309,22 @@ public class XlsxExcelHandle {
         Integer count = productOrderRepository.countActiveProductOrders();
         count = count + 1;
         String baseOrderCode = "RAL-SO-" + count;
+
+        // Get the product code from the row
+        String productCode = getStringCellValue(row.getCell(1));
+
+        // Check if the product code exists in the repository
+        if (!itemRepository.existsAllByItemCode(productCode)) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "product.code.not.exists", productCode);
+        }
+
         donHang.setProductOrderCode(baseOrderCode);
 //        donHang.setCustomerId(ExcelUtils.getStringCellValue(row.getCell(1)));
 //        donHang.setCustomerName(ExcelUtils.getStringCellValue(row.getCell(2)));
         donHang.setProductOrderType(getStringCellValue(row.getCell(0)));
         donHang.setType("Đơn hàng");
         donHang.setProductCodeChild(baseOrderCode + "-" + rowIndex);
-        donHang.setProductCode(getStringCellValue(row.getCell(1)));
+        donHang.setProductCode(productCode);
         donHang.setProductName(row.getCell(2).getStringCellValue().trim());
         donHang.setBomVersion("1.0");
         donHang.setQuantity(ExcelUtils.getIntegerCellValue(row.getCell(3)));
