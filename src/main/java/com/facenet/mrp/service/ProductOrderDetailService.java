@@ -173,7 +173,7 @@ public class ProductOrderDetailService {
             booleanBuilder.and(qProductOrderDetail.saleCode.containsIgnoreCase(filter.getSaleCode()));
         }
 
-        query.where(booleanBuilder).orderBy(qProductOrderDetail.createdAt.desc());
+        query.where(booleanBuilder).orderBy(qProductOrderDetail.productOrderChild.asc());
         List<ProductOrderDetail> result = query.fetch();
         long count = query.fetchCount();
 //        Page<ProductOrderDetail> productOrderDetailPage = new PageImpl<>(result, pageable, count);
