@@ -9,6 +9,7 @@ import com.facenet.mrp.domain.mrp.*;
 import com.facenet.mrp.repository.mrp.LeadTimeRepository;
 import com.facenet.mrp.repository.mrp.MqqPriceRepository;
 import com.facenet.mrp.repository.mrp.ParamRepository;
+import com.facenet.mrp.repository.mrp.ProductOrderRepository;
 import com.facenet.mrp.service.dto.KeyDictionaryDTO;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.model.MqqPriceExcelModel;
@@ -45,12 +46,15 @@ public class XlsxExcelHandle {
     private final MqqPriceRepository mqqPriceRepository;
     private final LeadTimeRepository leadTimeRepository;
     private final ParamRepository paramRepository;
+    private final ProductOrderRepository productOrderRepository;
 
     public XlsxExcelHandle(MqqPriceRepository mqqPriceRepository, LeadTimeRepository leadTimeRepository,
-                           ParamRepository paramRepository) {
+                           ParamRepository paramRepository,
+                           ProductOrderRepository productOrderRepository) {
         this.mqqPriceRepository = mqqPriceRepository;
         this.leadTimeRepository = leadTimeRepository;
         this.paramRepository = paramRepository;
+        this.productOrderRepository = productOrderRepository;
     }
 
     private static XSSFCellStyle createStyleForTitle(XSSFWorkbook workbook) {
@@ -211,7 +215,7 @@ public class XlsxExcelHandle {
         // Lấy ra sheet đầu tiên từ workbook
         XSSFSheet sheet = workbook.getSheetAt(0);
 
-
+        int rowIndex = 1;
         // Lấy ra Iterator cho tất cả các dòng của sheet hiện tại.
         boolean skipFirst = false;
         ArrayList<ProductOrder> result;
@@ -221,7 +225,7 @@ public class XlsxExcelHandle {
             // Lấy Iterator cho tất cả các cell của dòng hiện tại.
             Iterator<Cell> cellIterator = row.cellIterator();
             if(skipFirst) {
-                emp = excelToDonHang(row);
+                emp = excelToDonHang(row, rowIndex);
                 if(emp == null){
                     continue;
                 }
@@ -232,6 +236,7 @@ public class XlsxExcelHandle {
                     result.add(emp);
                     listHashMap.put(emp.getProductOrderCode(),result);
                 }
+                rowIndex++;
             } else skipFirst = true;
 
         }
@@ -293,33 +298,30 @@ public class XlsxExcelHandle {
         return null;
     }
 
-    public ProductOrder excelToDonHang(Row row) throws ParseException {
+    public ProductOrder excelToDonHang(Row row, int rowIndex) throws ParseException {
         //TODO: optimize code
         ExcelUtils.validateRow(row, 0, 11);
         ExcelUtils.validateRow(row, 15, 18);
 
         ProductOrder donHang = new ProductOrder();
 //        donHang.setId(UUID.randomUUID());
-        donHang.setProductOrderCode("RAL-SO-"+ getStringCellValue(row.getCell(0)));
+        Integer count = productOrderRepository.countActiveProductOrders();
+        count = count + 1;
+        String baseOrderCode = "RAL-SO-" + count;
+        donHang.setProductOrderCode(baseOrderCode);
 //        donHang.setCustomerId(ExcelUtils.getStringCellValue(row.getCell(1)));
 //        donHang.setCustomerName(ExcelUtils.getStringCellValue(row.getCell(2)));
-        donHang.setProductOrderType(getStringCellValue(row.getCell(1)));
+        donHang.setProductOrderType(getStringCellValue(row.getCell(0)));
         donHang.setType("Đơn hàng");
-        donHang.setProductCodeChild(getStringCellValue(row.getCell(2)));
-        donHang.setProductCode(getStringCellValue(row.getCell(3)));
-        donHang.setProductName(row.getCell(4).getStringCellValue().trim());
-        donHang.setBomVersion(getStringCellValue(row.getCell(5)));
-        donHang.setQuantity(ExcelUtils.getIntegerCellValue(row.getCell(6)));
-        donHang.setCustomerId(getStringCellValue(row.getCell(7)));
+        donHang.setProductCodeChild(baseOrderCode + "-" + rowIndex);
+        donHang.setProductCode(getStringCellValue(row.getCell(1)));
+        donHang.setProductName(row.getCell(2).getStringCellValue().trim());
+        donHang.setBomVersion("1.0");
+        donHang.setQuantity(ExcelUtils.getIntegerCellValue(row.getCell(3)));
+        donHang.setCustomerName(row.getCell(4) != null ? getStringCellValue(row.getCell(4)) : null);
+        donHang.setSaleCode(row.getCell(5) != null ? getStringCellValue(row.getCell(5)) : null);
 
-        if(StringUtils.isEmpty(donHang.getCustomerId())){
-            throw new CustomException("customer.id.is.empty",row.getRowNum() + "");
-        }
-
-        donHang.setCustomerName(getStringCellValue(row.getCell(8)));
-        donHang.setSaleCode(getStringCellValue(row.getCell(9)));
-
-        if(row.getCell(10) != null) {
+        if(row.getCell(6) != null) {
             try{
                 //startTime
                 donHang.setStartDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(10))));
@@ -329,7 +331,7 @@ public class XlsxExcelHandle {
             }
 
         }
-        if(row.getCell(11) != null) {
+        if(row.getCell(7) != null) {
             Date endTime;
             try{
                  endTime = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(11)));
@@ -342,22 +344,22 @@ public class XlsxExcelHandle {
             donHang.setEndDate(endTime);
         }
 
-        if (row.getCell(12).getCellType() == CellType.BLANK)
+        if (row.getCell(8).getCellType() == CellType.BLANK)
             donHang.setSupplyType("MRP");
         else
             donHang.setSupplyType(getStringCellValue(row.getCell(12)));
 
-        if (row.getCell(13).getCellType() == CellType.BLANK)
+        if (row.getCell(9).getCellType() == CellType.BLANK)
             donHang.setPriorityProduct(1);
         else
             donHang.setPriorityProduct(ExcelUtils.getIntegerCellValue(row.getCell(13)));
 
-        if (row.getCell(14).getCellType() == CellType.BLANK)
+        if (row.getCell(10).getCellType() == CellType.BLANK)
             donHang.setPriority(1);
         else
             donHang.setPriority(ExcelUtils.getIntegerCellValue(row.getCell(14)));
         donHang.setStatus(1);
-        if(row.getCell(15) != null) {
+        if(row.getCell(11) != null) {
             try{
                 donHang.setOrderDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(15))));
             }catch (Exception e){
@@ -366,7 +368,7 @@ public class XlsxExcelHandle {
         }else{
             donHang.setOrderDate(new Date());
         }
-        if (row.getCell(16) != null) {
+        if (row.getCell(12) != null) {
             Date deliverDate;
             try{
                 deliverDate = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(16)));
@@ -389,8 +391,8 @@ public class XlsxExcelHandle {
 //                throw new CustomException("object.must.be.greater.than.at", "thời gian trả hàng", "thời gian phát sinh", String.valueOf(row.getRowNum() + 1));
 //            donHang.setEndDate(endTime);
 //        }
-        donHang.setPartCode(getStringCellValue(row.getCell(17)));
-        donHang.setPartName(getStringCellValue(row.getCell(18)));
+        donHang.setPartCode(row.getCell(13) != null ? getStringCellValue(row.getCell(13)) : null);
+        donHang.setPartName(row.getCell(14) != null ? getStringCellValue(row.getCell(14)) : null);
         donHang.setCreatedAt(Instant.now());
 
 //        String po_id = donHang.getCustomerId() + "-" + new SimpleDateFormat("yyyyMMdd").format(donHang.getOrderDate());
