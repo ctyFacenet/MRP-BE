@@ -325,19 +325,19 @@ public class XlsxExcelHandle {
         if(row.getCell(6) != null) {
             try{
                 //startTime
-                donHang.setStartDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(10))));
+                donHang.setStartDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(6))));
             }catch (Exception e){
                 //startTime
-                donHang.setStartDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(10))));
+                donHang.setStartDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(6))));
             }
 
         }
         if(row.getCell(7) != null) {
             Date endTime;
             try{
-                 endTime = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(11)));
+                 endTime = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(7)));
             }catch (Exception e){
-                endTime = new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(11)));
+                endTime = new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(7)));
             }
             //endTime
             if (endTime.compareTo(donHang.getStartDate()) < 0)
@@ -348,23 +348,23 @@ public class XlsxExcelHandle {
         if (row.getCell(8).getCellType() == CellType.BLANK)
             donHang.setSupplyType("MRP");
         else
-            donHang.setSupplyType(getStringCellValue(row.getCell(12)));
+            donHang.setSupplyType(getStringCellValue(row.getCell(8)));
 
         if (row.getCell(9).getCellType() == CellType.BLANK)
             donHang.setPriorityProduct(1);
         else
-            donHang.setPriorityProduct(ExcelUtils.getIntegerCellValue(row.getCell(13)));
+            donHang.setPriorityProduct(ExcelUtils.getIntegerCellValue(row.getCell(9)));
 
         if (row.getCell(10).getCellType() == CellType.BLANK)
             donHang.setPriority(1);
         else
-            donHang.setPriority(ExcelUtils.getIntegerCellValue(row.getCell(14)));
+            donHang.setPriority(ExcelUtils.getIntegerCellValue(row.getCell(10)));
         donHang.setStatus(1);
         if(row.getCell(11) != null) {
             try{
-                donHang.setOrderDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(15))));
+                donHang.setOrderDate(new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(11))));
             }catch (Exception e){
-                donHang.setOrderDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(15))));
+                donHang.setOrderDate(new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(11))));
             }
         }else{
             donHang.setOrderDate(new Date());
@@ -372,9 +372,9 @@ public class XlsxExcelHandle {
         if (row.getCell(12) != null) {
             Date deliverDate;
             try{
-                deliverDate = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(16)));
+                deliverDate = new SimpleDateFormat("dd-MMM-yyyy").parse(String.valueOf(row.getCell(12)));
             }catch (Exception e){
-                deliverDate = new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(16)));
+                deliverDate = new SimpleDateFormat("dd/MM/yyyy").parse(String.valueOf(row.getCell(12)));
             }
             if (deliverDate.compareTo(donHang.getOrderDate()) < 0)
                 throw new CustomException("object.must.be.greater.than.other.at", "thời gian trả hàng", "thời gian đặt hàng", String.valueOf(row.getRowNum() + 1));
