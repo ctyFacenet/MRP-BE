@@ -300,8 +300,9 @@ public class XlsxExcelHandle {
 
     public ProductOrder excelToDonHang(Row row, int rowIndex) throws ParseException {
         //TODO: optimize code
-        ExcelUtils.validateRow(row, 0, 11);
-        ExcelUtils.validateRow(row, 15, 18);
+        ExcelUtils.validateRow(row, 0, 3);
+        ExcelUtils.validateRow(row, 6, 7);
+        ExcelUtils.validateRow(row, 11, 12);
 
         ProductOrder donHang = new ProductOrder();
 //        donHang.setId(UUID.randomUUID());
