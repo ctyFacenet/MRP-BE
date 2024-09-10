@@ -1,16 +1,21 @@
 package com.facenet.mrp.service;
 
 import com.facenet.mrp.domain.mrp.*;
+import com.facenet.mrp.domain.sap.CoittEntity;
+import com.facenet.mrp.domain.sap.OittEntity;
 import com.facenet.mrp.repository.mrp.ForecastOrderDetailRepository;
 import com.facenet.mrp.repository.mrp.ProductOrderDetailRepository;
 import com.facenet.mrp.repository.mrp.ProductOrderRepository;
 import com.facenet.mrp.repository.mrp.WarehouseEntityRepository;
 import com.facenet.mrp.repository.sap.CoittRepository;
+import com.facenet.mrp.repository.sap.OitmRepository;
 import com.facenet.mrp.repository.sap.OittRepository;
 import com.facenet.mrp.repository.sap.OitwRepository;
 import com.facenet.mrp.security.SecurityUtils;
+import com.facenet.mrp.service.dto.DetailBomVersionDTO;
 import com.facenet.mrp.service.dto.ForecastOrderDetailDTO;
 import com.facenet.mrp.service.dto.ProductOrderDetailDto;
+import com.facenet.mrp.service.dto.ViewBomDTO;
 import com.facenet.mrp.service.dto.mrp.CurrentInventory;
 import com.facenet.mrp.service.dto.mrp.ItemQuantity;
 import com.facenet.mrp.service.dto.mrp.MrpDetailDTO;
@@ -79,6 +84,8 @@ public class ProductOrderDetailService {
     private OittRepository oittRepository;
     @Autowired
     private WarehouseEntityRepository warehouseEntityRepository;
+    @Autowired
+    private OitmRepository oitmRepository;
 
     public ProductOrderDetailService(ForrecastOrderMapper forrecastOrderMapper, ProductOrderDetailRepository detailRepository, ProductOrderRepository productOrderRepository, OitwRepository oitwRepository, ProductOrderDetailMapper mapper, @Qualifier("mrpEntityManager") EntityManager entityManager, ForecastOrderDetailRepository forecastOrderDetailRepository, ProductOrderService productOrderService, CoittRepository coittRepository) {
         this.forrecastOrderMapper = forrecastOrderMapper;
@@ -275,12 +282,28 @@ public class ProductOrderDetailService {
         orderDetail.setIsActive((byte) 1);
         orderDetail.setStatusPlanning(1);
         orderDetail.setMaterialChildrenCount(countChildren.getQuantity().intValue());
+        String productOrderChild = generateProductOrderChild(poCode);
+        orderDetail.setProductOrderChild(productOrderChild);
         //Save product vao db
         try {
             detailRepository.save(orderDetail);
         } catch (RuntimeException e) {
             logger.error("createNewProductOrderDetail error", e);
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "internal.error");
+        }
+    }
+
+    private String generateProductOrderChild(String poCode) {
+        String baseId = poCode; // Base product order code
+        int suffix = 1;
+
+        while (true) {
+            String productOrderChild = baseId + "-" + suffix;
+            ProductOrderDetail existingDetail = detailRepository.getOneProductOrderDetailByChildCode(productOrderChild);
+            if (existingDetail == null) {
+                return productOrderChild;  // If no existing child order, return this one
+            }
+            suffix++;  // Increment suffix and try again
         }
     }
 
@@ -553,7 +576,7 @@ public class ProductOrderDetailService {
 
     private List<MrpDetailDTO> getListBtp(List<MrpDetailDTO> itemListBtp,String code, String version){
         //TODO sua lai
-        List<MrpDetailDTO> bomItems = coittRepository.getAllMrpProductBomList(code,version);
+        List<MrpDetailDTO> bomItems = oittRepository.getAllMrpProductBomList(code);
         List<String> list = new ArrayList<>();
         if (!CollectionUtils.isEmpty(bomItems)) {
             for (MrpDetailDTO bomItem : bomItems) {
@@ -866,5 +889,25 @@ public class ProductOrderDetailService {
         }
 
         return response;
+    }
+
+    public ViewBomDTO getDetailBomVersionWithProduct(String productCode, String version) throws CustomException {
+        logger.info("------Start get detail Bom with product-------");
+        if (StringUtils.isEmpty(productCode) || StringUtils.isEmpty(version)) {
+            logger.error("tham số truyền vào không đúng!");
+            throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.param");
+        }
+        OittEntity oittEntity = oittRepository.getViewBomVersionWithProduct(productCode);
+        if (oittEntity == null) {
+            return null;
+        }
+        List<DetailBomVersionDTO> listCitt = oittRepository.getDetailBomVersionWithProduct(productCode);
+        ViewBomDTO viewBomDTO = new ViewBomDTO();
+        viewBomDTO.setProductCode(oittEntity.getCode());
+        viewBomDTO.setProductName(oitmRepository.getItemName(oittEntity.getCode()));
+        viewBomDTO.setVersionBom("1.0");
+        viewBomDTO.setList(listCitt);
+        logger.info("------End get detail Bom with product-------");
+        return viewBomDTO;
     }
 }

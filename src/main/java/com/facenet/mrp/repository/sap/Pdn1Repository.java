@@ -18,6 +18,7 @@ public interface Pdn1Repository extends JpaRepository<Pdn1Entity, Pdn1EntityPK> 
 
     @Query("select new com.facenet.mrp.service.dto.mrp.VendorItemEntityDto(p.baseCard, p.itemCode) " +
         "from Pdn1Entity p " +
+        "where p.docDate >= '2024-01-01' " +
         "group by p.baseCard, p.itemCode")
     List<VendorItemEntityDto> findDistinctVendorItems();
 }

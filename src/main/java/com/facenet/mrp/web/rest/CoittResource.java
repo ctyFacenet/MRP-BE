@@ -1,6 +1,7 @@
 package com.facenet.mrp.web.rest;
 
 import com.facenet.mrp.service.CoittServiceImpl;
+import com.facenet.mrp.service.ProductOrderDetailService;
 import com.facenet.mrp.service.dto.DetailBomVersionDTO;
 import com.facenet.mrp.service.dto.ListBomDTO;
 import com.facenet.mrp.service.dto.ViewBomDTO;
@@ -10,6 +11,7 @@ import com.facenet.mrp.service.model.BomFilterInput;
 import com.facenet.mrp.service.model.RequestInput;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,8 @@ public class CoittResource {
 
     @Autowired
     private CoittServiceImpl coittService;
+    @Autowired
+    private ProductOrderDetailService productOrderDetailService;
 
     /**
      * api lấy danh sách bom verion có trạng thái active
@@ -45,7 +49,7 @@ public class CoittResource {
     public CommonResponse getDetailBomVersionWithProduct(@PathVariable String productCode, @PathVariable String version){
         CommonResponse commonResponse = new CommonResponse();
         try {
-            ViewBomDTO list = coittService.getDetailBomVersionWithProduct(productCode,version);
+            ViewBomDTO list = productOrderDetailService.getDetailBomVersionWithProduct(productCode,version);
             if(list == null){
                 return commonResponse.result("404","Không tìm thấy dữ liệu!",false);
             }

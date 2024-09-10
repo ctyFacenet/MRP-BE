@@ -151,4 +151,9 @@ public interface ProductOrderDetailRepository extends PagingAndSortingRepository
         "and p.productCode = :itemCode " +
         "and p.isActive = 1 ")
     ProductOrderDetail getProductOrderDetailByItem(@Param("mrpPoId")String mrpPoId, @Param("itemCode")String itemCode);
+
+    @Query(value = "select p from ProductOrderDetail p " +
+        "where p.productOrderChild = :productOrderChild " +
+        "and p.isActive = 1")
+    ProductOrderDetail getOneProductOrderDetailByChildCode(@Param("productOrderChild") String productOrderChild);
 }

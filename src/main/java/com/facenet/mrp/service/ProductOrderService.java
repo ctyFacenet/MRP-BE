@@ -459,8 +459,11 @@ public class ProductOrderService {
             if (productOrder.getProductOrderDetails() == null || productOrder.getProductOrderDetails().isEmpty()) {
                 throw new CustomException("order.detail.is.must.not.empty");
             }
-            String po_id = "RAL-SO-" + productOrder.getProductOrderCode();
+            Integer count = productOrderRepository.countActiveProductOrders();
+            count = count + 1;
+            String po_id = "RAL-SO-" + count;
             logger.info("po_id = {} ", po_id);
+
             ProductOrder tmpOrder = productOrderRepository.findProductOrderByProductOrderCodeAndIsActive(po_id, (byte) 1);
             if (tmpOrder != null) {
                 logger.info(" poId " + po_id + " is exists in database");
@@ -503,6 +506,9 @@ public class ProductOrderService {
                 }
                 productCodes.add(productCodeVersion);
 
+                String productOrderChild = generateProductOrderChild(po_id);
+                product.setProductOrderChild(productOrderChild);
+
                 //query lấy children của sản phẩm TP
                 detailDTOS = oittRepository.getAllMrpProductBom(product.getProductCode());
                 log.info("children của sản phẩm: {}", detailDTOS);
@@ -519,6 +525,20 @@ public class ProductOrderService {
             }
         }
         productOrderRepository.saveAll(productOrders);
+    }
+
+    private String generateProductOrderChild(String po_id) {
+        String baseId = po_id; // Base product order code
+        int suffix = 1;
+
+        while (true) {
+            String productOrderChild = baseId + "-" + suffix;
+            ProductOrder existingOrder = productOrderRepository.findProductOrderByProductOrderCodeAndIsActive(productOrderChild, (byte) 1);
+            if (existingOrder == null) {
+                return productOrderChild;  // If no existing child order, return this one
+            }
+            suffix++;  // Increment suffix and try again
+        }
     }
 
     //hàm gọi api planning và đồng bộ

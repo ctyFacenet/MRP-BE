@@ -1,6 +1,8 @@
 package com.facenet.mrp.repository.sap;
 
+import com.facenet.mrp.domain.sap.CoittEntity;
 import com.facenet.mrp.domain.sap.OittEntity;
+import com.facenet.mrp.service.dto.DetailBomVersionDTO;
 import com.facenet.mrp.service.dto.mrp.CloneBomDTO;
 import com.facenet.mrp.service.dto.mrp.MrpDetailDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,4 +42,13 @@ public interface OittRepository extends JpaRepository<OittEntity, Integer> {
     List<MrpDetailDTO> getAllMrpProductBom(
         @Param("itemCode")String itemCode
     );
+
+    @Query(value = "select b from OittEntity b where b.uStatus = '0' and b.code = :productCode")
+    OittEntity getViewBomVersionWithProduct(@Param("productCode") String productCode);
+
+    @Query(value = "select new com.facenet.mrp.service.dto.DetailBomVersionDTO(a.code,oi.itemName, a.warehouse) " +
+        "from Itt1Entity a join OittEntity b on a.father = b.code " +
+        "join OitmEntity oi on oi.itemCode = a.code " +
+        "where b.uStatus = '0' and b.code = :productCode")
+    List<DetailBomVersionDTO> getDetailBomVersionWithProduct(@Param("productCode") String productCode);
 }
