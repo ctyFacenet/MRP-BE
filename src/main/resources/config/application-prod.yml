@@ -206,14 +206,32 @@ keycloak_planning:
   password: 123321
 planning:
   api:
-    #ip con thật rd
-    syncPo: http://192.168.68.91:8080/services/api/order/sync-product-order-mrp/
-    getWO: http://192.168.68.91:3000/rest/entities/PlanningWorkOrder/search?
-    getListWo: http://192.168.68.91:8080/services/api/workorder/find-by-ProductOrder/
-    createWo: http://192.168.68.91:8080/services/api/workorder/createWoMrp
-    updatePo: http://192.168.68.91:8080/services/api/order/update-product-order-mrp/
-    deletePo: http://192.168.68.91:8080/services/api/order/delete-product-order-mrp/
-    syncItemPo: http://192.168.68.91:8080/services/api/order/sync-item-order-mrp
+#    #ip con thật rd
+#    syncPo: http://192.168.68.91:8080/services/api/order/sync-product-order-mrp/
+#    getWO: http://192.168.68.91:3000/rest/entities/PlanningWorkOrder/search?
+#    getListWo: http://192.168.68.91:8080/services/api/workorder/find-by-ProductOrder/
+#    createWo: http://192.168.68.91:8080/services/api/workorder/createWoMrp
+#    updatePo: http://192.168.68.91:8080/services/api/order/update-product-order-mrp/
+#    deletePo: http://192.168.68.91:8080/services/api/order/delete-product-order-mrp/
+#    syncItemPo: http://192.168.68.91:8080/services/api/order/sync-item-order-mrp
+
+#    #ip con test
+#    syncPo: http://192.168.68.87:7999/services/api/order/sync-product-order-mrp/
+#    getWO: http://192.168.68.87:3300/rest/entities/PlanningWorkOrder/search?
+#    getListWo: http://192.168.68.87:7999/services/api/workorder/find-by-ProductOrder/
+#    createWo: http://192.168.68.87:7999/services/api/workorder/createWoMrp
+#    updatePo: http://192.168.68.87:7999/services/api/order/update-product-order-mrp/
+#    deletePo: http://192.168.68.87:7999/services/api/order/delete-product-order-mrp/
+#    syncItemPo: http://192.168.68.87:7999/services/api/order/sync-item-order-mrp
+
+    #ip con stagging
+    syncPo: http://192.168.68.87:8000/services/api/order/sync-product-order-mrp/
+    getWO: http://192.168.68.87:3000/rest/entities/PlanningWorkOrder/search?
+    getListWo: http://192.168.68.87:8000/services/api/workorder/find-by-ProductOrder/
+    createWo: http://192.168.68.87:8000/services/api/workorder/createWoMrp
+    updatePo: http://192.168.68.87:8000/services/api/order/update-product-order-mrp/
+    deletePo: http://192.168.68.87:8000/services/api/order/delete-product-order-mrp/
+    syncItemPo: http://192.168.68.87:8000/services/api/order/sync-item-order-mrp
 
 keycloak_report:
   baseUrl: http://192.168.68.90:8080/auth
