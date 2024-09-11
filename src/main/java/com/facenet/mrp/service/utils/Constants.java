@@ -119,6 +119,7 @@ public class Constants {
         int Phu_tung_nhua = 1;
         int Hoa_an = 2;
         int Cty = 3;
+        int Tp = 4;
     }
 
     public interface MrpAnalysis {
