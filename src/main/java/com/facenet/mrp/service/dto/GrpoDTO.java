@@ -227,12 +227,10 @@ public class GrpoDTO {
 
     @QueryProjection
     public GrpoDTO(String currency,String receiptId,
-                   String soId,
                    String poId,
                    String prId,
                    String grpoId,
                    String productId,
-                   String mrpCode,
                    String description,
                    String vendorCode,
                    String vendor,
@@ -243,12 +241,10 @@ public class GrpoDTO {
                    Integer lineNumber) {
         this.currency = currency;
         this.receiptId = receiptId;
-        this.soId = soId;
         this.poId = poId;
         this.prId = prId;
         this.grpoId = grpoId;
         this.productId = productId;
-        this.mrpCode = mrpCode;
         this.description = description;
         this.vendorCode = vendorCode;
         this.vendor = vendor;
