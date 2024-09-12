@@ -1,5 +1,5 @@
 pipeline {
-    agent {label "MRP_DEV"}
+    agent {label "MRP_XPRD"}
 
     environment {
         SPRING_PROFILES_ACTIVE = 'dev'
