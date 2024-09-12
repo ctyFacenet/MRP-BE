@@ -8,8 +8,8 @@ pipeline {
     stages{
         stage("Check old image") {
             steps {
-                sh 'docker rm -f mks-mrp-be-xp|| echo "this container does not exist" '
-                sh 'docker image rm -f mks-mrp-be-xp || echo "this image dose not exist" '
+                sh 'docker rm -f mrp-be-xp|| echo "this container does not exist" '
+                sh 'docker image rm -f mrp-be-xp || echo "this image dose not exist" '
             }
         }
         stage('Clean') {
@@ -31,7 +31,7 @@ pipeline {
         }
         stage('Build and Run') {
             steps {
-                sh 'docker compose -f docker-compose-dev.yml up -d --build'
+                sh 'docker compose -f docker-compose-prod.yml up -d --build'
             }
         }
     }
