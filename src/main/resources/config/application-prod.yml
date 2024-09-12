@@ -1,30 +1,122 @@
-# ===================================================================
-# Spring Boot configuration for the "prod" profile.
+## ===================================================================
+## Standard Spring Boot properties.
+## Full reference is available at:
+## http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+## ===================================================================
 #
-# This configuration overrides the application.yml file.
+#logging:
+#  level:
+#    ROOT: INFO
+#    tech.jhipster: INFO
+#    com.facenet.mrp: INFO
 #
-# More information on profiles: https://www.jhipster.tech/profiles/
-# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
-# ===================================================================
-
-# ===================================================================
-# Standard Spring Boot properties.
-# Full reference is available at:
-# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
-# ===================================================================
-
+#management:
+#  metrics:
+#    export:
+#      prometheus:
+#        enabled: false
+#
+#spring:
+#  kafka:
+#    producer:
+#      bootstrap-servers: 192.168.68.76:9092
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+#  devtools:
+#    restart:
+#      enabled: false
+#    livereload:
+#      enabled: false
+#  datasource:
+#    primary:
+#      type: com.zaxxer.hikari.HikariDataSource
+#      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
+#      username: root
+#      password: Facenet@123
+#      hikari:
+#        poolName: Hikari
+#        auto-commit: false
+#        max-lifetime: 300000
+#        data-source-properties:
+#          cachePrepStmts: true
+#          prepStmtCacheSize: 250
+#          prepStmtCacheSqlLimit: 2048
+#          useServerPrepStmts: true
+#    sap:
+#      type: com.zaxxer.hikari.HikariDataSource
+#      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Test-connectPana;integratedSecurity=true;encrypt=true;
+#      username: read
+#      password: 2022@mesrd
+#  jpa:
+#    properties:
+#      enable_lazy_load_no_trans: true
+#  # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
+#  liquibase:
+#    contexts: prod
+#    enabled: off
+#  thymeleaf:
+#    cache: true
+#
+## ===================================================================
+## To enable TLS in production, generate a certificate using:
+## keytool -genkey -alias mrpservice -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650
+##
+## You can also use Let's Encrypt:
+## See details in topic "Create a Java Keystore (.JKS) from Let's Encrypt Certificates" on https://maximilian-boehm.com/en-gb/blog
+##
+## Then, modify the server.ssl properties so your "server" configuration looks like:
+##
+## server:
+##   port: 443
+##   ssl:
+##     key-store: classpath:config/tls/keystore.p12
+##     key-store-password: password
+##     key-store-type: PKCS12
+##     key-alias: selfsigned
+##     # The ciphers suite enforce the security by deactivating some old and deprecated SSL cipher, this list was tested against SSL Labs (https://www.ssllabs.com/ssltest/)
+##     ciphers: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 ,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,TLS_RSA_WITH_CAMELLIA_128_CBC_SHA
+## ===================================================================
+#server:
+#  port: 8312
+#  shutdown: graceful # see https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-graceful-shutdown
+#  compression:
+#    enabled: true
+#    mime-types: text/html,text/xml,text/plain,text/css,application/javascript,application/json,image/svg+xml
+#    min-response-size: 1024
+#
+## ===================================================================
+## JHipster specific properties
+##
+## Full reference is available at: https://www.jhipster.tech/common-application-properties/
+## ===================================================================
+#
+#jhipster:
+#  http:
+#    cache: # Used by the CachingHttpHeadersFilter
+#      timeToLiveInDays: 1461
+#  cors:
+#    # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
+#    allowed-origins: 'http://192.168.68.87:4200,http://192.168.68.87:4000,http://192.168.68.96:4200'
+#    # Enable CORS when running in GitHub Codespaces
+#    allowed-methods: '*'
+#    allowed-headers: '*'
+#    exposed-headers: 'Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params'
+#    allow-credentials: true
+#    max-age: 1800
+#  logging:
+#    use-json-format: false # By default, logs are not in Json format
+#    logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
+#      enabled: false
+#      host: localhost
+#      port: 5000
+#      queue-size: 512
+#####################################################################
 logging:
   level:
-    ROOT: INFO
-    tech.jhipster: INFO
-    com.facenet.mrp: INFO
-
-management:
-  metrics:
-    export:
-      prometheus:
-        enabled: false
-
+    ROOT: DEBUG
+    tech.jhipster: DEBUG
+    org.hibernate.SQL: DEBUG
+    com.facenet.mrp: DEBUG
 spring:
   kafka:
     producer:
@@ -33,19 +125,28 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
   devtools:
     restart:
-      enabled: false
+      enabled: true
+      additional-exclude: static/**
     livereload:
-      enabled: false
+      enabled: false # we use Webpack dev server + BrowserSync for livereload
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
+      indent-output: true
+    time-zone: Europe/London
   datasource:
     primary:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning?useLegacyDatetimeCode=false&serverTimezone=UTC
+      jdbc-url: jdbc:mariadb://222.252.25.37:3307/material_requirements_planning?useLegacyDatetimeCode=false
       username: root
-      password: Facenet@123
+      password: 171ca9e4eb616be4a8007db9fa1da1091480f211e39c2ed8cc56cd6d6d25b09a
+      #      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning_test?useLegacyDatetimeCode=false&serverTimezone=UTC
+      #      username: root
+      #      password: Facenet@2023
       hikari:
         poolName: Hikari
         auto-commit: false
-        max-lifetime: 300000
+        max-lifetime: 1800000
         data-source-properties:
           cachePrepStmts: true
           prepStmtCacheSize: 250
@@ -53,52 +154,53 @@ spring:
           useServerPrepStmts: true
     sap:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Test-connectPana;integratedSecurity=true;encrypt=true;
-      username: read
-      password: 2022@mesrd
+      jdbc-url: jdbc:sqlserver://222.252.25.37:1433;database=XPN_UAT_THANG3;encrypt=true;trustServerCertificate=true;
+      username: sa
+      password: facenet@70d61c662aab8f49178f33794acac0deb3298c26b1ccb78c1c294ab2889072c4
+  #      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Thang4;encrypt=true;trustServerCertificate=true;
+  #      username: read
+  #      password: 2022@mesrd
+  security:
+    oauth2:
+      client:
+        provider:
+          oidc:
+            issuer-uri: https://sso.xfactory.vn/auth/realms/QLSX
+        #            issuer-uri: http://192.168.68.90:8080/auth/realms/QLSX
+        registration:
+          oidc:
+            client-id: mrp_dev
+            client-secret: mrp_dev
+            scope: openid, profile, email, offline_access # last one for refresh tokens
   jpa:
+    show-sql: true
     properties:
+      hibernate:
+        generate_statistics: true
+        order_inserts: true
+        jdbc:
+          batch_size: 100
+        order_updates: true
       enable_lazy_load_no_trans: true
-  # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
+
   liquibase:
-    contexts: prod
+    # Remove 'faker' if you do not want the sample data to be loaded automatically
+    contexts: dev, faker
     enabled: off
+  messages:
+    cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
-    cache: true
-
-# ===================================================================
-# To enable TLS in production, generate a certificate using:
-# keytool -genkey -alias mrpservice -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650
-#
-# You can also use Let's Encrypt:
-# See details in topic "Create a Java Keystore (.JKS) from Let's Encrypt Certificates" on https://maximilian-boehm.com/en-gb/blog
-#
-# Then, modify the server.ssl properties so your "server" configuration looks like:
-#
-
-
+    cache: false
 server:
-  port: 8312
-  shutdown: graceful # see https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-graceful-shutdown
-  compression:
-    enabled: true
-    mime-types: text/html,text/xml,text/plain,text/css,application/javascript,application/json,image/svg+xml
-    min-response-size: 1024
-
-# ===================================================================
-# JHipster specific properties
-#
-# Full reference is available at: https://www.jhipster.tech/common-application-properties/
-# ===================================================================
+  port: 8313
 
 jhipster:
-  http:
-    cache: # Used by the CachingHttpHeadersFilter
-      timeToLiveInDays: 1461
+  # CORS is only enabled by default with the "dev" profile
   cors:
     # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
-    allowed-origins: 'http://192.168.68.87:4200,http://192.168.68.87:4000,http://192.168.68.96:4200'
+    allowed-origins: 'http://192.168.68.87:4000,http://localhost:8100,https://localhost:8100,http://localhost:9000,https://localhost:9000,http://222.252.25.37:8312,http://localhost:4200,http://222.252.25.37:4200,http://192.168.1.29:4000,http://192.168.1.29:4201,http://192.168.68.96:4200,http://192.168.1.25:8313,http://192.168.1.25:4600, http://192.168.1.25:5002, http://192.168.1.25:5001, http://192.168.1.25:5000, http://192.168.1.25:4601, http://localhost:4601, http://222.252.25.37:4600'
     # Enable CORS when running in GitHub Codespaces
+    allowed-origin-patterns: 'https://*.githubpreview.dev'
     allowed-methods: '*'
     allowed-headers: '*'
     exposed-headers: 'Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params'
@@ -111,27 +213,41 @@ jhipster:
       host: localhost
       port: 5000
       queue-size: 512
-# ===================================================================
-# Application specific properties
-# Add your own application properties here, see the ApplicationProperties class
-# to have type-safe configuration, like in the JHipsterProperties above
-#
-# More documentation is available at:
-# https://www.jhipster.tech/common-application-properties/
-# ===================================================================
 
+keycloak:
+  auth-server-url: https://sso.xfactory.vn/auth
+  #  auth-server-url: http://192.168.68.90:8080/auth
+  realm: master
+  resource: admin-cli
+  credentials:
+    secret: mrp_backend
+    username: admin
+    password: 'Facenet@2023'
+  #    password: '123321'
+  approval:
+    realm: QLSX
+    role: MRP_QL
 
 keycloak_planning:
-  baseUrl: http://192.168.68.90:8080/auth
+  baseUrl: https://sso.xfactory.vn/auth
   realm: QLSX
   clientId: planning_backend
-  clientSecret: AMmEOEbqtPIskkErXNx94vt8c0bvF7Jd
-  username: admin
-  password: 123321
-# application: config planning prod
+  clientSecret: E1c4gANY6yIjQg0M38fiFdwlWagFfX6M
+  username: aps_demo
+  password: 123456
 planning:
   api:
-    syncPo: http://192.168.68.87:8080/services/api/order/sync-product-order-mrp
-    getWO: http://192.168.68.87:3000/rest/entities/PlanningWorkOrder/search?
-    getListWo: http://192.168.68.87:8080/services/api/workorder/find-by-ProductOrder/
-    createWo: http://192.168.68.87:8080/services/api/workorder/createWoMrp
+    syncPo: http://apsdev.mkvision.xfactory.vn/services/api/order/sync-product-order-mrp/
+    getWO: http://apsdev.mkvision.xfactory.vn/rest/entities/PlanningWorkOrder/search?
+    getListWo: http://apsdev.mkvision.xfactory.vn/services/api/workorder/find-by-ProductOrder/
+    createWo: http://apsdev.mkvision.xfactory.vn/services/api/workorder/createWoMrp
+    updatePo: http://apsdev.mkvision.xfactory.vn/services/api/order/update-product-order-mrp/
+    deletePo: http://apsdev.mkvision.xfactory.vn/services/api/order/delete-product-order-mrp/{productOrderCode}/productCode={productCode}/type={type}
+    syncItemPo: http://apsdev.mkvision.xfactory.vn/services/api/order/sync-item-order-mrp
+keycloak_report:
+  baseUrl: https://sso.xfactory.vn/auth
+  realm: QLSX
+  clientId: RangDong_Report
+  clientSecret: m5FFeRXECUxzNSEBwgQ3rdmy3NwoIyDn
+  username: admin
+  password: 123321
