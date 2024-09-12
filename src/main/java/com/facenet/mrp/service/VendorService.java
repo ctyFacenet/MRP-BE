@@ -47,9 +47,6 @@ public class VendorService {
     private VendorEntityMapper VendorEntityMapper;
 
     @Autowired
-    private ListSaleService listSaleService;
-
-    @Autowired
     @Qualifier("sapEntityManager")
     private EntityManager entityManagerSap;
 
@@ -294,5 +291,7 @@ public class VendorService {
         // Lưu dữ liệu vào database
         itemRepository.saveAll(itemsToSave);
     }
+
+
 
 }

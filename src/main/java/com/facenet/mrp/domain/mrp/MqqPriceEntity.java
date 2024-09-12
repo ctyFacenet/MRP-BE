@@ -82,6 +82,9 @@ public class MqqPriceEntity {
     @LastModifiedBy
     private String updatedBy;
 
+    @Column(name = "sap")
+    private Integer sap;
+
     @Transient
     private Integer leadTime;
 
@@ -263,5 +266,21 @@ public class MqqPriceEntity {
 
     public void setVendorItemEntity(VendorItemEntity vendorItemEntity) {
         this.vendorItemEntity = vendorItemEntity;
+    }
+
+    public Boolean getPromotion() {
+        return isPromotion;
+    }
+
+    public void setPromotion(Boolean promotion) {
+        isPromotion = promotion;
+    }
+
+    public Integer getSap() {
+        return sap;
+    }
+
+    public void setSap(Integer sap) {
+        this.sap = sap;
     }
 }
