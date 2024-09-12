@@ -122,5 +122,6 @@ public interface MqqPriceRepository extends PagingAndSortingRepository<MqqPriceE
         "and ((mq.timeStart = (SELECT MAX(timeStart) FROM MqqPriceEntity WHERE timeStart <= CURDATE() and vendorCode = mq.vendorCode and itemCode = mq.itemCode)))")
     List<MoqDTO> findMoqMinAndLeadTimeByItemCodeAndVendorCode(String vendorCode, String itemCode);
 
+    List<MqqPriceEntity> findBySap(Integer sap);
 }
 

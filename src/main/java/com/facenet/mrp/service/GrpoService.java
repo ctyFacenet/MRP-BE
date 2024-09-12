@@ -48,12 +48,12 @@ public class GrpoService {
                 new QGrpoDTO(
                     qPdn1Entity.currency,
                     qOpdnEntity.uInvCode,
-                    qPdn1Entity.uSo,
+//                    qPdn1Entity.uSo,
                     qPor1Entity.docEntry.stringValue().trim(),
                     qPrq1Entity.docEntry.stringValue().trim(),
                     qPdn1Entity.docEntry.stringValue().trim(),
                     qPdn1Entity.itemCode,
-                    qPdn1Entity.uMCode,
+//                    qPdn1Entity.uMCode,
                     qPdn1Entity.dscription,
                     qOpdnEntity.cardCode,
                     qOpdnEntity.cardName,
@@ -110,12 +110,12 @@ public class GrpoService {
             booleanBuilder.and(qOpdnEntity.cardName.containsIgnoreCase(filter.getVendor()));
         }
 
-        if (!StringUtils.isEmpty(filter.getSoId())) {
-            booleanBuilder.and(qPdn1Entity.uSo.containsIgnoreCase(filter.getSoId()));
-        }
-        if (!StringUtils.isEmpty(filter.getMrpCode())) {
-            booleanBuilder.and(qPdn1Entity.uMCode.containsIgnoreCase(filter.getMrpCode()));
-        }
+//        if (!StringUtils.isEmpty(filter.getSoId())) {
+//            booleanBuilder.and(qPdn1Entity.uSo.containsIgnoreCase(filter.getSoId()));
+//        }
+//        if (!StringUtils.isEmpty(filter.getMrpCode())) {
+//            booleanBuilder.and(qPdn1Entity.uMCode.containsIgnoreCase(filter.getMrpCode()));
+//        }
         if (!StringUtils.isEmpty(filter.getReceiptId())) {
             booleanBuilder.and(qOpdnEntity.uInvCode.containsIgnoreCase(filter.getReceiptId()));
         }

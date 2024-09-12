@@ -21,4 +21,8 @@ public interface Pdn1Repository extends JpaRepository<Pdn1Entity, Pdn1EntityPK> 
         "where p.docDate >= '2024-01-01' " +
         "group by p.baseCard, p.itemCode")
     List<VendorItemEntityDto> findDistinctVendorItems();
+
+    @Query("SELECT p FROM Pdn1Entity p WHERE p.itemCode = :itemCode AND p.baseCard = :baseCard ORDER BY p.docDate DESC")
+    List<Pdn1Entity> findTop3ByItemCodeAndBaseCardOrderByDocDateDesc(@Param("itemCode") String itemCode,
+                                                                     @Param("baseCard") String baseCard);
 }
