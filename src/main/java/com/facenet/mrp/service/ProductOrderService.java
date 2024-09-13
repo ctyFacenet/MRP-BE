@@ -497,6 +497,7 @@ public class ProductOrderService {
             productOrder.setType("Đơn hàng");
             // Check trùng mã sản phẩm
             // Lay tung san pham de tim so luong NVl ben trong theo bomversion
+            int suffix = 1;
             for (ProductOrderDetail product : productOrder.getProductOrderDetails()) {
                 countChildren = new ItemQuantity();
                 countChildren.setQuantity(0.0);
@@ -505,10 +506,10 @@ public class ProductOrderService {
                     throw new CustomException("product.code.duplicate", product.getProductCode());
                 }
                 productCodes.add(productCodeVersion);
-
-                String productOrderChild = generateProductOrderChild(po_id);
+                String productOrderChild = po_id + "-" + suffix;
+//                String productOrderChild = generateProductOrderChild(po_id);
                 product.setProductOrderChild(productOrderChild);
-
+                suffix++;
                 //query lấy children của sản phẩm TP
                 detailDTOS = oittRepository.getAllMrpProductBom(product.getProductCode());
                 log.info("children của sản phẩm: {}", detailDTOS);
