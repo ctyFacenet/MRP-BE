@@ -137,9 +137,9 @@ spring:
   datasource:
     primary:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:mariadb://222.252.25.37:3307/material_requirements_planning?useLegacyDatetimeCode=false
-      username: root
-      password: 171ca9e4eb616be4a8007db9fa1da1091480f211e39c2ed8cc56cd6d6d25b09a
+      jdbc-url: jdbc:mariadb://10.162.70.88:3307/material_requirements_planning?useLegacyDatetimeCode=false
+      username: admin
+      password: Facenet@2024
       #      jdbc-url: jdbc:mariadb://192.168.68.96:3307/material_requirements_planning_test?useLegacyDatetimeCode=false&serverTimezone=UTC
       #      username: root
       #      password: Facenet@2023
@@ -165,7 +165,7 @@ spring:
       client:
         provider:
           oidc:
-            issuer-uri: https://sso.xfactory.vn/auth/realms/QLSX
+            issuer-uri: http://10.162.70.88:8080/auth/realms/QLSX
         #            issuer-uri: http://192.168.68.90:8080/auth/realms/QLSX
         registration:
           oidc:
@@ -215,7 +215,7 @@ jhipster:
       queue-size: 512
 
 keycloak:
-  auth-server-url: https://sso.xfactory.vn/auth
+  auth-server-url: http://10.162.70.88:8080/auth
   #  auth-server-url: http://192.168.68.90:8080/auth
   realm: master
   resource: admin-cli
@@ -229,7 +229,7 @@ keycloak:
     role: MRP_QL
 
 keycloak_planning:
-  baseUrl: https://sso.xfactory.vn/auth
+  baseUrl: http://10.162.70.88:8080/auth
   realm: QLSX
   clientId: planning_backend
   clientSecret: E1c4gANY6yIjQg0M38fiFdwlWagFfX6M
@@ -245,7 +245,7 @@ planning:
     deletePo: http://apsdev.mkvision.xfactory.vn/services/api/order/delete-product-order-mrp/{productOrderCode}/productCode={productCode}/type={type}
     syncItemPo: http://apsdev.mkvision.xfactory.vn/services/api/order/sync-item-order-mrp
 keycloak_report:
-  baseUrl: https://sso.xfactory.vn/auth
+  baseUrl: http://10.162.70.88:8080/auth
   realm: QLSX
   clientId: RangDong_Report
   clientSecret: m5FFeRXECUxzNSEBwgQ3rdmy3NwoIyDn
