@@ -51,7 +51,7 @@ public class MaterialOnOrderSummaryJob {
     @Autowired
     private PrPoGrpoCache prPoGrpoCache;
 
-//    @Scheduled(fixedDelay = 30 * 60 * 1000)
+    @Scheduled(fixedDelay = 30 * 60 * 1000)
     public void poOnOrderSummary() {
         logger.info("------ start run PO_OnOrderSummary job ------");
         PoFilter poFilter = new PoFilter();
