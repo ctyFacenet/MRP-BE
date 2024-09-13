@@ -99,6 +99,6 @@ public interface ProductOrderRepository  extends PagingAndSortingRepository<Prod
     @Query("select p from ProductOrder p where p.isActive = 1 and p.deliverDate > :date")
     List<ProductOrder> getAllProductOrder(@Param("date") Date date);
 
-    @Query(value = "SELECT COUNT(p) FROM ProductOrder p WHERE p.isActive = 1")
+    @Query(value = "SELECT COUNT(p) FROM ProductOrder p")
     Integer countActiveProductOrders();
 }
