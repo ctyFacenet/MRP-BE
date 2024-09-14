@@ -8,8 +8,8 @@ pipeline {
     stages{
         stage("Check old image") {
             steps {
-                sh 'docker rm -f mks-mrp-be-xp|| echo "this container does not exist" '
-                sh 'docker image rm -f mks-mrp-be-xp || echo "this image dose not exist" '
+                sh 'docker rm -f dev-mrp-be-xp|| echo "this container does not exist" '
+                sh 'docker image rm -f dev-mrp-be-xp || echo "this image dose not exist" '
             }
         }
         stage('Clean') {
