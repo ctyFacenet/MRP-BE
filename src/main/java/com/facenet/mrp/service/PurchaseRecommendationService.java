@@ -267,6 +267,7 @@ public class PurchaseRecommendationService {
             boolean isValidItem = false;
             for (DetailItemSyntheticDTO analysisResult : item.getDetailData()) {
                 if (analysisResult.getOriginQuantity() != 0) {
+                    log.info("Đã vào đây");
                     isValidItem = true;
                     break;
                 }
