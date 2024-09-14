@@ -288,7 +288,18 @@ public class PurchaseRecommendationService {
 
             choosePrice(prde, moqPrice.get(item.getItemCode()));
 
-            prde = purchaseRecommendationDetailRepository.save(prde);
+            // Lưu đối tượng PurchaseRecommendationDetailEntity và kiểm tra kết quả
+            try {
+                prde = purchaseRecommendationDetailRepository.save(prde);
+
+                // Nếu lưu thành công, log thông tin chi tiết
+                log.info("Saved PurchaseRecommendationDetailEntity: [ItemCode: {}, Quantity: {}, Status: {}, RequiredQuantity: {}]",
+                    prde.getItemCode(), prde.getQuantity(), prde.getStatus(), prde.getRequiredQuantity());
+            } catch (Exception e) {
+                // Log thông tin lỗi nếu xảy ra ngoại lệ
+                log.error("Failed to save PurchaseRecommendationDetailEntity for ItemCode: {}, Error: {}", prde.getItemCode(), e.getMessage());
+                throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "error.save.purchaseRecommendationDetail", String.valueOf(e));
+            }
 
             if (item.getRequestNumber() == 0) {
                 planEntities.add(planMapper.toEntity(prde, item.getDetailData().get(1), Constants.PurchaseRecommendationPlan.CHECKED));
