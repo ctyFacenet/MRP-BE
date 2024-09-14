@@ -7,7 +7,7 @@ services:
     image: dev-mrp-be-xp
     restart: always
     ports:
-      - '8314:8313'
+      - '8313:8313'
     volumes:
       - /home/ubuntu/uploads:/rd/uploads
       - /home/ubuntu/mrp/be/static:/home/ubuntu/mrp/be/static
