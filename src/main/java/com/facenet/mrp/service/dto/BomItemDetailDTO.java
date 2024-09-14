@@ -64,7 +64,13 @@ public class BomItemDetailDTO {
     }
 
     public String getMaterialGroup() {
-        return materialGroup == 101 ? "BTP" : "NVL";
+        if (materialGroup == 104) {
+            return "TP";
+        } else if (materialGroup == 101) {
+            return "BTP";
+        } else {
+            return "NVL";
+        }
     }
 
     @JsonIgnore
