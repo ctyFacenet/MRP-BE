@@ -607,7 +607,7 @@ public class ProductOrderService {
             donHang.setStatus("active");
             donHang.setEmployeeCode(productOrderDetails.getSaleCode());//nv sale
             donHang.setItemPriority(productOrderDetails.getPriority());
-            donHang.setCreatedDate(Date.from(productOrder.getCreatedAt()));
+            donHang.setCreatedDate(Date.from(productOrderDetails.getCreatedAt()));
             donHang.setClassify(1);
 //            donHang.setCreatedDate(new Date());
             donHang.setOriginal("MRP");
