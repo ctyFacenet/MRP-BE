@@ -169,8 +169,8 @@ spring:
         #            issuer-uri: http://192.168.68.90:8080/auth/realms/QLSX
         registration:
           oidc:
-            client-id: mrp_dev
-            client-secret: mrp_dev
+            client-id: mrp_backend
+            client-secret: mrp_backend
             scope: openid, profile, email, offline_access # last one for refresh tokens
   jpa:
     show-sql: true
