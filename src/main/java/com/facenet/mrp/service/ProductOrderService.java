@@ -607,6 +607,7 @@ public class ProductOrderService {
             donHang.setStatus("active");
             donHang.setEmployeeCode(productOrderDetails.getSaleCode());//nv sale
             donHang.setItemPriority(productOrderDetails.getPriority());
+            donHang.setCreatedDate(Date.from(productOrder.getCreatedAt()));
             donHang.setClassify(1);
 //            donHang.setCreatedDate(new Date());
             donHang.setOriginal("MRP");
@@ -667,6 +668,7 @@ public class ProductOrderService {
             donHang.setStatus("active");
             donHang.setEmployeeCode(productOrder.getSaleCode());//nv sale
             donHang.setItemPriority(productOrder.getPriorityProduct());
+            donHang.setCreatedDate(Date.from(productOrder.getCreatedAt()));
             donHang.setClassify(1);
             donHang.setOriginal("MRP");
             if (productOrder.getOrderDate() != null) {

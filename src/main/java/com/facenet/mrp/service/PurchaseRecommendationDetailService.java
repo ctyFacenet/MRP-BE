@@ -332,11 +332,11 @@ public class PurchaseRecommendationDetailService {
                 HttpEntity<PurchaseRequestApiDTO> httpEntity = new HttpEntity<>(purchaseRequestDTO);
                 String sapApiUrl = configRepository.getValueByName("SAP_PR_API").orElseThrow(RuntimeException::new);
                 try {
-//                    restTemplate.exchange(
-//                        sapApiUrl,
-//                        HttpMethod.POST,
-//                        httpEntity, String.class
-//                    );
+                    restTemplate.exchange(
+                        sapApiUrl,
+                        HttpMethod.POST,
+                        httpEntity, String.class
+                    );
                 } catch (Exception e) {
                     logger.error("Send PR to SAP failed", e);
                     planRepository.approveRecommendationPlan(
