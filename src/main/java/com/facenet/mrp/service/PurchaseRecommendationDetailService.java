@@ -21,6 +21,7 @@ import com.facenet.mrp.service.model.UpdatePurchaseRecommendationForm;
 import com.facenet.mrp.service.utils.Constants;
 import com.facenet.mrp.service.utils.Utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -329,6 +330,14 @@ public class PurchaseRecommendationDetailService {
             if (!purchaseRequestDetailApiList.isEmpty()) {
                 RestTemplate restTemplate = new RestTemplate();
                 PurchaseRequestApiDTO purchaseRequestDTO = purchaseRequestApiMapper.toDTO(purchaseRecommendationEntity, purchaseRequestDetailApiList, purchaseHasRecommendationEntity);
+                // Log the object as JSON
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    String json = objectMapper.writeValueAsString(purchaseRequestDTO);
+                    logger.info("PurchaseRequestDTO: " + json);
+                } catch (JsonProcessingException e) {
+                    logger.error("Error while serializing PurchaseRequestDTO to JSON", e);
+                }
                 HttpEntity<PurchaseRequestApiDTO> httpEntity = new HttpEntity<>(purchaseRequestDTO);
                 String sapApiUrl = configRepository.getValueByName("SAP_PR_API").orElseThrow(RuntimeException::new);
                 try {
