@@ -324,10 +324,13 @@ public class PurchaseRecommendationDetailService {
 
         // Hold Item when accepting PR
         if (input.getIsApproval()) {
+            logger.info("Hold Item when accepting PR");
             PurchaseHasRecommendationEntity purchaseHasRecommendationEntity = purchaseHasRecommendationRepository.getPurchaseHasRecommendationBatch(purchaseRecommendationId, batch);
             List<PurchaseRequestDetailApiDTO> purchaseRequestDetailApiList = planRepository.getAllApprovedByItems(purchaseRecommendationEntity, Constants.PurchaseRecommendationPlan.ACCEPTED, input.getItems(), batch);
             purchaseRequestDetailApiList.removeIf(detailApiDTO -> detailApiDTO.getRequiredQuantity() <= 0.0);
+            logger.info("Before if");
             if (!purchaseRequestDetailApiList.isEmpty()) {
+                logger.info("In if");
                 RestTemplate restTemplate = new RestTemplate();
                 PurchaseRequestApiDTO purchaseRequestDTO = purchaseRequestApiMapper.toDTO(purchaseRecommendationEntity, purchaseRequestDetailApiList, purchaseHasRecommendationEntity);
                 // Log the object as JSON
@@ -341,6 +344,7 @@ public class PurchaseRecommendationDetailService {
                 HttpEntity<PurchaseRequestApiDTO> httpEntity = new HttpEntity<>(purchaseRequestDTO);
                 String sapApiUrl = configRepository.getValueByName("SAP_PR_API").orElseThrow(RuntimeException::new);
                 try {
+                    logger.info("Send to SAP");
                     restTemplate.exchange(
                         sapApiUrl,
                         HttpMethod.POST,
