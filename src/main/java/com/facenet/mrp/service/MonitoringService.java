@@ -8,6 +8,7 @@ import com.facenet.mrp.repository.sap.Prq1Repository;
 import com.facenet.mrp.service.dto.mrp.*;
 import com.facenet.mrp.service.dto.request.AddMonitoringItemRequest;
 import com.facenet.mrp.service.dto.request.AddMonitoringRequest;
+import com.facenet.mrp.service.dto.request.CreatePurchaseOrderDTO;
 import com.facenet.mrp.service.dto.request.ListMonitoringRequest;
 import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
@@ -55,6 +56,15 @@ public class MonitoringService {
 
     @Autowired
     SapOnOrderDurationDetailRepository durationDetailRepository;
+
+    @Autowired
+    PurchaseOrderRepository purchaseOrderRepository;
+
+    @Autowired
+    PurchaseOrderItemRepository purchaseOrderItemRepository;
+
+    @Autowired
+    PurchaseOrderItemProgressRepository purchaseOrderItemProgressRepository;
 
     @Autowired
     PurchaseRecommendationDetailRepository recommendationDetailRepository;
@@ -186,6 +196,68 @@ public class MonitoringService {
             .isOk(true)
             .dataCount(count)
             .data(result);
+    }
+
+    public PageResponse<List<PurchaseOrderEntity>> createPurchaseOrder(CreatePurchaseOrderDTO createPurchaseOrderDto) {
+        PurchaseOrderEntity purchaseOrder = new PurchaseOrderEntity();
+        purchaseOrder.setPoCode(createPurchaseOrderDto.getPoCode());
+        purchaseOrder.setVendorName(createPurchaseOrderDto.getVendorName());
+        purchaseOrder.setVendorCode(createPurchaseOrderDto.getVendorCode());
+        purchaseOrder.setOrderDate(createPurchaseOrderDto.getOrderDate());
+        purchaseOrder.setDeliveryDate(createPurchaseOrderDto.getDeliveryDate());
+        purchaseOrder.setRequestUser(createPurchaseOrderDto.getRequestUser());
+        purchaseOrder.setNote(createPurchaseOrderDto.getNote());
+        purchaseOrder.setUnit(createPurchaseOrderDto.getUnit());
+        purchaseOrder.setShippingType(createPurchaseOrderDto.getShippingType());
+        purchaseOrder.setCreatedAt(new Date());
+
+        PurchaseOrderEntity savedPurchaseOrder = purchaseOrderRepository.save(purchaseOrder);
+
+        List<PurchaseOrderItemEntity> items = new ArrayList<>();
+        List<PurchaseOrderItemProgressEntity> progress = new ArrayList<>();
+        for (CreatePurchaseOrderDTO.PurchaseOrderItemDTO itemDto : createPurchaseOrderDto.getItems()) {
+            PurchaseOrderItemEntity item = new PurchaseOrderItemEntity();
+            item.setPurchaseOrder(purchaseOrder);
+            item.setItemCode(itemDto.getItemCode());
+            item.setItemName(itemDto.getItemName());
+            item.setUnit(itemDto.getUnit());
+            item.setQuantity(itemDto.getQuantity());
+            item.setPrice(itemDto.getPrice());
+            item.setTotal(itemDto.getTotal());
+            item.setDiscountPercent(itemDto.getDiscountPercent());
+            item.setTaxPercent(itemDto.getTaxPercent());
+            item.setGrossTotal(itemDto.getGrossTotal());
+            item.setNote(itemDto.getNote());
+            items.add(item);
+
+            for (CreatePurchaseOrderDTO.PurchaseOrderItemProgressDTO progressDto : itemDto.getProgress()) {
+                PurchaseOrderItemProgressEntity progressEntity = new PurchaseOrderItemProgressEntity();
+                progressEntity.setPurchaseOrderItem(item);
+                progressEntity.setDate(progressDto.getDate());
+                progressEntity.setQuantity(progressDto.getQuantity());
+                progress.add(progressEntity);
+            }
+        }
+
+        List<PurchaseOrderItemEntity> savedItems = purchaseOrderItemRepository.saveAll(items);
+        for (PurchaseOrderItemProgressEntity progressEntity : progress) {
+            for (PurchaseOrderItemEntity savedItem : savedItems) {
+                if (progressEntity.getPurchaseOrderItem().getItemCode().equals(savedItem.getItemCode())) {
+                    progressEntity.getPurchaseOrderItem().setId(savedItem.getId());
+                    break;
+                }
+            }
+        }
+
+        List<PurchaseOrderItemProgressEntity> savedProgress = purchaseOrderItemProgressRepository.saveAll(progress);
+
+        List<PurchaseOrderEntity> result = new ArrayList<>();
+        result.add(savedPurchaseOrder);
+
+        return new PageResponse<List<PurchaseOrderEntity>>()
+            .result("00", "Thành công", true)
+            .data(result)
+            .dataCount(result.size());
     }
 
     /**
