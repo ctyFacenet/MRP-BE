@@ -57,6 +57,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -450,6 +451,7 @@ public class ProductOrderService {
         logger.info("start create new product order");
         for (ProductOrder productOrder : productOrders) {
             //add BTP TP vào list
+            productOrder.setCreatedAt(Instant.now());
             donHangArrayList.add(mapToPlanning(productOrder,true));
             Set<String> productCodes = new HashSet<>();
             if (productOrder.getProductOrderDetails() == null || productOrder.getProductOrderDetails().isEmpty()) {
