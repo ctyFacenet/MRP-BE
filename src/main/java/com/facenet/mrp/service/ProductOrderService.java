@@ -401,7 +401,7 @@ public class ProductOrderService {
                 orderItem.setCustomerName(order.getCustomerName());
                 orderItem.setSaleCode(order.getSaleCode());
                 orderItem.setMaterialChildrenCount(countChildren.getQuantity().intValue());
-
+                orderItem.setCreatedAt(Instant.now());
                 productOrderDetails.add(orderItem);
             }
             validateBomVersion(productOrderDetails, productCodes);
@@ -475,6 +475,7 @@ public class ProductOrderService {
                 productOrder.getProductOrderDetails().forEach(productOrderDetail -> {
                     productOrderDetail.setProductOrderCode(productOrder);
                     productOrderDetail.setStatusPlanning(2);
+                    productOrderDetail.setCreatedAt(Instant.now());
                     productOrderDetail.setStatus(Constants.ProductOrder.STATUS_NEW);
                 });
             }else {
@@ -482,6 +483,7 @@ public class ProductOrderService {
                 productOrder.getProductOrderDetails().forEach(productOrderDetail -> {
                     productOrderDetail.setProductOrderCode(productOrder);
                     productOrderDetail.setStatusPlanning(1);
+                    productOrderDetail.setCreatedAt(Instant.now());
                     productOrderDetail.setStatus(Constants.ProductOrder.STATUS_NEW);
                 });
             }
