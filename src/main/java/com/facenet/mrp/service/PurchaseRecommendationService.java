@@ -365,7 +365,12 @@ public class PurchaseRecommendationService {
 //            System.out.println("Không có giá trị thích hợp.");
 //        }
 //        ------------------------------------------------------
-        int maxTimeUsed = priceList.stream().max(Comparator.comparing(MoqDTO::getTimeUsed)).get().getTimeUsed();
+//        int maxTimeUsed = priceList.stream().max(Comparator.comparing(MoqDTO::getTimeUsed)).get().getTimeUsed();
+        int maxTimeUsed = priceList.stream()
+            .filter(p -> p.getTimeUsed() != null)  // Bỏ các phần tử có giá trị null
+            .max(Comparator.comparing(MoqDTO::getTimeUsed))
+            .map(MoqDTO::getTimeUsed)              // Lấy giá trị timeUsed
+            .orElse(0);
         Date maxStartTime = new Date(Long.MIN_VALUE);
         MoqDTO bestPrice = priceList.get(0);
         boolean isFoundSuitableRange = false;
