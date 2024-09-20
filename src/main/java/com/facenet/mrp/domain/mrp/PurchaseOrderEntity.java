@@ -48,6 +48,15 @@ public class PurchaseOrderEntity {
     @Column(name = "shipping_type")
     private String shippingType;
 
+    @Column(name = "receive_address")
+    private String receiveAddress;
+
+    @Column(name = "payment_type")
+    private String paymentType;
+
+    @Column(name = "payment_address")
+    private String paymentAddress;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;

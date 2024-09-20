@@ -209,6 +209,9 @@ public class MonitoringService {
         purchaseOrder.setNote(createPurchaseOrderDto.getNote());
         purchaseOrder.setUnit(createPurchaseOrderDto.getUnit());
         purchaseOrder.setShippingType(createPurchaseOrderDto.getShippingType());
+        purchaseOrder.setReceiveAddress(createPurchaseOrderDto.getReceiveAddress());
+        purchaseOrder.setPaymentType(createPurchaseOrderDto.getPaymentType());
+        purchaseOrder.setPaymentAddress(createPurchaseOrderDto.getPaymentAddress());
         purchaseOrder.setCreatedAt(new Date());
 
         PurchaseOrderEntity savedPurchaseOrder = purchaseOrderRepository.save(purchaseOrder);

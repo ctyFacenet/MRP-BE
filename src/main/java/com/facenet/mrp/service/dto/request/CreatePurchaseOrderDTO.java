@@ -22,6 +22,9 @@ public class CreatePurchaseOrderDTO {
     private String note;
     private String unit;
     private String shippingType;
+    private String receiveAddress;
+    private String paymentType;
+    private String paymentAddress;
     private List<PurchaseOrderItemDTO> items;
 
     @Setter
