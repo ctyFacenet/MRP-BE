@@ -451,7 +451,7 @@ public class ProductOrderService {
         logger.info("start create new product order");
         for (ProductOrder productOrder : productOrders) {
             //add BTP TP vào list
-            productOrder.setCreatedAt(Instant.now());
+            productOrder.getProductOrderDetails().forEach(detail -> detail.setCreatedAt(Instant.now()));
             donHangArrayList.add(mapToPlanning(productOrder,true));
             Set<String> productCodes = new HashSet<>();
             if (productOrder.getProductOrderDetails() == null || productOrder.getProductOrderDetails().isEmpty()) {
