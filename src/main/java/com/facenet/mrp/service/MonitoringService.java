@@ -61,6 +61,9 @@ public class MonitoringService {
     PurchaseOrderRepository purchaseOrderRepository;
 
     @Autowired
+    PurchaseOrderPurchaseRequestRepository purchaseOrderPurchaseRequestRepository;
+
+    @Autowired
     PurchaseOrderItemRepository purchaseOrderItemRepository;
 
     @Autowired
@@ -216,8 +219,19 @@ public class MonitoringService {
 
         PurchaseOrderEntity savedPurchaseOrder = purchaseOrderRepository.save(purchaseOrder);
 
+        List<PurchaseorderPurchaseRequestEntity> purchaseRequestCodes = new ArrayList<>();
         List<PurchaseOrderItemEntity> items = new ArrayList<>();
         List<PurchaseOrderItemProgressEntity> progress = new ArrayList<>();
+
+        for (CreatePurchaseOrderDTO.PurchaseOrderPurchaseRequestDTO purchaseRequestDto : createPurchaseOrderDto.getPurchaseRequestCodes()) {
+            PurchaseorderPurchaseRequestEntity purchaseRequest = new PurchaseorderPurchaseRequestEntity();
+            purchaseRequest.setPurchaseOrderId(savedPurchaseOrder.getId());
+            purchaseRequest.setPurchaseRequestCode(purchaseRequestDto.getPurchaseRequestCode());
+            purchaseRequestCodes.add(purchaseRequest);
+        }
+
+        purchaseOrderPurchaseRequestRepository.saveAll(purchaseRequestCodes);
+
         for (CreatePurchaseOrderDTO.PurchaseOrderItemDTO itemDto : createPurchaseOrderDto.getItems()) {
             PurchaseOrderItemEntity item = new PurchaseOrderItemEntity();
             item.setPurchaseOrder(purchaseOrder);
@@ -243,6 +257,7 @@ public class MonitoringService {
         }
 
         List<PurchaseOrderItemEntity> savedItems = purchaseOrderItemRepository.saveAll(items);
+
         for (PurchaseOrderItemProgressEntity progressEntity : progress) {
             for (PurchaseOrderItemEntity savedItem : savedItems) {
                 if (progressEntity.getPurchaseOrderItem().getItemCode().equals(savedItem.getItemCode())) {
@@ -252,7 +267,7 @@ public class MonitoringService {
             }
         }
 
-        List<PurchaseOrderItemProgressEntity> savedProgress = purchaseOrderItemProgressRepository.saveAll(progress);
+        purchaseOrderItemProgressRepository.saveAll(progress);
 
         List<PurchaseOrderEntity> result = new ArrayList<>();
         result.add(savedPurchaseOrder);
