@@ -19,7 +19,13 @@ public class PurchaseRequestDetailEntityDto implements Serializable {
     String itemCode;
     String itemName;
     Double requiredQuantity;
+    Double poPostedQuantity;
+    String nccCode;
+    String nccName;
     Timestamp dueDate;
+    Double itemPrice;
+    String unit;
+    String status;
     String note;
     String mrpCode;
     Integer isActive;
@@ -102,5 +108,53 @@ public class PurchaseRequestDetailEntityDto implements Serializable {
 
     public void setIsActive(Integer isActive) {
         this.isActive = isActive;
+    }
+
+    public Double getPoPostedQuantity() {
+        return poPostedQuantity;
+    }
+
+    public void setPoPostedQuantity(Double poPostQuantity) {
+        this.poPostedQuantity = poPostQuantity;
+    }
+
+    public String getNccCode() {
+        return nccCode;
+    }
+
+    public void setNccCode(String nccCode) {
+        this.nccCode = nccCode;
+    }
+
+    public String getNccName() {
+        return nccName;
+    }
+
+    public void setNccName(String nccName) {
+        this.nccName = nccName;
+    }
+
+    public Double getItemPrice() {
+        return itemPrice;
+    }
+
+    public void setItemPrice(Double itemPrice) {
+        this.itemPrice = itemPrice;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -1,45 +1,69 @@
 package com.facenet.mrp.service;
 
+import com.facenet.mrp.domain.mrp.PurchaseRequestDetailEntity;
+import com.facenet.mrp.domain.mrp.PurchaseRequestEntity;
 import com.facenet.mrp.domain.sap.*;
-import com.facenet.mrp.repository.sap.OporRepository;
+import com.facenet.mrp.repository.mrp.PurchaseRequestDetailEntityRepository;
+import com.facenet.mrp.repository.mrp.PurchaseRequestEntityRepository;
+import com.facenet.mrp.security.SecurityUtils;
 import com.facenet.mrp.service.dto.PurchaseRequestDTO;
+import com.facenet.mrp.service.dto.PurchaseRequestDetailEntityDto;
+import com.facenet.mrp.service.dto.PurchaseRequestEntityDto;
 import com.facenet.mrp.service.dto.QPurchaseRequestDTO;
+import com.facenet.mrp.service.dto.request.PurchaseRequestPagingDTO;
 import com.facenet.mrp.service.dto.response.PageResponse;
-import com.facenet.mrp.service.dto.sap.PrByItemSapDTO;
 import com.facenet.mrp.service.exception.CustomException;
+import com.facenet.mrp.service.mapper.PurchaseRequestApiMapper;
+import com.facenet.mrp.service.mapper.PurchaseRequestDetailEntityMapper;
+import com.facenet.mrp.service.mapper.PurchaseRequestEntityMapper;
 import com.facenet.mrp.service.model.PageFilterInput;
+import com.facenet.mrp.service.utils.Constants;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.dsl.DateTimeExpression;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
+import org.hibernate.Criteria;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
 public class PurchaseRequestService {
     private static final Logger logger = LoggerFactory.getLogger(PurchaseRequestService.class);
 
-    private final EntityManager entityManager;
+    @PersistenceContext
+    private EntityManager entityManager;
+    private final PurchaseRequestEntityMapper purchaseRequestEntityMapper;
+    private final PurchaseRequestDetailEntityMapper purchaseRequestDetailEntityMapper;
+    private final PurchaseRequestDetailEntityRepository purchaseRequestDetailEntityRepository;
+    private final PurchaseRequestEntityRepository purchaseRequestEntityRepository;
 
-    public PurchaseRequestService(@Qualifier("sapEntityManager") EntityManager entityManager) {
-        this.entityManager = entityManager;
+    public PurchaseRequestService(PurchaseRequestEntityMapper purchaseRequestEntityMapper, PurchaseRequestDetailEntityMapper purchaseRequestDetailEntityMapper, PurchaseRequestDetailEntityRepository purchaseRequestDetailEntityRepository, PurchaseRequestEntityRepository purchaseRequestEntityRepository) {
+        this.purchaseRequestEntityMapper = purchaseRequestEntityMapper;
+        this.purchaseRequestDetailEntityMapper = purchaseRequestDetailEntityMapper;
+        this.purchaseRequestDetailEntityRepository = purchaseRequestDetailEntityRepository;
+        this.purchaseRequestEntityRepository = purchaseRequestEntityRepository;
     }
 
     public PageResponse<List<PurchaseRequestDTO>> getPurchaseRequestsWithPaging(PageFilterInput<PurchaseRequestDTO> input) {
@@ -150,4 +174,118 @@ public class PurchaseRequestService {
             .dataCount(query.fetchCount())
             .data(result);
     }
+
+    public void addPurchaseRequest(PurchaseRequestEntityDto purchaseRequestEntityDto)
+    {
+        PurchaseRequestEntity purchaseRequestEntity = purchaseRequestEntityMapper.toEntity(purchaseRequestEntityDto);
+
+        List<String> codeList = purchaseRequestEntityRepository.findLastPRCode();
+        String newCode;
+        if (!codeList.isEmpty()) {
+            String lastCode = codeList.get(0);
+            int lastNumber = Integer.parseInt(lastCode.substring(3));
+            newCode = String.format("PR-%d", lastNumber + 1);
+        } else {
+            newCode = "PR-1";
+        }
+
+        purchaseRequestEntity.setPrCode(newCode);
+
+        for(PurchaseRequestDetailEntityDto purchaseRequestDetailEntityDto : purchaseRequestEntityDto.getPurchaseRequestDetailEntityDtos())
+        {
+            PurchaseRequestDetailEntity purchaseRequestDetailEntity = purchaseRequestDetailEntityMapper.toEntity(purchaseRequestDetailEntityDto);
+            purchaseRequestDetailEntity.setIsActive(1);
+            purchaseRequestDetailEntity.setStatus(Constants.PurchaseRequestStatus.NEWLY_CREATED);
+            purchaseRequestDetailEntity.setPrCode(newCode);
+            purchaseRequestDetailEntityRepository.save(purchaseRequestDetailEntity);
+        }
+        purchaseRequestEntity.setStatus(Constants.PurchaseRequestStatus.NEWLY_CREATED);
+        purchaseRequestEntityRepository.save(purchaseRequestEntity);
+    }
+
+    public void deletePurchaseRequest(String prCode)
+    {
+        PurchaseRequestEntity purchaseRequestEntity = purchaseRequestEntityRepository.findByPrCode(prCode);
+        purchaseRequestEntity.setDeletedAt(Timestamp.valueOf(LocalDateTime.now()));
+        purchaseRequestEntity.setDeletedBy(SecurityUtils.getCurrentUsername().orElseThrow());
+
+        List<PurchaseRequestDetailEntity> prDetailListByPrCode = purchaseRequestDetailEntityRepository.findAllByPrCodeAndIsActive(prCode, 1);
+
+        for(PurchaseRequestDetailEntity prDetailEntity : prDetailListByPrCode) {
+            prDetailEntity.setIsActive(0);
+            purchaseRequestDetailEntityRepository.save(prDetailEntity);
+        }
+        purchaseRequestEntityRepository.save(purchaseRequestEntity);
+    }
+
+    @Transactional
+    public Page<PurchaseRequestEntity> getAllPurchaseRequest(PageFilterInput<PurchaseRequestPagingDTO> input, Pageable pageable)
+    {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<PurchaseRequestEntity> cq = cb.createQuery(PurchaseRequestEntity.class);
+        Root<PurchaseRequestEntity> root = cq.from(PurchaseRequestEntity.class);
+        List<Predicate> predicates = new ArrayList<>();
+
+        // predicates.add(cb.isNull(root.get("deletedBy")));
+
+        if (input.getFilter().getPrCode() != null && !input.getFilter().getPrCode().trim().isEmpty()) {
+            predicates.add(cb.like(cb.lower(root.get("prCode")), "%" + input.getFilter().getPrCode().trim().toLowerCase() + "%"));
+        }
+        if (input.getFilter().getSoCode() != null && !input.getFilter().getSoCode().trim().isEmpty()) {
+            predicates.add(cb.like(cb.lower(root.get("soCode")), "%" + input.getFilter().getSoCode().trim().toLowerCase() + "%"));
+        }
+        if (input.getFilter().getMrpCode() != null && !input.getFilter().getMrpCode().trim().isEmpty()) {
+            predicates.add(cb.like(cb.lower(root.get("mrpCode")), "%" + input.getFilter().getMrpCode().trim().toLowerCase() + "%"));
+        }
+        if (input.getFilter().getPeriod() != null && !input.getFilter().getPeriod().trim().isEmpty()) {
+            predicates.add(cb.like(cb.lower(root.get("period")), "%" + input.getFilter().getPeriod().trim().toLowerCase() + "%"));
+        }
+        if (input.getFilter().getPrCreateUser() != null && !input.getFilter().getPrCreateUser().trim().isEmpty()) {
+            predicates.add(cb.like(cb.lower(root.get("prCreateUser")), "%" + input.getFilter().getPrCreateUser().trim().toLowerCase() + "%"));
+        }
+        if (input.getFilter().getApprovalUser() != null && !input.getFilter().getApprovalUser().trim().isEmpty()) {
+            predicates.add(cb.like(cb.lower(root.get("approvalUser")), "%" + input.getFilter().getApprovalUser().trim().toLowerCase() + "%"));
+        }
+        if (input.getFilter().getStatus() != null && !input.getFilter().getStatus().trim().isEmpty()) {
+            predicates.add(cb.like(cb.lower(root.get("status")), "%" + input.getFilter().getStatus().trim().toLowerCase() + "%"));
+        }
+
+        // Filter by time
+        if (input.getFilter().getPrCreateDate() != null && !input.getFilter().getPrCreateDate().trim().isEmpty()) {
+            LocalDate searchDate = LocalDate.parse(input.getFilter().getPrCreateDate().trim());
+
+            Instant startInstant = searchDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+            Instant endInstant = searchDate.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant();
+            predicates.add(cb.between(root.get("prCreateDate"), Timestamp.from(startInstant), Timestamp.from(endInstant)));
+        }
+        if (input.getFilter().getApprovalDate() != null && !input.getFilter().getApprovalDate().trim().isEmpty()) {
+            LocalDate searchDate = LocalDate.parse(input.getFilter().getApprovalDate().trim());
+
+            Instant startInstant = searchDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+            Instant endInstant = searchDate.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant();
+            predicates.add(cb.between(root.get("approvalDate"), Timestamp.from(startInstant), Timestamp.from(endInstant)));
+        }
+
+        cq.where(predicates.toArray(new Predicate[0]));
+        TypedQuery<PurchaseRequestEntity> query = entityManager.createQuery(cq);
+
+        // Pagination
+        int totalRows;
+        List<PurchaseRequestEntity> results;
+        if (pageable.getPageSize() == 0) {
+            results = query.getResultList();
+            totalRows = results.size();
+        } else {
+            totalRows = query.getResultList().size();
+            results = query.setFirstResult((int) pageable.getOffset()).setMaxResults(pageable.getPageSize()).getResultList();
+        }
+        logger.info(
+            "Query executed successfully, return {} results (Page {} of {})",
+            results.size(),
+            pageable.getPageNumber(),
+            (totalRows + pageable.getPageSize() - 1) / pageable.getPageSize()
+        );
+        return new PageImpl<>(results, pageable, totalRows);
+    }
+
 }

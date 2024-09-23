@@ -140,4 +140,8 @@ public class Constants {
 
     public static final int BUILD_BOM_EXCLUDE_BTP = 1;
     public static final int BUILD_BOM_EXCLUDE_NVL = 2;
+
+    public interface PurchaseRequestStatus {
+        String NEWLY_CREATED = "Mới tạo";
+    }
 }

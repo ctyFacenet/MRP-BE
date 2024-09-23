@@ -29,8 +29,11 @@ public class PurchaseRequestEntity {
     @Column(name = "pr_create_date")
     private Timestamp prCreateDate;
     @Basic
-    @Column(name = "asign_date")
-    private Timestamp asignDate;
+    @Column(name = "approval_date")
+    private Timestamp approvalDate;
+    @Basic
+    @Column(name = "approval_user")
+    private String approvalUser;
     @Basic
     @Column(name = "status")
     private String status;
@@ -97,12 +100,20 @@ public class PurchaseRequestEntity {
         this.prCreateDate = prCreateDate;
     }
 
-    public Timestamp getAsignDate() {
-        return asignDate;
+    public Timestamp getApprovalDate() {
+        return approvalDate;
     }
 
-    public void setAsignDate(Timestamp asignDate) {
-        this.asignDate = asignDate;
+    public void setApprovalDate(Timestamp approval_date) {
+        this.approvalDate = approval_date;
+    }
+
+    public String getApprovalUser() {
+        return approvalUser;
+    }
+
+    public void setApprovalUser(String approvalUser) {
+        this.approvalUser = approvalUser;
     }
 
     public String getStatus() {
@@ -143,7 +154,8 @@ public class PurchaseRequestEntity {
         if (soCode != null ? !soCode.equals(that.soCode) : that.soCode != null) return false;
         if (period != null ? !period.equals(that.period) : that.period != null) return false;
         if (prCreateDate != null ? !prCreateDate.equals(that.prCreateDate) : that.prCreateDate != null) return false;
-        if (asignDate != null ? !asignDate.equals(that.asignDate) : that.asignDate != null) return false;
+        if (approvalDate != null ? !approvalDate.equals(that.approvalDate) : that.approvalDate != null) return false;
+        if (approvalUser != null ? !approvalUser.equals(that.approvalUser) : that.approvalUser != null) return false;
         if (status != null ? !status.equals(that.status) : that.status != null) return false;
         if (deletedAt != null ? !deletedAt.equals(that.deletedAt) : that.deletedAt != null) return false;
         if (deletedBy != null ? !deletedBy.equals(that.deletedBy) : that.deletedBy != null) return false;
@@ -160,7 +172,8 @@ public class PurchaseRequestEntity {
         result = 31 * result + (soCode != null ? soCode.hashCode() : 0);
         result = 31 * result + (period != null ? period.hashCode() : 0);
         result = 31 * result + (prCreateDate != null ? prCreateDate.hashCode() : 0);
-        result = 31 * result + (asignDate != null ? asignDate.hashCode() : 0);
+        result = 31 * result + (approvalDate != null ? approvalDate.hashCode() : 0);
+        result = 31 * result + (approvalUser != null ? approvalUser.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + (deletedAt != null ? deletedAt.hashCode() : 0);
         result = 31 * result + (deletedBy != null ? deletedBy.hashCode() : 0);
