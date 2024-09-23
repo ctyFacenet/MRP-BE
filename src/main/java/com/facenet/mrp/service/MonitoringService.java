@@ -12,6 +12,7 @@ import com.facenet.mrp.service.dto.request.CreatePurchaseOrderDTO;
 import com.facenet.mrp.service.dto.request.ListMonitoringRequest;
 import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
+import com.facenet.mrp.service.model.FindPurchaseOrderProgressFilter;
 import com.facenet.mrp.service.model.MonitoringFilter;
 import com.facenet.mrp.service.model.PageFilterInput;
 import com.facenet.mrp.service.utils.Constants;
@@ -199,6 +200,41 @@ public class MonitoringService {
             .isOk(true)
             .dataCount(count)
             .data(result);
+    }
+
+    public PageResponse<List<PurchaseOrderProgressDTO>> findPurchaseOrderProgress(PageFilterInput<FindPurchaseOrderProgressFilter> request) {
+        FindPurchaseOrderProgressFilter filter = request.getFilter();
+        Pageable pageable = PageRequest.of(request.getPageNumber(), request.getPageSize());
+
+        List<PurchaseOrderEntity> purchaseOrders = purchaseOrderRepository.findAll();
+
+        List<PurchaseOrderProgressDTO> purchaseOrderProgressDTOList = new ArrayList<>();
+
+        for (PurchaseOrderEntity entity : purchaseOrders) {
+            PurchaseOrderProgressDTO dto = new PurchaseOrderProgressDTO();
+            dto.setId(entity.getId());
+            dto.setPoCode(entity.getPoCode());
+            dto.setVendorName(entity.getVendorName());
+            dto.setVendorCode(entity.getVendorCode());
+            dto.setOrderDate(entity.getOrderDate());
+            dto.setDeliveryDate(entity.getDeliveryDate());
+            dto.setRequestUser(entity.getRequestUser());
+            dto.setNote(entity.getNote());
+            dto.setUnit(entity.getUnit());
+            dto.setShippingType(entity.getShippingType());
+            dto.setReceiveAddress(entity.getReceiveAddress());
+            dto.setPaymentType(entity.getPaymentType());
+            dto.setPaymentAddress(entity.getPaymentAddress());
+            dto.setCreatedAt(entity.getCreatedAt());
+            dto.setCreatedBy(entity.getCreatedBy());
+            dto.setUpdatedAt(entity.getUpdatedAt());
+            purchaseOrderProgressDTOList.add(dto);
+        }
+
+        return new PageResponse<List<PurchaseOrderProgressDTO>>()
+            .result("00", "Thành công", true)
+            .data(purchaseOrderProgressDTOList)
+            .dataCount(0);
     }
 
     public PageResponse<List<PurchaseOrderEntity>> createPurchaseOrder(CreatePurchaseOrderDTO createPurchaseOrderDto) {
