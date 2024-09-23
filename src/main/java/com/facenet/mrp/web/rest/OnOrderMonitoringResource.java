@@ -10,6 +10,7 @@ import com.facenet.mrp.service.dto.request.CreatePurchaseOrderDTO;
 import com.facenet.mrp.service.dto.request.ListMonitoringRequest;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
+import com.facenet.mrp.service.model.FindPurchaseOrderProgressFilter;
 import com.facenet.mrp.service.model.MonitoringFilter;
 import com.facenet.mrp.service.model.PageFilterInput;
 import org.apache.logging.log4j.LogManager;
@@ -42,6 +43,13 @@ public class OnOrderMonitoringResource {
     @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPO', 'VIEW')")
     public ResponseEntity listAll(@RequestBody PageFilterInput<MonitoringFilter> bodyRequest){
         PageResponse<List<OnOrderMonitoringDTO>> data = monitoringService.monitoringDTOList(bodyRequest);
+        return ResponseEntity.ok(data);
+    }
+
+    @PostMapping("/list-po")
+    @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR', 'VIEW')")
+    public ResponseEntity<CommonResponse> listAllPurchaseOrder(@RequestBody PageFilterInput<FindPurchaseOrderProgressFilter> body) {
+        PageResponse<List<PurchaseOrderProgressDTO>> data = monitoringService.findPurchaseOrderProgress(body);
         return ResponseEntity.ok(data);
     }
 
