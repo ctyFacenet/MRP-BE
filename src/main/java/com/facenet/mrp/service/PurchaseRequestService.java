@@ -10,6 +10,7 @@ import com.facenet.mrp.service.dto.PurchaseRequestDTO;
 import com.facenet.mrp.service.dto.PurchaseRequestDetailEntityDto;
 import com.facenet.mrp.service.dto.PurchaseRequestEntityDto;
 import com.facenet.mrp.service.dto.QPurchaseRequestDTO;
+import com.facenet.mrp.service.dto.request.PurchaseRequestDetailPagingDTO;
 import com.facenet.mrp.service.dto.request.PurchaseRequestPagingDTO;
 import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
@@ -226,7 +227,7 @@ public class PurchaseRequestService {
         Root<PurchaseRequestEntity> root = cq.from(PurchaseRequestEntity.class);
         List<Predicate> predicates = new ArrayList<>();
 
-        // predicates.add(cb.isNull(root.get("deletedBy")));
+        predicates.add(cb.isNull(root.get("deletedBy")));
 
         if (input.getFilter().getPrCode() != null && !input.getFilter().getPrCode().trim().isEmpty()) {
             predicates.add(cb.like(cb.lower(root.get("prCode")), "%" + input.getFilter().getPrCode().trim().toLowerCase() + "%"));
@@ -288,4 +289,44 @@ public class PurchaseRequestService {
         return new PageImpl<>(results, pageable, totalRows);
     }
 
+    @Transactional
+    public Page<PurchaseRequestDetailEntity> getAllPRDetailDetailListByPRCode(PageFilterInput<PurchaseRequestDetailPagingDTO> input, Pageable pageable, String prCode)
+    {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<PurchaseRequestDetailEntity> cq = cb.createQuery(PurchaseRequestDetailEntity.class);
+        Root<PurchaseRequestDetailEntity> root = cq.from(PurchaseRequestDetailEntity.class);
+        List<Predicate> predicates = new ArrayList<>();
+
+        predicates.add(cb.equal(root.get("prCode"), prCode.trim()));
+        predicates.add(cb.equal(root.get("isActive"), 1));
+
+        // Filter
+        if (input.getFilter().getItemCode() != null && !input.getFilter().getItemCode().trim().isEmpty()) {
+            predicates.add(cb.like(cb.lower(root.get("itemCode")), "%" + input.getFilter().getItemCode().trim().toLowerCase() + "%"));
+        }
+        if (input.getFilter().getItemName() != null && !input.getFilter().getItemName().trim().isEmpty()) {
+            predicates.add(cb.like(cb.lower(root.get("itemName")), "%" + input.getFilter().getItemName().trim().toLowerCase() + "%"));
+        }
+
+        cq.where(predicates.toArray(new Predicate[0]));
+        TypedQuery<PurchaseRequestDetailEntity> query = entityManager.createQuery(cq);
+
+        // Pagination
+        int totalRows;
+        List<PurchaseRequestDetailEntity> results;
+        if (pageable.getPageSize() == 0) {
+            results = query.getResultList();
+            totalRows = results.size();
+        } else {
+            totalRows = query.getResultList().size();
+            results = query.setFirstResult((int) pageable.getOffset()).setMaxResults(pageable.getPageSize()).getResultList();
+        }
+        logger.info(
+            "Query executed successfully, return {} results (Page {} of {})",
+            results.size(),
+            pageable.getPageNumber(),
+            (totalRows + pageable.getPageSize() - 1) / pageable.getPageSize()
+        );
+        return new PageImpl<>(results, pageable, totalRows);
+    }
 }
