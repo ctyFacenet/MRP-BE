@@ -21,7 +21,8 @@ public class PurchaseRequestEntityDto implements Serializable {
     String soCode;
     String period;
     Timestamp prCreateDate;
-    Timestamp asignDate;
+    Timestamp approvalDate;
+    String approvalUser;
     String status;
     Timestamp deletedAt;
     String deletedBy;
@@ -83,12 +84,20 @@ public class PurchaseRequestEntityDto implements Serializable {
         this.prCreateDate = prCreateDate;
     }
 
-    public Timestamp getAsignDate() {
-        return asignDate;
+    public Timestamp getApprovalDate() {
+        return approvalDate;
     }
 
-    public void setAsignDate(Timestamp asignDate) {
-        this.asignDate = asignDate;
+    public void setApprovalDate(Timestamp approvalDate) {
+        this.approvalDate = approvalDate;
+    }
+
+    public String getApprovalUser() {
+        return approvalUser;
+    }
+
+    public void setApprovalUser(String approvalUser) {
+        this.approvalUser = approvalUser;
     }
 
     public String getStatus() {

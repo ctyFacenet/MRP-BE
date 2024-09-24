@@ -1,19 +1,7 @@
-package com.facenet.mrp.service.dto;
+package com.facenet.mrp.service.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Value;
-
-import java.io.Serializable;
-import java.sql.Timestamp;
-
-/**
- * DTO for {@link com.facenet.mrp.domain.mrp.PurchaseRequestDetailEntity}
- */
-@NoArgsConstructor
-@AllArgsConstructor
-public class PurchaseRequestDetailEntityDto implements Serializable {
-    Integer id;
+public class PurchaseRequestDetailPagingDTO
+{
     String prCode;
     String soCode;
     String itemCode;
@@ -22,21 +10,10 @@ public class PurchaseRequestDetailEntityDto implements Serializable {
     Double poPostedQuantity;
     String nccCode;
     String nccName;
-    Timestamp dueDate;
+    String dueDate;
     Double itemPrice;
     String unit;
     String status;
-    String note;
-    String mrpCode;
-    Integer isActive;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
 
     public String getPrCode() {
         return prCode;
@@ -78,44 +55,12 @@ public class PurchaseRequestDetailEntityDto implements Serializable {
         this.requiredQuantity = requiredQuantity;
     }
 
-    public Timestamp getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(Timestamp dueDate) {
-        this.dueDate = dueDate;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
-    }
-
-    public String getMrpCode() {
-        return mrpCode;
-    }
-
-    public void setMrpCode(String mrpCode) {
-        this.mrpCode = mrpCode;
-    }
-
-    public Integer getIsActive() {
-        return isActive;
-    }
-
-    public void setIsActive(Integer isActive) {
-        this.isActive = isActive;
-    }
-
     public Double getPoPostedQuantity() {
         return poPostedQuantity;
     }
 
-    public void setPoPostedQuantity(Double poPostQuantity) {
-        this.poPostedQuantity = poPostQuantity;
+    public void setPoPostedQuantity(Double poPostedQuantity) {
+        this.poPostedQuantity = poPostedQuantity;
     }
 
     public String getNccCode() {
@@ -132,6 +77,14 @@ public class PurchaseRequestDetailEntityDto implements Serializable {
 
     public void setNccName(String nccName) {
         this.nccName = nccName;
+    }
+
+    public String getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(String dueDate) {
+        this.dueDate = dueDate;
     }
 
     public Double getItemPrice() {

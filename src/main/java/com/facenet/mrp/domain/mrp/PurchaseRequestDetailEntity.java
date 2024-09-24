@@ -26,8 +26,26 @@ public class PurchaseRequestDetailEntity {
     @Column(name = "required_quantity")
     private Double requiredQuantity;
     @Basic
+    @Column(name = "po_posted_quantity")
+    private Double poPostedQuantity;
+    @Basic
+    @Column(name = "ncc_code")
+    private String nccCode;
+    @Basic
+    @Column(name = "ncc_name")
+    private String nccName;
+    @Basic
     @Column(name = "due_date")
     private Timestamp dueDate;
+    @Basic
+    @Column(name = "item_price")
+    private Double itemPrice;
+    @Basic
+    @Column(name = "unit")
+    private String unit;
+    @Basic
+    @Column(name = "status")
+    private String status;
     @Basic
     @Column(name = "note")
     private String note;
@@ -116,6 +134,54 @@ public class PurchaseRequestDetailEntity {
 
     public void setIsActive(Integer isActive) {
         this.isActive = isActive;
+    }
+
+    public Double getPoPostedQuantity() {
+        return poPostedQuantity;
+    }
+
+    public void setPoPostedQuantity(Double poPostedQuantity) {
+        this.poPostedQuantity = poPostedQuantity;
+    }
+
+    public String getNccCode() {
+        return nccCode;
+    }
+
+    public void setNccCode(String nccCode) {
+        this.nccCode = nccCode;
+    }
+
+    public String getNccName() {
+        return nccName;
+    }
+
+    public void setNccName(String nccName) {
+        this.nccName = nccName;
+    }
+
+    public Double getItemPrice() {
+        return itemPrice;
+    }
+
+    public void setItemPrice(Double itemPrice) {
+        this.itemPrice = itemPrice;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     @Override
