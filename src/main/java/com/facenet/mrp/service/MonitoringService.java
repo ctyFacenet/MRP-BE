@@ -223,15 +223,30 @@ public class MonitoringService {
             dto.setOrderDate(entity.getOrderDate());
             dto.setDeliveryDate(entity.getDeliveryDate());
             dto.setRequestUser(entity.getRequestUser());
-            dto.setNote(entity.getNote());
-            dto.setUnit(entity.getUnit());
-            dto.setShippingType(entity.getShippingType());
-            dto.setReceiveAddress(entity.getReceiveAddress());
-            dto.setPaymentType(entity.getPaymentType());
-            dto.setPaymentAddress(entity.getPaymentAddress());
             dto.setCreatedAt(entity.getCreatedAt());
             dto.setCreatedBy(entity.getCreatedBy());
             dto.setUpdatedAt(entity.getUpdatedAt());
+            dto.setUnmetDeadlineCount(0);
+            purchaseOrderProgressDTOList.add(dto);
+
+            List<PurchaseOrderItemEntity> items = purchaseOrderItemRepository.findByPurchaseOrderId(entity.getId());
+            int unmetDeadlines = 0;
+            double totalItemQuantity = 0;
+            double totalProgressQuantity = 0;
+
+            for (PurchaseOrderItemEntity item : items) {
+                totalItemQuantity += item.getQuantity();
+                List<PurchaseOrderItemProgressEntity> progressEntities = purchaseOrderItemProgressRepository.findByPurchaseOrderItemId(item.getId());
+                totalProgressQuantity += progressEntities.stream().mapToDouble(PurchaseOrderItemProgressEntity::getQuantity).sum();
+                unmetDeadlines += progressEntities.stream().filter(progress -> progress.getDate().after(entity.getDeliveryDate())).count();
+            }
+
+            if (totalItemQuantity > 0) {
+                dto.setBuyingProgress((int) ((totalProgressQuantity / totalItemQuantity) * 100));
+            } else {
+                dto.setBuyingProgress(0);
+            }
+            dto.setUnmetDeadlineCount(unmetDeadlines);
             purchaseOrderProgressDTOList.add(dto);
         }
 
@@ -375,6 +390,21 @@ public class MonitoringService {
         purchaseOrderDTO.setItems(purchaseOrderItemDTOList);
 
         return new CommonResponse<PurchaseOrderDTO>().result("00", "Success", true).data(purchaseOrderDTO);
+    }
+
+    public CommonResponse<List<PurchaseOrderDTO.PurchaseOrderItemProgressDTO>> findPurchaseOrderItemProgressByItemId(Long purchaseOrderItemId) {
+        List<PurchaseOrderItemProgressEntity> progressEntities = purchaseOrderItemProgressRepository.findByPurchaseOrderItemId(purchaseOrderItemId);
+
+        Function<PurchaseOrderItemProgressEntity, PurchaseOrderDTO.PurchaseOrderItemProgressDTO> mapToProgressDTO = entity -> {
+            PurchaseOrderDTO.PurchaseOrderItemProgressDTO dto = new PurchaseOrderDTO.PurchaseOrderItemProgressDTO();
+            dto.setDate(entity.getDate());
+            dto.setQuantity(entity.getQuantity());
+            return dto;
+        };
+        CommonResponse<List<PurchaseOrderDTO.PurchaseOrderItemProgressDTO>> response = new PageResponse<>();
+        List<PurchaseOrderDTO.PurchaseOrderItemProgressDTO> res = progressEntities.stream().map(mapToProgressDTO).collect(Collectors.toList());
+        response.result("00", "Success", true).data(res);
+        return response;
     }
 
     /**

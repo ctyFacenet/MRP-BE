@@ -49,7 +49,7 @@ public class OnOrderMonitoringResource {
 
     @PostMapping("/list-po")
     @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR', 'VIEW')")
-    public ResponseEntity<CommonResponse> listAllPurchaseOrder(@RequestBody PageFilterInput<FindPurchaseOrderProgressFilter> body) {
+    public ResponseEntity<PageResponse<List<PurchaseOrderProgressDTO>>> listAllPurchaseOrder(@RequestBody PageFilterInput<FindPurchaseOrderProgressFilter> body) {
         PageResponse<List<PurchaseOrderProgressDTO>> data = monitoringService.findPurchaseOrderProgress(body);
         return ResponseEntity.ok(data);
     }
@@ -67,6 +67,14 @@ public class OnOrderMonitoringResource {
         CommonResponse<PurchaseOrderDTO> data = monitoringService.findPurchaseOrderById(id);
         return ResponseEntity.ok(data);
     }
+
+    @GetMapping("/get-progress-by-item-id/{id}")
+    @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR', 'VIEW')")
+    public ResponseEntity<CommonResponse<List<PurchaseOrderDTO.PurchaseOrderItemProgressDTO>>> getPurchaseOrderItemProgressByItemId(@PathVariable Long id) {
+        CommonResponse<List<PurchaseOrderDTO.PurchaseOrderItemProgressDTO>> data = monitoringService.findPurchaseOrderItemProgressByItemId(id);
+        return ResponseEntity.ok(data);
+    }
+
 
     @PostMapping("/list-all-pr")
     @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR', 'VIEW')")
