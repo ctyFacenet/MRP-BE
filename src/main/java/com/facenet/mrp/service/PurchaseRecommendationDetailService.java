@@ -373,9 +373,12 @@ public class PurchaseRecommendationDetailService {
 
             if (input.getIsApproval()
                 && purchaseRecommendationDetailEntity.getMoqPriceEntity() != null
-                && purchaseRecommendationDetailEntity.getMoqPriceEntity().getVendorItemEntity() != null
-            ) {
+                && purchaseRecommendationDetailEntity.getMoqPriceEntity().getVendorItemEntity() != null) {
+
+                // Increment the time used
                 purchaseRecommendationDetailEntity.getMoqPriceEntity().getVendorItemEntity().incrementTimeUsed();
+            } else {
+                throw new CustomException(HttpStatus.BAD_REQUEST, "Product.has.no.vendor");
             }
         }
 
