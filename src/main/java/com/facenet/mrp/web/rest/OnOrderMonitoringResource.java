@@ -59,6 +59,15 @@ public class OnOrderMonitoringResource {
         PageResponse<List<PurchaseOrderEntity>> data = monitoringService.createPurchaseOrder(createPoRequest);
         return ResponseEntity.ok(data);
     }
+    @PostMapping("/update-po/{prId}")
+    public ResponseEntity<CommonResponse> updatePo(@PathVariable Long prId, @RequestBody CreatePurchaseOrderDTO updatePoRequest) {
+        CommonResponse<PurchaseOrderEntity> response = monitoringService.updatePurchaseOrder(prId, updatePoRequest);
+        if (response.getResult().isOk()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
 
     @PostMapping("/list-all-pr")
     @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR', 'VIEW')")

@@ -1,8 +1,6 @@
 package com.facenet.mrp.domain.mrp;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -11,6 +9,8 @@ import javax.persistence.*;
 @ToString
 @Entity
 @Table(name = "purchase_order_purchase_request")
+@AllArgsConstructor // Tạo constructor với tất cả các tham số
+@NoArgsConstructor // Tạo constructor không tham số
 public class PurchaseorderPurchaseRequestEntity {
 
     @Id
