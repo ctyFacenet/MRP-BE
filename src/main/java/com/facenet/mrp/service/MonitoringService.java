@@ -5,11 +5,13 @@ import com.facenet.mrp.repository.mrp.*;
 import com.facenet.mrp.repository.sap.Pdn1Repository;
 import com.facenet.mrp.repository.sap.Por1Repository;
 import com.facenet.mrp.repository.sap.Prq1Repository;
+import com.facenet.mrp.service.dto.PurchaseOrderDTO;
 import com.facenet.mrp.service.dto.mrp.*;
 import com.facenet.mrp.service.dto.request.AddMonitoringItemRequest;
 import com.facenet.mrp.service.dto.request.AddMonitoringRequest;
 import com.facenet.mrp.service.dto.request.CreatePurchaseOrderDTO;
 import com.facenet.mrp.service.dto.request.ListMonitoringRequest;
+import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.model.FindPurchaseOrderProgressFilter;
@@ -47,6 +49,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class MonitoringService {
@@ -312,6 +316,65 @@ public class MonitoringService {
             .result("00", "Thành công", true)
             .data(result)
             .dataCount(result.size());
+    }
+
+    public CommonResponse<PurchaseOrderDTO> findPurchaseOrderById(Long id) {
+        Optional<PurchaseOrderEntity> purchaseOrderOptional = purchaseOrderRepository.findById(id);
+        if (!purchaseOrderOptional.isPresent()) {
+            throw new CustomException("Purchase order not found");
+        }
+
+        PurchaseOrderEntity purchaseOrderEntity = purchaseOrderOptional.get();
+
+        PurchaseOrderDTO purchaseOrderDTO = new PurchaseOrderDTO();
+        purchaseOrderDTO.setPoCode(purchaseOrderEntity.getPoCode());
+        purchaseOrderDTO.setVendorName(purchaseOrderEntity.getVendorName());
+        purchaseOrderDTO.setVendorCode(purchaseOrderEntity.getVendorCode());
+        purchaseOrderDTO.setOrderDate(purchaseOrderEntity.getOrderDate());
+        purchaseOrderDTO.setDeliveryDate(purchaseOrderEntity.getDeliveryDate());
+        purchaseOrderDTO.setRequestUser(purchaseOrderEntity.getRequestUser());
+        purchaseOrderDTO.setNote(purchaseOrderEntity.getNote());
+        purchaseOrderDTO.setUnit(purchaseOrderEntity.getUnit());
+        purchaseOrderDTO.setShippingType(purchaseOrderEntity.getShippingType());
+        purchaseOrderDTO.setReceiveAddress(purchaseOrderEntity.getReceiveAddress());
+        purchaseOrderDTO.setPaymentType(purchaseOrderEntity.getPaymentType());
+        purchaseOrderDTO.setPaymentAddress(purchaseOrderEntity.getPaymentAddress());
+
+        // Lambda for mapping PurchaseOrderItemEntity to PurchaseOrderItemDTO
+        Function<PurchaseOrderItemEntity, PurchaseOrderDTO.PurchaseOrderItemDTO> mapToItemDTO = entity -> {
+            PurchaseOrderDTO.PurchaseOrderItemDTO dto = new PurchaseOrderDTO.PurchaseOrderItemDTO();
+            dto.setItemCode(entity.getItemCode());
+            dto.setItemName(entity.getItemName());
+            dto.setUnit(entity.getUnit());
+            dto.setQuantity(entity.getQuantity());
+            dto.setPrice(entity.getPrice());
+            dto.setTotal(entity.getTotal());
+            dto.setDiscountPercent(entity.getDiscountPercent());
+            dto.setTaxPercent(entity.getTaxPercent());
+            dto.setGrossTotal(entity.getGrossTotal());
+            dto.setNote(entity.getNote());
+
+            // Lambda for mapping PurchaseOrderItemProgressEntity to PurchaseOrderItemProgressDTO
+            Function<PurchaseOrderItemProgressEntity, PurchaseOrderDTO.PurchaseOrderItemProgressDTO> mapToProgressDTO = progressEntity -> {
+                PurchaseOrderDTO.PurchaseOrderItemProgressDTO progressDTO = new PurchaseOrderDTO.PurchaseOrderItemProgressDTO();
+                progressDTO.setDate(progressEntity.getDate());
+                progressDTO.setQuantity(progressEntity.getQuantity());
+                return progressDTO;
+            };
+
+            List<PurchaseOrderItemProgressEntity> progressEntities = purchaseOrderItemProgressRepository.findByPurchaseOrderItemId(entity.getId());
+            List<PurchaseOrderDTO.PurchaseOrderItemProgressDTO> progressDTOs = progressEntities.stream().map(mapToProgressDTO).collect(Collectors.toList());
+            dto.setProgress(progressDTOs);
+
+            return dto;
+        };
+
+        List<PurchaseOrderItemEntity> items = purchaseOrderItemRepository.findByPurchaseOrderId(purchaseOrderEntity.getId());
+        List<PurchaseOrderDTO.PurchaseOrderItemDTO> purchaseOrderItemDTOList = items.stream().map(mapToItemDTO).collect(Collectors.toList());
+
+        purchaseOrderDTO.setItems(purchaseOrderItemDTOList);
+
+        return new CommonResponse<PurchaseOrderDTO>().result("00", "Success", true).data(purchaseOrderDTO);
     }
 
     /**

@@ -3,6 +3,7 @@ package com.facenet.mrp.web.rest;
 import com.facenet.mrp.domain.mrp.PurchaseOrderEntity;
 import com.facenet.mrp.service.MonitoringService;
 import com.facenet.mrp.service.MqqPriceService;
+import com.facenet.mrp.service.dto.PurchaseOrderDTO;
 import com.facenet.mrp.service.dto.mrp.*;
 import com.facenet.mrp.service.dto.request.AddMonitoringItemRequest;
 import com.facenet.mrp.service.dto.request.AddMonitoringRequest;
@@ -57,6 +58,13 @@ public class OnOrderMonitoringResource {
     @PreAuthorize("hasAnyAuthority('GSTD-Create')")
     public ResponseEntity<CommonResponse> createPo(@RequestBody CreatePurchaseOrderDTO createPoRequest) {
         PageResponse<List<PurchaseOrderEntity>> data = monitoringService.createPurchaseOrder(createPoRequest);
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/get-po/{id}")
+    @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR', 'VIEW')")
+    public ResponseEntity<CommonResponse<PurchaseOrderDTO>> getPurchaseOrderById(@PathVariable Long id) {
+        CommonResponse<PurchaseOrderDTO> data = monitoringService.findPurchaseOrderById(id);
         return ResponseEntity.ok(data);
     }
 
