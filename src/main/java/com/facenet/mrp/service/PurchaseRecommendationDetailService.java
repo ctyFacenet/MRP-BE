@@ -5,6 +5,7 @@ import com.facenet.mrp.repository.mrp.*;
 import com.facenet.mrp.repository.sap.OcrdRepository;
 import com.facenet.mrp.security.SecurityUtils;
 import com.facenet.mrp.service.dto.*;
+import com.facenet.mrp.service.dto.mrp.OnOrderMonitoringDTO;
 import com.facenet.mrp.service.dto.mrp.SendApprovalRequest;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
@@ -27,6 +28,9 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -34,9 +38,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManager;
+import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -719,5 +728,76 @@ public class PurchaseRecommendationDetailService {
                 entity.setStatus(Constants.PurchaseRecommendationPlan.CLOSED);
         });
         planRepository.saveAll(prOfItem);
+    }
+
+    public byte[] exportPurchaseRecommendationDetailToExcel(Integer purchaseRecommendationId, Integer batch, PageFilterInput<ItemFilter> input)
+    {
+        List<PurchaseRecommendationDetailDTO> data = new ArrayList<>();
+        data = getAllItemsHasRecommendation(purchaseRecommendationId, batch, input).getData();
+        String[] columns = {"STT", "Tên vật tư", "Xuất xứ", "ĐVT", "Số lượng", "Thời gian", "Ghi chú", "Người mua"};
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        try (Workbook workbook = new XSSFWorkbook())
+        {
+            Sheet sheet = workbook.createSheet("PHIẾU YÊU CẦU MUA VẬT TƯ");
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            // Main title
+            Row titleRow = sheet.createRow(0);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("PHIẾU YÊU CẦU MUA VẬT TƯ");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
+
+            CellStyle unitStyle = workbook.createCellStyle();
+            unitStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            Row unitRow = sheet.createRow(1);
+            Cell unitCell = unitRow.createCell(0);
+            unitCell.setCellValue("Đơn vị đề nghị: Xưởng phích nước - thủy tinh");
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 7));
+            unitCell.setCellStyle(unitStyle);
+
+            Row headerRow = sheet.createRow(2);
+            for (int i = 0; i < columns.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columns[i]);
+                cell.setCellStyle(unitStyle);
+            }
+
+            // Write data rows
+            int rowNum = 3;
+            int stt = 1;
+            for (PurchaseRecommendationDetailDTO prDTO : data) {
+                Row row = sheet.createRow(rowNum++);
+
+                row.createCell(0).setCellValue(stt++);
+                row.createCell(1).setCellValue(prDTO.getItemDescription());
+                row.createCell(2).setCellValue(prDTO.getVendorName());
+                row.createCell(3).setCellValue(prDTO.getUnit());
+                row.createCell(4).setCellValue(prDTO.getSumRequestQuantity());
+                row.createCell(5).setCellValue(prDTO.getReceiveDate());
+                row.createCell(6).setCellValue(prDTO.getNote());
+                row.createCell(7).setCellValue("");
+            }
+
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
+            // workbook.write(out);
+            // Convert workbook to byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            return null;
+        }
     }
 }

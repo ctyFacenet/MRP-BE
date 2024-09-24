@@ -11,7 +11,9 @@ import com.facenet.mrp.service.model.ItemFilter;
 import com.facenet.mrp.service.model.PageFilterInput;
 import com.facenet.mrp.service.model.UpdatePurchaseRecommendationForm;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -160,5 +162,21 @@ public class PurchaseRecommendationDetailResource {
             .errorCode("00")
             .message("Thành công")
             .data(plan));
+    }
+
+    @PostMapping(value="/to-excel-pr/{purchaseRecommendationId}/{batch}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<byte[]> exportToExcelPr(@PathVariable Integer purchaseRecommendationId,@PathVariable Integer batch, @RequestBody PageFilterInput<ItemFilter> input) {
+        try {
+            byte[] excelData = purchaseRecommendationDetailService.exportPurchaseRecommendationDetailToExcel(purchaseRecommendationId, batch, input);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            String filename = "Phiếu_yêu_cầu_mua_vật_tư.xlsx";
+            headers.setContentDispositionFormData(filename, filename);
+            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+            ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(excelData, headers, HttpStatus.OK);
+            return responseEntity;
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(("Error occurred during export: " + e.getMessage()).getBytes());
+        }
     }
 }

@@ -58,13 +58,13 @@ public class PurchaseRequestResource {
         return new PageResponse<List<PurchaseRequestEntity>>().data(result.getContent()).dataCount(result.getTotalElements());
     }
 
-    @PostMapping("/detail/{prCode}")
-    public PageResponse<List<PurchaseRequestDetailEntity>> getAllPurchaseRequest(@RequestBody PageFilterInput<PurchaseRequestDetailPagingDTO> input, @PathVariable String prCode) {
+    @PostMapping("/detail/{prId}")
+    public PageResponse<List<PurchaseRequestDetailEntity>> getAllPurchaseRequest(@RequestBody PageFilterInput<PurchaseRequestDetailPagingDTO> input, @PathVariable Integer prId) {
         Pageable pageable = input.getPageSize() == 0
             ? PageRequest.of(0, Integer.MAX_VALUE)
             : PageRequest.of(input.getPageNumber(), input.getPageSize());
 
-        Page<PurchaseRequestDetailEntity> result = purchaseRequestService.getAllPRDetailDetailListByPRCode(input, pageable, prCode);
+        Page<PurchaseRequestDetailEntity> result = purchaseRequestService.getAllPRDetailDetailListByPRId(input, pageable, prId);
         return new PageResponse<List<PurchaseRequestDetailEntity>>().data(result.getContent()).dataCount(result.getTotalElements());
     }
 }

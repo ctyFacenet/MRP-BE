@@ -290,14 +290,17 @@ public class PurchaseRequestService {
     }
 
     @Transactional
-    public Page<PurchaseRequestDetailEntity> getAllPRDetailDetailListByPRCode(PageFilterInput<PurchaseRequestDetailPagingDTO> input, Pageable pageable, String prCode)
+    public Page<PurchaseRequestDetailEntity> getAllPRDetailDetailListByPRId(PageFilterInput<PurchaseRequestDetailPagingDTO> input, Pageable pageable, Integer prId)
     {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<PurchaseRequestDetailEntity> cq = cb.createQuery(PurchaseRequestDetailEntity.class);
         Root<PurchaseRequestDetailEntity> root = cq.from(PurchaseRequestDetailEntity.class);
         List<Predicate> predicates = new ArrayList<>();
 
-        predicates.add(cb.equal(root.get("prCode"), prCode.trim()));
+        PurchaseRequestEntity purchaseRequest = purchaseRequestEntityRepository.findById(prId).orElseThrow(
+            () -> new CustomException(HttpStatus.NOT_FOUND, "not.found", "PR ID " + String.valueOf(prId))
+        );
+        predicates.add(cb.equal(root.get("prCode"), purchaseRequest.getPrCode().trim()));
         predicates.add(cb.equal(root.get("isActive"), 1));
 
         // Filter
