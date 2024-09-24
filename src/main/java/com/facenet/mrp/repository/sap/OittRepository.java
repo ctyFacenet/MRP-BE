@@ -5,6 +5,7 @@ import com.facenet.mrp.domain.sap.OittEntity;
 import com.facenet.mrp.service.dto.DetailBomVersionDTO;
 import com.facenet.mrp.service.dto.mrp.CloneBomDTO;
 import com.facenet.mrp.service.dto.mrp.MrpDetailDTO;
+import com.facenet.mrp.service.dto.sap.CoittCitt1DTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -51,4 +52,12 @@ public interface OittRepository extends JpaRepository<OittEntity, Integer> {
         "join OitmEntity oi on oi.itemCode = a.code " +
         "where b.uStatus = '0' and b.code = :productCode")
     List<DetailBomVersionDTO> getDetailBomVersionWithProduct(@Param("productCode") String productCode);
+
+    @Query(value = "select new com.facenet.mrp.service.dto.sap.CoittCitt1DTO(a.code,'1.0',1,b.code,'1.0')"+
+        " FROM OittEntity a join Itt1Entity b on a.code = b.father join OitmEntity z on z.itemCode = b.code"+
+        " where z.itmsGrpCod.itmsGrpCode = 101 order by a.code")
+    List<CoittCitt1DTO> getAllDistinct();
+
+    @Query(value = "select x from OittEntity x")
+    List<OittEntity> getAllOitt();
 }

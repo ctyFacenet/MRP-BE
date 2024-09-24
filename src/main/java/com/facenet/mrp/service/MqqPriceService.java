@@ -86,7 +86,7 @@ public class MqqPriceService {
             .collect(Collectors.groupingBy(mqq -> mqq.getItemCode() + "|" + mqq.getVendorCode()));
 
         // Bước 3: Lấy tất cả các bản ghi từ SAP (Pdn1Entity) và nhóm theo itemCode và baseCard
-        List<Pdn1Entity> pdn1Records = pdn1Repository.findAll();
+        List<Pdn1Entity> pdn1Records = pdn1Repository.findAllFrom2024();
         Map<String, List<Pdn1Entity>> pdn1GroupedRecords = pdn1Records.stream()
             .collect(Collectors.groupingBy(pdn1 -> pdn1.getItemCode() + "|" + pdn1.getBaseCard()));
 
@@ -102,7 +102,8 @@ public class MqqPriceService {
         Map<String, LeadTimeEntity> leadTimeMap = leadTimeEntities.stream()
             .collect(Collectors.toMap(
                 lead -> lead.getItemCode() + "|" + lead.getVendorCode(),
-                lead -> lead
+                lead -> lead,
+                (existing, replacement) -> existing
             ));
 
         // Bước 5: Lặp qua từng cặp itemCode và baseCard từ SAP, lấy 3 bản ghi gần nhất

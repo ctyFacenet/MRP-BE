@@ -55,7 +55,7 @@ public class PurchaseRequestResource {
             : PageRequest.of(input.getPageNumber(), input.getPageSize());
 
         Page<PurchaseRequestEntity> result = purchaseRequestService.getAllPurchaseRequest(input, pageable);
-        return new PageResponse<List<PurchaseRequestEntity>>().data(result.getContent()).dataCount(result.getTotalElements());
+        return new PageResponse<List<PurchaseRequestEntity>>().result("00", "Thành công", true).data(result.getContent()).dataCount(result.getTotalElements());
     }
 
     @PostMapping("/detail/{prId}")
