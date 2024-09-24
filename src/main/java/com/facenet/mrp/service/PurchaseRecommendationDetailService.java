@@ -29,7 +29,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,11 +55,12 @@ public class PurchaseRecommendationDetailService {
     private final ConfigRepository configRepository;
     private final ApprovalUserAuthorizationRepository approvalUserAuthorizationRepository;
     private final MrpSubRepository mrpSubRepository;
+    private final PurchaseRequestService purchaseRequestService;
 
     public PurchaseRecommendationDetailService(PurchaseHasRecommendationRepository purchaseHasRecommendationRepository, PurchaseRecommendationBatchRepository purchaseRecommendationBatchRepository, PurchaseRecommendationDetailRepository purchaseRecommendationDetailRepository, PurchaseRecommendationRepository purchaseRecommendationRepository, OcrdRepository ocrdRepository, MqqPriceRepository mqqPriceRepository, ItemHoldRepository itemHoldRepository, ItemHoldMapper itemHoldMapper, @Qualifier("mrpEntityManager") EntityManager entityManager, PurchaseRecommendationPlanRepository planRepository, RateExchangeService rateExchangeService, RecommendationPlanMapper planMapper, PurchaseRequestApiMapper purchaseRequestApiMapper,
                                                ConfigRepository configRepository,
                                                ApprovalUserAuthorizationRepository approvalUserAuthorizationRepository,
-                                               MrpSubRepository mrpSubRepository) {
+                                               MrpSubRepository mrpSubRepository, PurchaseRequestService purchaseRequestService) {
         this.purchaseHasRecommendationRepository = purchaseHasRecommendationRepository;
         this.purchaseRecommendationBatchRepository = purchaseRecommendationBatchRepository;
         this.purchaseRecommendationDetailRepository = purchaseRecommendationDetailRepository;
@@ -74,6 +74,7 @@ public class PurchaseRecommendationDetailService {
         this.configRepository = configRepository;
         this.approvalUserAuthorizationRepository = approvalUserAuthorizationRepository;
         this.mrpSubRepository = mrpSubRepository;
+        this.purchaseRequestService = purchaseRequestService;
     }
 
     /**
@@ -327,6 +328,7 @@ public class PurchaseRecommendationDetailService {
             List<PurchaseRequestDetailApiDTO> purchaseRequestDetailApiList = planRepository.getAllApprovedByItems(purchaseRecommendationEntity, Constants.PurchaseRecommendationPlan.ACCEPTED, input.getItems(), batch);
             purchaseRequestDetailApiList.removeIf(detailApiDTO -> detailApiDTO.getRequiredQuantity() <= 0.0);
             if (!purchaseRequestDetailApiList.isEmpty()) {
+
                 RestTemplate restTemplate = new RestTemplate();
                 PurchaseRequestApiDTO purchaseRequestDTO = purchaseRequestApiMapper.toDTO(purchaseRecommendationEntity, purchaseRequestDetailApiList, purchaseHasRecommendationEntity);
                 HttpEntity<PurchaseRequestApiDTO> httpEntity = new HttpEntity<>(purchaseRequestDTO);
@@ -337,15 +339,16 @@ public class PurchaseRecommendationDetailService {
 //                        HttpMethod.POST,
 //                        httpEntity, String.class
 //                    );
+                    purchaseRequestService.addPurchaseRequest(input.getPurchaseRequestEntityDto());
                 } catch (Exception e) {
-                    logger.error("Send PR to SAP failed", e);
+                    logger.error("Create PR failed", e);
                     planRepository.approveRecommendationPlan(
                         purchaseRecommendationEntity,
                         Constants.PurchaseRecommendationPlan.SEND_APPROVAL,
                         input.getItems(),
                         batch
                     );
-                    throw new CustomException( "sent.pr.sap.failed");
+                    throw new CustomException( "create.pr.failed");
                 }
             }
 

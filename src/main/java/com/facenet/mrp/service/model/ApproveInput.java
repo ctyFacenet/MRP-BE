@@ -1,5 +1,7 @@
 package com.facenet.mrp.service.model;
 
+import com.facenet.mrp.service.dto.PurchaseRequestEntityDto;
+
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -11,6 +13,8 @@ public class ApproveInput {
     private List<String> items;
 
     private String note;
+
+    private PurchaseRequestEntityDto purchaseRequestEntityDto;
 
     public Boolean getIsApproval() {
         return isApproval;
@@ -34,5 +38,17 @@ public class ApproveInput {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public Boolean getApproval() {
+        return isApproval;
+    }
+
+    public PurchaseRequestEntityDto getPurchaseRequestEntityDto() {
+        return purchaseRequestEntityDto;
+    }
+
+    public void setPurchaseRequestEntityDto(PurchaseRequestEntityDto purchaseRequestEntityDto) {
+        this.purchaseRequestEntityDto = purchaseRequestEntityDto;
     }
 }
