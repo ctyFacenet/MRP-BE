@@ -181,11 +181,6 @@ public class PurchaseRequestService {
     public void addPurchaseRequest(PurchaseRequestEntityDto purchaseRequestEntityDto)
     {
         PurchaseRequestEntity purchaseRequestEntity = purchaseRequestEntityMapper.toEntity(purchaseRequestEntityDto);
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null) {
-            String currentUser = authentication.getName(); // Lấy username của người dùng hiện tại
-            purchaseRequestEntity.setApprovalUser(currentUser); // Đặt user đang đăng nhập làm ApprovalUser
-        }
 
         List<String> codeList = purchaseRequestEntityRepository.findLastPRCode();
         String newCode;
