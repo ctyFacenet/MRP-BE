@@ -12,7 +12,7 @@ import java.util.List;
 @ToString
 public class CreatePurchaseOrderDTO {
 
-    private List<PurchaseOrderPurchaseRequestDTO> purchaseRequestCodes;
+    private List<PurchaseOrderPurchaseRequestDTO> prCodes;
     private String poCode;
     private String vendorName;
     private String vendorCode;
