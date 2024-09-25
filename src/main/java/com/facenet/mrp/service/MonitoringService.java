@@ -442,8 +442,8 @@ public class MonitoringService {
      * Ham update
      */
     @Transactional
-    public CommonResponse<PurchaseOrderEntity> updatePurchaseOrder(Long prId, CreatePurchaseOrderDTO updatePurchaseOrderDto) {
-        Optional<PurchaseOrderEntity> purchaseOrderOpt = purchaseOrderRepository.findById(prId);
+    public CommonResponse<PurchaseOrderEntity> updatePurchaseOrder(Long poId, CreatePurchaseOrderDTO updatePurchaseOrderDto) {
+        Optional<PurchaseOrderEntity> purchaseOrderOpt = purchaseOrderRepository.findById(poId);
 
         if (purchaseOrderOpt.isPresent()) {
             PurchaseOrderEntity purchaseOrder = purchaseOrderOpt.orElseThrow();
@@ -462,20 +462,49 @@ public class MonitoringService {
             purchaseOrder.setPaymentType(updatePurchaseOrderDto.getPaymentType());
             purchaseOrder.setPaymentAddress(updatePurchaseOrderDto.getPaymentAddress());
             PurchaseOrderEntity savedPurchaseOrder = purchaseOrderRepository.save(purchaseOrder);
-
-            List<PurchaseorderPurchaseRequestEntity> existsPurchaseOrderRequest  = purchaseOrderPurchaseRequestRepository.findAllByPurchaseOrderId(prId);
+            //Xóa thông tin cũ ở các bảng
+            List<PurchaseorderPurchaseRequestEntity> existsPurchaseOrderRequest  = purchaseOrderPurchaseRequestRepository.findAllByPurchaseOrderId(poId);
             purchaseOrderPurchaseRequestRepository.deleteAll(existsPurchaseOrderRequest);
-
+            List<PurchaseOrderItemEntity> existPOItems = purchaseOrderItemRepository.findByPurchaseOrderId(poId) ;
+            purchaseOrderItemRepository.deleteAll(existPOItems);
+            for(PurchaseOrderItemEntity element :existPOItems){
+                List<PurchaseOrderItemProgressEntity> itemProgress = purchaseOrderItemProgressRepository.findByPurchaseOrderItemId(element.getId());
+                purchaseOrderItemProgressRepository.deleteAll(itemProgress);
+            }
             // Lưu thông tin yêu cầu mua
             List<PurchaseorderPurchaseRequestEntity> purchaseRequestCodes = new ArrayList<>();
 
             for (String prCode : updatePurchaseOrderDto.getPrCodes()) {
                 PurchaseorderPurchaseRequestEntity purchaseRequest = new PurchaseorderPurchaseRequestEntity();
-                purchaseRequest.setPurchaseOrderId(prId); // Assuming prId is the ID of the purchase order being updated
+                purchaseRequest.setPurchaseOrderId(poId);
                 purchaseRequest.setPurchaseRequestCode(prCode);
                 purchaseRequestCodes.add(purchaseRequest);
             }
             purchaseOrderPurchaseRequestRepository.saveAll(purchaseRequestCodes);
+
+            for(CreatePurchaseOrderDTO.PurchaseOrderItemDTO itemDTO : updatePurchaseOrderDto.getItems()){
+                PurchaseOrderItemEntity item = new PurchaseOrderItemEntity();
+                item.setPurchaseOrder(purchaseOrder);
+                item.setItemCode(itemDTO.getItemCode());
+                item.setItemName(itemDTO.getItemName());
+                item.setUnit(itemDTO.getUnit());
+                item.setQuantity(itemDTO.getQuantity());
+                item.setPrice(itemDTO.getPrice());
+                item.setTotal(itemDTO.getTotal());
+                item.setDiscountPercent(itemDTO.getDiscountPercent());
+                item.setTaxPercent(itemDTO.getTaxPercent());
+                item.setGrossTotal(itemDTO.getGrossTotal());
+                item.setNote(itemDTO.getNote());
+                purchaseOrderItemRepository.save(item);
+                for(CreatePurchaseOrderDTO.PurchaseOrderItemProgressDTO itemProgressDTO : itemDTO.getProgress()){
+                    PurchaseOrderItemProgressEntity progressEntity = new PurchaseOrderItemProgressEntity();
+                    progressEntity.setPurchaseOrderItem(item);
+                    progressEntity.setDate(itemProgressDTO.getDate());
+                    progressEntity.setQuantity(itemProgressDTO.getQuantity());
+                    purchaseOrderItemProgressRepository.save(progressEntity);
+                }
+
+            }
 
             // Tạo CommonResponse
             return new CommonResponse<PurchaseOrderEntity>()
