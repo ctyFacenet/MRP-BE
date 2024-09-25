@@ -312,7 +312,9 @@ public class MonitoringService {
             item.setPrice(itemDto.getPrice());
             item.setTotal(itemDto.getTotal());
             item.setDiscountPercent(itemDto.getDiscountPercent());
+            item.setDiscountValue(itemDto.getDiscountValue());
             item.setTaxPercent(itemDto.getTaxPercent());
+            item.setTaxValue(itemDto.getTaxValue());
             item.setGrossTotal(itemDto.getGrossTotal());
             item.setNote(itemDto.getNote());
             items.add(item);

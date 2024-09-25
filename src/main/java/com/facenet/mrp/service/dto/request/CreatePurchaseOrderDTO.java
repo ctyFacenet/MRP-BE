@@ -56,7 +56,9 @@ public class CreatePurchaseOrderDTO {
         private Double price;
         private Double total;
         private Double discountPercent;
+        private Double discountValue;
         private Double taxPercent;
+        private Double taxValue;
         private Double grossTotal;
         private String note;
         private List<PurchaseOrderItemProgressDTO> progress;

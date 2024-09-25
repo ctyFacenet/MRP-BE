@@ -39,8 +39,14 @@ public class PurchaseOrderItemEntity {
     @Column(name = "discount_percent")
     private Double discountPercent;
 
+    @Column(name = "discount_value")
+    private Double discountValue;
+
     @Column(name = "tax_percent")
     private Double taxPercent;
+
+    @Column(name = "tax_value")
+    private Double taxValue;
 
     @Column(name = "gross_total")
     private Double grossTotal;
