@@ -32,6 +32,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -210,7 +211,8 @@ public class MonitoringService {
         FindPurchaseOrderProgressFilter filter = request.getFilter();
         Pageable pageable = PageRequest.of(request.getPageNumber(), request.getPageSize());
 
-        List<PurchaseOrderEntity> purchaseOrders = purchaseOrderRepository.findAll();
+        Page<PurchaseOrderEntity> purchaseOrderPage = purchaseOrderRepository.findAll(pageable);
+        List<PurchaseOrderEntity> purchaseOrders = purchaseOrderPage.getContent();
 
         List<PurchaseOrderProgressDTO> purchaseOrderProgressDTOList = new ArrayList<>();
 
@@ -226,8 +228,6 @@ public class MonitoringService {
             dto.setCreatedAt(entity.getCreatedAt());
             dto.setCreatedBy(entity.getCreatedBy());
             dto.setUpdatedAt(entity.getUpdatedAt());
-            dto.setUnmetDeadlineCount(0);
-            purchaseOrderProgressDTOList.add(dto);
 
             List<PurchaseOrderItemEntity> items = purchaseOrderItemRepository.findByPurchaseOrderId(entity.getId());
             int unmetDeadlines = 0;
@@ -253,7 +253,7 @@ public class MonitoringService {
         return new PageResponse<List<PurchaseOrderProgressDTO>>()
             .result("00", "Thành công", true)
             .data(purchaseOrderProgressDTOList)
-            .dataCount(0);
+            .dataCount(purchaseOrderProgressDTOList.size());
     }
 
     public PageResponse<List<PurchaseOrderEntity>> createPurchaseOrder(CreatePurchaseOrderDTO createPurchaseOrderDto) {
