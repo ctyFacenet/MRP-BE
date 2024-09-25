@@ -380,6 +380,12 @@ public class MonitoringService {
         purchaseOrderDTO.setWholeTaxValue(purchaseOrderEntity.getWholeTaxValue());
         purchaseOrderDTO.setFinalTotal(purchaseOrderEntity.getFinalTotal());
 
+        List<String> prCodes = purchaseOrderPurchaseRequestRepository.findAllByPurchaseOrderId(purchaseOrderEntity.getId())
+            .stream()
+            .map(PurchaseorderPurchaseRequestEntity::getPurchaseRequestCode)
+            .collect(Collectors.toList());
+        purchaseOrderDTO.setPrCodes(prCodes);
+
         // Lambda for mapping PurchaseOrderItemEntity to PurchaseOrderItemDTO
         Function<PurchaseOrderItemEntity, PurchaseOrderDTO.PurchaseOrderItemDTO> mapToItemDTO = entity -> {
             PurchaseOrderDTO.PurchaseOrderItemDTO dto = new PurchaseOrderDTO.PurchaseOrderItemDTO();

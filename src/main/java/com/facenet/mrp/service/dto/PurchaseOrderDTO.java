@@ -13,7 +13,7 @@ import java.util.List;
 public class PurchaseOrderDTO {
 
     private Long id;
-    private List<PurchaseOrderPurchaseRequestDTO> purchaseRequestCodes;
+    private List<String> prCodes;
     private String poCode;
     private String vendorName;
     private String vendorCode;
