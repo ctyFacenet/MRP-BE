@@ -191,7 +191,7 @@ public class PurchaseRequestService {
         }
 
         purchaseRequestEntity.setPrCode(newCode);
-
+        purchaseRequestEntity.setApprovalDate(new Timestamp(System.currentTimeMillis()));
         for(PurchaseRequestDetailEntityDto purchaseRequestDetailEntityDto : purchaseRequestEntityDto.getPurchaseRequestDetailEntityDtos())
         {
             PurchaseRequestDetailEntity purchaseRequestDetailEntity = purchaseRequestDetailEntityMapper.toEntity(purchaseRequestDetailEntityDto);
