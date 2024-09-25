@@ -677,8 +677,7 @@ public class PurchaseRecommendationDetailService {
 //        List<PurchaseRecommendationPurchasePlanEntity> planEntities = planRepository.findAllPlan(detailEntities.get(0).getPurchaseRecommendationDetailId());
         List<RecommendationPlanDto> planEntities = planRepository.findOtherPlanByStatus(
             soCode,
-            mrpSubCode, itemCode,
-            List.of(Constants.PurchaseRecommendationPlan.ACCEPTED, Constants.PurchaseRecommendationPlan.CLOSED_ACCEPTED)
+            mrpSubCode, itemCode
         );
 
         if (planEntities == null || planEntities.isEmpty()) {
