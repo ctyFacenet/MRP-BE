@@ -278,10 +278,10 @@ public class MonitoringService {
         List<PurchaseOrderItemEntity> items = new ArrayList<>();
         List<PurchaseOrderItemProgressEntity> progress = new ArrayList<>();
 
-        for (CreatePurchaseOrderDTO.PurchaseOrderPurchaseRequestDTO purchaseRequestDto : createPurchaseOrderDto.getPrCodes()) {
+        for (String prCode : createPurchaseOrderDto.getPrCodes()) {
             PurchaseorderPurchaseRequestEntity purchaseRequest = new PurchaseorderPurchaseRequestEntity();
             purchaseRequest.setPurchaseOrderId(savedPurchaseOrder.getId());
-            purchaseRequest.setPurchaseRequestCode(purchaseRequestDto.getPurchaseRequestCode());
+            purchaseRequest.setPurchaseRequestCode(prCode);
             purchaseRequestCodes.add(purchaseRequest);
         }
 
@@ -438,10 +438,10 @@ public class MonitoringService {
             // Lưu thông tin yêu cầu mua
             List<PurchaseorderPurchaseRequestEntity> purchaseRequestCodes = new ArrayList<>();
 
-            for (CreatePurchaseOrderDTO.PurchaseOrderPurchaseRequestDTO purchaseRequestDto : updatePurchaseOrderDto.getPrCodes()) {
+            for (String prCode : updatePurchaseOrderDto.getPrCodes()) {
                 PurchaseorderPurchaseRequestEntity purchaseRequest = new PurchaseorderPurchaseRequestEntity();
-                purchaseRequest.setPurchaseOrderId(purchaseRequestDto.getPurchaseOrderId());
-                purchaseRequest.setPurchaseRequestCode(purchaseRequestDto.getPurchaseRequestCode());
+                purchaseRequest.setPurchaseOrderId(prId); // Assuming prId is the ID of the purchase order being updated
+                purchaseRequest.setPurchaseRequestCode(prCode);
                 purchaseRequestCodes.add(purchaseRequest);
             }
             purchaseOrderPurchaseRequestRepository.saveAll(purchaseRequestCodes);
