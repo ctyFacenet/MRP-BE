@@ -32,6 +32,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -179,6 +181,11 @@ public class PurchaseRequestService {
     public void addPurchaseRequest(PurchaseRequestEntityDto purchaseRequestEntityDto)
     {
         PurchaseRequestEntity purchaseRequestEntity = purchaseRequestEntityMapper.toEntity(purchaseRequestEntityDto);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            String currentUser = authentication.getName(); // Lấy username của người dùng hiện tại
+            purchaseRequestEntity.setApprovalUser(currentUser); // Đặt user đang đăng nhập làm ApprovalUser
+        }
 
         List<String> codeList = purchaseRequestEntityRepository.findLastPRCode();
         String newCode;
