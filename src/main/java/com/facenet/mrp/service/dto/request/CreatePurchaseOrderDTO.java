@@ -32,7 +32,7 @@ public class CreatePurchaseOrderDTO {
     @Getter
     @ToString
     public static class PurchaseOrderPurchaseRequestDTO {
-        private String purchaseOrderId;
+        private Long purchaseOrderId;
         private String purchaseRequestCode;
     }
 

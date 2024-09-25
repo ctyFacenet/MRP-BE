@@ -408,6 +408,56 @@ public class MonitoringService {
     }
 
     /**
+     * Ham update
+     */
+    @Transactional
+    public CommonResponse<PurchaseOrderEntity> updatePurchaseOrder(Long prId, CreatePurchaseOrderDTO updatePurchaseOrderDto) {
+        Optional<PurchaseOrderEntity> purchaseOrderOpt = purchaseOrderRepository.findById(prId);
+
+        if (purchaseOrderOpt.isPresent()) {
+            PurchaseOrderEntity purchaseOrder = purchaseOrderOpt.orElseThrow();
+
+
+            purchaseOrder.setPoCode(updatePurchaseOrderDto.getPoCode());
+            purchaseOrder.setVendorName(updatePurchaseOrderDto.getVendorName());
+            purchaseOrder.setVendorCode(updatePurchaseOrderDto.getVendorCode());
+            purchaseOrder.setOrderDate(updatePurchaseOrderDto.getOrderDate());
+            purchaseOrder.setDeliveryDate(updatePurchaseOrderDto.getDeliveryDate());
+            purchaseOrder.setRequestUser(updatePurchaseOrderDto.getRequestUser());
+            purchaseOrder.setNote(updatePurchaseOrderDto.getNote());
+            purchaseOrder.setUnit(updatePurchaseOrderDto.getUnit());
+            purchaseOrder.setShippingType(updatePurchaseOrderDto.getShippingType());
+            purchaseOrder.setReceiveAddress(updatePurchaseOrderDto.getReceiveAddress());
+            purchaseOrder.setPaymentType(updatePurchaseOrderDto.getPaymentType());
+            purchaseOrder.setPaymentAddress(updatePurchaseOrderDto.getPaymentAddress());
+            PurchaseOrderEntity savedPurchaseOrder = purchaseOrderRepository.save(purchaseOrder);
+
+            List<PurchaseorderPurchaseRequestEntity> existsPurchaseOrderRequest  = purchaseOrderPurchaseRequestRepository.findAllByPurchaseOrderId(prId);
+            purchaseOrderPurchaseRequestRepository.deleteAll(existsPurchaseOrderRequest);
+
+            // Lưu thông tin yêu cầu mua
+            List<PurchaseorderPurchaseRequestEntity> purchaseRequestCodes = new ArrayList<>();
+
+            for (CreatePurchaseOrderDTO.PurchaseOrderPurchaseRequestDTO purchaseRequestDto : updatePurchaseOrderDto.getPurchaseRequestCodes()) {
+                PurchaseorderPurchaseRequestEntity purchaseRequest = new PurchaseorderPurchaseRequestEntity();
+                purchaseRequest.setPurchaseOrderId(purchaseRequestDto.getPurchaseOrderId());
+                purchaseRequest.setPurchaseRequestCode(purchaseRequestDto.getPurchaseRequestCode());
+                purchaseRequestCodes.add(purchaseRequest);
+            }
+            purchaseOrderPurchaseRequestRepository.saveAll(purchaseRequestCodes);
+
+            // Tạo CommonResponse
+            return new CommonResponse<PurchaseOrderEntity>()
+                .success("Cập nhật thành công")
+                .data(savedPurchaseOrder);
+        } else {
+            return new CommonResponse<PurchaseOrderEntity>()
+                .result("404", "không tìm thấy", false);
+        }
+    }
+
+
+    /**
      * ham lay sach item trong po va tien do cua item
      *
      * @param request
