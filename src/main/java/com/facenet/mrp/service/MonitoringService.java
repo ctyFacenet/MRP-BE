@@ -496,7 +496,9 @@ public class MonitoringService {
                 item.setPrice(itemDTO.getPrice());
                 item.setTotal(itemDTO.getTotal());
                 item.setDiscountPercent(itemDTO.getDiscountPercent());
+                item.setDiscountValue(itemDTO.getDiscountValue());
                 item.setTaxPercent(itemDTO.getTaxPercent());
+                item.setTaxValue(itemDTO.getTaxValue());
                 item.setGrossTotal(itemDTO.getGrossTotal());
                 item.setNote(itemDTO.getNote());
                 purchaseOrderItemRepository.save(item);
