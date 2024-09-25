@@ -398,7 +398,9 @@ public class MonitoringService {
             dto.setPrice(entity.getPrice());
             dto.setTotal(entity.getTotal());
             dto.setDiscountPercent(entity.getDiscountPercent());
+            dto.setDiscountValue(entity.getDiscountValue());
             dto.setTaxPercent(entity.getTaxPercent());
+            dto.setTaxValue(entity.getTaxValue());
             dto.setGrossTotal(entity.getGrossTotal());
             dto.setNote(entity.getNote());
 
