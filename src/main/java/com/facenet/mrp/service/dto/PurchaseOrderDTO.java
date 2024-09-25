@@ -12,6 +12,7 @@ import java.util.List;
 @ToString
 public class PurchaseOrderDTO {
 
+    private Long id;
     private List<PurchaseOrderPurchaseRequestDTO> purchaseRequestCodes;
     private String poCode;
     private String vendorName;
@@ -26,6 +27,15 @@ public class PurchaseOrderDTO {
     private String receiveAddress;
     private String paymentType;
     private String paymentAddress;
+    private Double totalSummary;
+    private Double discountSummary;
+    private Double taxSummary;
+    private Double grossTotalSummary;
+    private Double wholeDiscountPercent;
+    private Double wholeDiscountValue;
+    private Double wholeTaxPercent;
+    private Double wholeTaxValue;
+    private Double finalTotal;
     private List<PurchaseOrderItemDTO> items;
 
     @Setter

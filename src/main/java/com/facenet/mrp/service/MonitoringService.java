@@ -276,6 +276,15 @@ public class MonitoringService {
         purchaseOrder.setReceiveAddress(createPurchaseOrderDto.getReceiveAddress());
         purchaseOrder.setPaymentType(createPurchaseOrderDto.getPaymentType());
         purchaseOrder.setPaymentAddress(createPurchaseOrderDto.getPaymentAddress());
+        purchaseOrder.setTotalSummary(createPurchaseOrderDto.getTotalSummary());
+        purchaseOrder.setDiscountSummary(createPurchaseOrderDto.getDiscountSummary());
+        purchaseOrder.setTaxSummary(createPurchaseOrderDto.getTaxSummary());
+        purchaseOrder.setGrossTotalSummary(createPurchaseOrderDto.getGrossTotalSummary());
+        purchaseOrder.setWholeDiscountPercent(createPurchaseOrderDto.getWholeDiscountPercent());
+        purchaseOrder.setWholeDiscountValue(createPurchaseOrderDto.getWholeDiscountValue());
+        purchaseOrder.setWholeTaxPercent(createPurchaseOrderDto.getWholeTaxPercent());
+        purchaseOrder.setWholeTaxValue(createPurchaseOrderDto.getWholeTaxValue());
+        purchaseOrder.setFinalTotal(createPurchaseOrderDto.getFinalTotal());
         purchaseOrder.setCreatedAt(new Date());
 
         PurchaseOrderEntity savedPurchaseOrder = purchaseOrderRepository.save(purchaseOrder);
@@ -348,6 +357,7 @@ public class MonitoringService {
         PurchaseOrderEntity purchaseOrderEntity = purchaseOrderOptional.get();
 
         PurchaseOrderDTO purchaseOrderDTO = new PurchaseOrderDTO();
+        purchaseOrderDTO.setId(purchaseOrderEntity.getId());
         purchaseOrderDTO.setPoCode(purchaseOrderEntity.getPoCode());
         purchaseOrderDTO.setVendorName(purchaseOrderEntity.getVendorName());
         purchaseOrderDTO.setVendorCode(purchaseOrderEntity.getVendorCode());
@@ -360,6 +370,15 @@ public class MonitoringService {
         purchaseOrderDTO.setReceiveAddress(purchaseOrderEntity.getReceiveAddress());
         purchaseOrderDTO.setPaymentType(purchaseOrderEntity.getPaymentType());
         purchaseOrderDTO.setPaymentAddress(purchaseOrderEntity.getPaymentAddress());
+        purchaseOrderDTO.setTotalSummary(purchaseOrderEntity.getTotalSummary());
+        purchaseOrderDTO.setDiscountSummary(purchaseOrderEntity.getDiscountSummary());
+        purchaseOrderDTO.setTaxSummary(purchaseOrderEntity.getTaxSummary());
+        purchaseOrderDTO.setGrossTotalSummary(purchaseOrderEntity.getGrossTotalSummary());
+        purchaseOrderDTO.setWholeDiscountPercent(purchaseOrderEntity.getWholeDiscountPercent());
+        purchaseOrderDTO.setWholeDiscountValue(purchaseOrderEntity.getWholeDiscountValue());
+        purchaseOrderDTO.setWholeTaxPercent(purchaseOrderEntity.getWholeTaxPercent());
+        purchaseOrderDTO.setWholeTaxValue(purchaseOrderEntity.getWholeTaxValue());
+        purchaseOrderDTO.setFinalTotal(purchaseOrderEntity.getFinalTotal());
 
         // Lambda for mapping PurchaseOrderItemEntity to PurchaseOrderItemDTO
         Function<PurchaseOrderItemEntity, PurchaseOrderDTO.PurchaseOrderItemDTO> mapToItemDTO = entity -> {

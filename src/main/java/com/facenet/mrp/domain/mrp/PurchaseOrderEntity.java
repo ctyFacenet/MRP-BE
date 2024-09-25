@@ -57,6 +57,33 @@ public class PurchaseOrderEntity {
     @Column(name = "payment_address")
     private String paymentAddress;
 
+    @Column(name = "total_summary")
+    private Double totalSummary;
+
+    @Column(name = "discount_summary")
+    private Double discountSummary;
+
+    @Column(name = "tax_summary")
+    private Double taxSummary;
+
+    @Column(name = "gross_total_summary")
+    private Double grossTotalSummary;
+
+    @Column(name = "whole_discount_percent")
+    private Double wholeDiscountPercent;
+
+    @Column(name = "whole_discount_value")
+    private Double wholeDiscountValue;
+
+    @Column(name = "whole_tax_percent")
+    private Double wholeTaxPercent;
+
+    @Column(name = "whole_tax_value")
+    private Double wholeTaxValue;
+
+    @Column(name = "final_total")
+    private Double finalTotal;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
