@@ -229,6 +229,12 @@ public class MonitoringService {
             dto.setCreatedBy(entity.getCreatedBy());
             dto.setUpdatedAt(entity.getUpdatedAt());
 
+            List<String> prCodes = purchaseOrderPurchaseRequestRepository.findAllByPurchaseOrderId(entity.getId())
+                .stream()
+                .map(PurchaseorderPurchaseRequestEntity::getPurchaseRequestCode)
+                .collect(Collectors.toList());
+            dto.setPrCodes(prCodes);
+
             List<PurchaseOrderItemEntity> items = purchaseOrderItemRepository.findByPurchaseOrderId(entity.getId());
             int unmetDeadlines = 0;
             double totalItemQuantity = 0;
@@ -253,7 +259,7 @@ public class MonitoringService {
         return new PageResponse<List<PurchaseOrderProgressDTO>>()
             .result("00", "Thành công", true)
             .data(purchaseOrderProgressDTOList)
-            .dataCount(purchaseOrderProgressDTOList.size());
+            .dataCount(purchaseOrderItemRepository.count());
     }
 
     public PageResponse<List<PurchaseOrderEntity>> createPurchaseOrder(CreatePurchaseOrderDTO createPurchaseOrderDto) {
