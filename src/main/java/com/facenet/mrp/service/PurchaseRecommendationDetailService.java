@@ -338,19 +338,20 @@ public class PurchaseRecommendationDetailService {
             purchaseRequestDetailApiList.removeIf(detailApiDTO -> detailApiDTO.getRequiredQuantity() <= 0.0);
             if (!purchaseRequestDetailApiList.isEmpty()) {
 
-                RestTemplate restTemplate = new RestTemplate();
-                PurchaseRequestApiDTO purchaseRequestDTO = purchaseRequestApiMapper.toDTO(purchaseRecommendationEntity, purchaseRequestDetailApiList, purchaseHasRecommendationEntity);
-                HttpEntity<PurchaseRequestApiDTO> httpEntity = new HttpEntity<>(purchaseRequestDTO);
-                String sapApiUrl = configRepository.getValueByName("SAP_PR_API").orElseThrow(RuntimeException::new);
+//                RestTemplate restTemplate = new RestTemplate();
+//                PurchaseRequestApiDTO purchaseRequestDTO = purchaseRequestApiMapper.toDTO(purchaseRecommendationEntity, purchaseRequestDetailApiList, purchaseHasRecommendationEntity);
+//                HttpEntity<PurchaseRequestApiDTO> httpEntity = new HttpEntity<>(purchaseRequestDTO);
+//                String sapApiUrl = configRepository.getValueByName("SAP_PR_API").orElseThrow(RuntimeException::new);
                 try {
 //                    restTemplate.exchange(
 //                        sapApiUrl,
 //                        HttpMethod.POST,
 //                        httpEntity, String.class
 //                    );
+                    logger.info("Creating PR ------");
                     purchaseRequestService.addPurchaseRequest(input.getPurchaseRequestEntityDto());
                 } catch (Exception e) {
-                    logger.error("Create PR failed", e);
+                    logger.error("Create PR failed ------", e);
                     planRepository.approveRecommendationPlan(
                         purchaseRecommendationEntity,
                         Constants.PurchaseRecommendationPlan.SEND_APPROVAL,
