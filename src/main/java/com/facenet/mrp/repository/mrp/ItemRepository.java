@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 public interface ItemRepository extends JpaRepository<ItemEntity, Integer> {
     @Query("select i.itemCode from ItemEntity i join VendorItemEntity v on i.itemCode = v.itemCode " +
         "where v.vendorCode = :vendorCode " +
-        "and (:itemCode is null or i.itemCode like '%' + :itemCode + '%') " +
-        "and (:itemName is null or i.itemName like '%' + :itemName + '%')")
+        "and (:itemCode is null or i.itemCode like concat('%', :itemCode, '%')) " +
+        "and (:itemName is null or i.itemName like concat('%', :itemName, '%'))")
     Page<String> getAllByVendorCode(@Param("vendorCode") String vendorCode,
                                             @Param("itemCode") String itemCode,
                                             @Param("itemName") String itemName,
