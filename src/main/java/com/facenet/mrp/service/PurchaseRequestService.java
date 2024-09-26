@@ -418,11 +418,13 @@ public class PurchaseRequestService {
         }
 
         if (input.getFilter().getOrderTime() != null ) {
-            query.setParameter(paramIndex, input.getFilter().getOrderTime());
+            java.sql.Date orderDate = new java.sql.Date(input.getFilter().getOrderTime().toInstant().toEpochMilli());
+            query.setParameter(paramIndex, orderDate);
         }
 
         if (input.getFilter().getDeliveryTime() != null ) {
-            query.setParameter(paramIndex, input.getFilter().getDeliveryTime());
+            java.sql.Date deliveryTime = new java.sql.Date(input.getFilter().getDeliveryTime().toInstant().toEpochMilli());
+            query.setParameter(paramIndex, deliveryTime);
         }
 
         if (pageable.getPageSize() > 0) {
