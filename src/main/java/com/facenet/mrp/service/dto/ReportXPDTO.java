@@ -1,6 +1,7 @@
 package com.facenet.mrp.service.dto;
 
 import java.time.Instant;
+import java.util.Date;
 
 public class ReportXPDTO {
     private String soCode;                 // Mã SO/FC
@@ -12,9 +13,9 @@ public class ReportXPDTO {
     private String vendorName;               // Tên NCC
     private Integer requiredPurchaseQty;     // Số lượng cần mua
     private Integer approvedPurchaseQty;     // Số lượng đã được phê duyệt đặt hàng
-    private Instant approvalDate;          // Ngày duyệt
+    private Date approvalDate;          // Ngày duyệt
     private Integer receivedQty;             // Số lượng đã về
-    private Instant arrivalDate;           // Ngày hàng về
+    private Date arrivalDate;           // Ngày hàng về
     private Integer unreceivedQty;           // Số lượng chưa về
     private Double completionRate;           // Tỉ lệ hoàn thành
     private String status;                   // Tình trạng
@@ -22,8 +23,8 @@ public class ReportXPDTO {
     private String customerName;             // Tên khách hàng
     private String orderer;                  // NGƯỜI ĐẶT HÀNG
     private String buyer;                    // NGƯỜI MUA HÀNG
-    private Instant orderTime;         // Thời gian đặt hàng
-    private Instant deliveryTime;      // Thời gian trả hàng
+    private Date orderTime;         // Thời gian đặt hàng
+    private Date deliveryTime;      // Thời gian trả hàng
     private Integer totalOrderedQty;         // Tổng số lượng sản phẩm đặt hàng
     private Integer totalRequiredItemQty;    // Tổng số lượng vật tư cần mua
     private Integer totalPrItemQty;          // Tổng số lượng vật tư đã lên PR
@@ -103,11 +104,11 @@ public class ReportXPDTO {
         this.approvedPurchaseQty = approvedPurchaseQty;
     }
 
-    public Instant getApprovalDate() {
+    public Date getApprovalDate() {
         return approvalDate;
     }
 
-    public void setApprovalDate(Instant approvalDate) {
+    public void setApprovalDate(Date approvalDate) {
         this.approvalDate = approvalDate;
     }
 
@@ -119,11 +120,11 @@ public class ReportXPDTO {
         this.receivedQty = receivedQty;
     }
 
-    public Instant getArrivalDate() {
+    public Date getArrivalDate() {
         return arrivalDate;
     }
 
-    public void setArrivalDate(Instant arrivalDate) {
+    public void setArrivalDate(Date arrivalDate) {
         this.arrivalDate = arrivalDate;
     }
 
@@ -183,19 +184,19 @@ public class ReportXPDTO {
         this.buyer = buyer;
     }
 
-    public Instant getOrderTime() {
+    public Date getOrderTime() {
         return orderTime;
     }
 
-    public void setOrderTime(Instant orderTime) {
+    public void setOrderTime(Date orderTime) {
         this.orderTime = orderTime;
     }
 
-    public Instant getDeliveryTime() {
+    public Date getDeliveryTime() {
         return deliveryTime;
     }
 
-    public void setDeliveryTime(Instant deliveryTime) {
+    public void setDeliveryTime(Date deliveryTime) {
         this.deliveryTime = deliveryTime;
     }
 

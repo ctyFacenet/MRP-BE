@@ -5,6 +5,7 @@ import com.facenet.mrp.domain.mrp.PurchaseRequestEntity;
 import com.facenet.mrp.service.PurchaseRequestService;
 import com.facenet.mrp.service.dto.PurchaseRequestDTO;
 import com.facenet.mrp.service.dto.PurchaseRequestEntityDto;
+import com.facenet.mrp.service.dto.ReportXPDTO;
 import com.facenet.mrp.service.dto.request.PurchaseRequestDetailPagingDTO;
 import com.facenet.mrp.service.dto.request.PurchaseRequestPagingDTO;
 import com.facenet.mrp.service.dto.response.CommonResponse;
@@ -66,5 +67,16 @@ public class PurchaseRequestResource {
 
         Page<PurchaseRequestDetailEntity> result = purchaseRequestService.getAllPRDetailDetailListByPRId(input, pageable, prId);
         return new PageResponse<List<PurchaseRequestDetailEntity>>().data(result.getContent()).dataCount(result.getTotalElements());
+    }
+
+    @PostMapping("/report")
+    public PageResponse<List<ReportXPDTO>> reportPurchaseRequest(@RequestBody PageFilterInput<ReportXPDTO> input)
+    {
+        Pageable pageable = input.getPageSize() == 0
+            ? PageRequest.of(0, Integer.MAX_VALUE)
+            : PageRequest.of(input.getPageNumber(), input.getPageSize());
+
+        Page<ReportXPDTO> result = purchaseRequestService.getSOReport(input, pageable);
+        return new PageResponse<List<ReportXPDTO>>().data(result.getContent()).dataCount(result.getTotalElements());
     }
 }
