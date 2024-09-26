@@ -627,10 +627,10 @@ public class HistoryMrpService {
                 ViewBtpTpDTO viewBtpTpDTO = new ViewBtpTpDTO();
                 viewBtpTpDTO.setProductCode(productCode);
                 viewBtpTpDTO.setProductName(productName);
-                viewBtpTpDTO.setProductBomVer(proBomVer);
+                viewBtpTpDTO.setProductBomVer("1.0");
                 viewBtpTpDTO.setSemiProductCode(itemCode);
                 viewBtpTpDTO.setSemiProductName(itemName);
-                viewBtpTpDTO.setSemiProductBomVer(bomVersion);
+                viewBtpTpDTO.setSemiProductBomVer("1.0");
                 viewBtpTpDTO.setLevel(mrpDetailDTO.getLevel());
                 listViewBtpTp.add(viewBtpTpDTO);
                 ItemSyntheticDTO itemSyntheticDTO = new ItemSyntheticDTO();
@@ -639,7 +639,7 @@ public class HistoryMrpService {
                 itemSyntheticDTO.setItemName(mrpDetailDTO.getItemName());
                 itemSyntheticDTO.setAltItemCode(mrpDetailDTO.getAltItemCode());
                 itemSyntheticDTO.setType("NVL");
-                itemSyntheticDTO.setBomVersion(null);
+                itemSyntheticDTO.setBomVersion("1.0");
 
                 if (mrpDetailDTO.getRequiredQuantity() != null) {
                     itemSyntheticDTO.setRequestNumber(mrpDetailDTO.getRequiredQuantity());
@@ -681,10 +681,10 @@ public class HistoryMrpService {
                 ViewBtpTpDTO viewBtpTpDTO = new ViewBtpTpDTO();
                 viewBtpTpDTO.setProductCode(productCode);
                 viewBtpTpDTO.setProductName(productName);
-                viewBtpTpDTO.setProductBomVer(proBomVer);
+                viewBtpTpDTO.setProductBomVer("1.0");
                 viewBtpTpDTO.setSemiProductCode(itemCode);
                 viewBtpTpDTO.setSemiProductName(itemName);
-                viewBtpTpDTO.setSemiProductBomVer(bomVersion);
+                viewBtpTpDTO.setSemiProductBomVer("1.0");
                 viewBtpTpDTO.setLevel(mrpDetailDTO.getLevel());
                 listViewBtpTp.add(viewBtpTpDTO);
                 ItemSyntheticDTO itemSyntheticDTO = new ItemSyntheticDTO();
@@ -693,7 +693,7 @@ public class HistoryMrpService {
                 itemSyntheticDTO.setItemName(mrpDetailDTO.getItemName());
                 itemSyntheticDTO.setAltItemCode(mrpDetailDTO.getAltItemCode());
                 itemSyntheticDTO.setType("BTP");
-                itemSyntheticDTO.setBomVersion(mrpDetailDTO.getBomVersion());
+                itemSyntheticDTO.setBomVersion("1.0");
 
                 if (mrpDetailDTO.getRequiredQuantity() != null) {
                     itemSyntheticDTO.setRequestNumber(mrpDetailDTO.getRequiredQuantity());

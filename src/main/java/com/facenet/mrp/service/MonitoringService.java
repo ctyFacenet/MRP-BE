@@ -270,6 +270,7 @@ public class MonitoringService {
         purchaseOrder.setOrderDate(createPurchaseOrderDto.getOrderDate());
         purchaseOrder.setDeliveryDate(createPurchaseOrderDto.getDeliveryDate());
         purchaseOrder.setRequestUser(createPurchaseOrderDto.getRequestUser());
+        purchaseOrder.setStatus(createPurchaseOrderDto.getStatus());
         purchaseOrder.setNote(createPurchaseOrderDto.getNote());
         purchaseOrder.setUnit(createPurchaseOrderDto.getUnit());
         purchaseOrder.setShippingType(createPurchaseOrderDto.getShippingType());
@@ -285,6 +286,7 @@ public class MonitoringService {
         purchaseOrder.setWholeTaxPercent(createPurchaseOrderDto.getWholeTaxPercent());
         purchaseOrder.setWholeTaxValue(createPurchaseOrderDto.getWholeTaxValue());
         purchaseOrder.setFinalTotal(createPurchaseOrderDto.getFinalTotal());
+        purchaseOrder.setIsDraft(createPurchaseOrderDto.getIsDraft());
         purchaseOrder.setCreatedAt(new Date());
 
         PurchaseOrderEntity savedPurchaseOrder = purchaseOrderRepository.save(purchaseOrder);
@@ -312,7 +314,9 @@ public class MonitoringService {
             item.setPrice(itemDto.getPrice());
             item.setTotal(itemDto.getTotal());
             item.setDiscountPercent(itemDto.getDiscountPercent());
+            item.setDiscountValue(itemDto.getDiscountValue());
             item.setTaxPercent(itemDto.getTaxPercent());
+            item.setTaxValue(itemDto.getTaxValue());
             item.setGrossTotal(itemDto.getGrossTotal());
             item.setNote(itemDto.getNote());
             items.add(item);
@@ -396,7 +400,9 @@ public class MonitoringService {
             dto.setPrice(entity.getPrice());
             dto.setTotal(entity.getTotal());
             dto.setDiscountPercent(entity.getDiscountPercent());
+            dto.setDiscountValue(entity.getDiscountValue());
             dto.setTaxPercent(entity.getTaxPercent());
+            dto.setTaxValue(entity.getTaxValue());
             dto.setGrossTotal(entity.getGrossTotal());
             dto.setNote(entity.getNote());
 
@@ -442,8 +448,8 @@ public class MonitoringService {
      * Ham update
      */
     @Transactional
-    public CommonResponse<PurchaseOrderEntity> updatePurchaseOrder(Long prId, CreatePurchaseOrderDTO updatePurchaseOrderDto) {
-        Optional<PurchaseOrderEntity> purchaseOrderOpt = purchaseOrderRepository.findById(prId);
+    public CommonResponse<PurchaseOrderEntity> updatePurchaseOrder(Long poId, CreatePurchaseOrderDTO updatePurchaseOrderDto) {
+        Optional<PurchaseOrderEntity> purchaseOrderOpt = purchaseOrderRepository.findById(poId);
 
         if (purchaseOrderOpt.isPresent()) {
             PurchaseOrderEntity purchaseOrder = purchaseOrderOpt.orElseThrow();
@@ -461,21 +467,53 @@ public class MonitoringService {
             purchaseOrder.setReceiveAddress(updatePurchaseOrderDto.getReceiveAddress());
             purchaseOrder.setPaymentType(updatePurchaseOrderDto.getPaymentType());
             purchaseOrder.setPaymentAddress(updatePurchaseOrderDto.getPaymentAddress());
+            purchaseOrder.setIsDraft(updatePurchaseOrderDto.getIsDraft());
             PurchaseOrderEntity savedPurchaseOrder = purchaseOrderRepository.save(purchaseOrder);
-
-            List<PurchaseorderPurchaseRequestEntity> existsPurchaseOrderRequest  = purchaseOrderPurchaseRequestRepository.findAllByPurchaseOrderId(prId);
+            //Xóa thông tin cũ ở các bảng
+            List<PurchaseorderPurchaseRequestEntity> existsPurchaseOrderRequest  = purchaseOrderPurchaseRequestRepository.findAllByPurchaseOrderId(poId);
             purchaseOrderPurchaseRequestRepository.deleteAll(existsPurchaseOrderRequest);
-
+            List<PurchaseOrderItemEntity> existPOItems = purchaseOrderItemRepository.findByPurchaseOrderId(poId) ;
+            purchaseOrderItemRepository.deleteAll(existPOItems);
+            for(PurchaseOrderItemEntity element :existPOItems){
+                List<PurchaseOrderItemProgressEntity> itemProgress = purchaseOrderItemProgressRepository.findByPurchaseOrderItemId(element.getId());
+                purchaseOrderItemProgressRepository.deleteAll(itemProgress);
+            }
             // Lưu thông tin yêu cầu mua
             List<PurchaseorderPurchaseRequestEntity> purchaseRequestCodes = new ArrayList<>();
 
             for (String prCode : updatePurchaseOrderDto.getPrCodes()) {
                 PurchaseorderPurchaseRequestEntity purchaseRequest = new PurchaseorderPurchaseRequestEntity();
-                purchaseRequest.setPurchaseOrderId(prId); // Assuming prId is the ID of the purchase order being updated
+                purchaseRequest.setPurchaseOrderId(poId);
                 purchaseRequest.setPurchaseRequestCode(prCode);
                 purchaseRequestCodes.add(purchaseRequest);
             }
             purchaseOrderPurchaseRequestRepository.saveAll(purchaseRequestCodes);
+
+            for(CreatePurchaseOrderDTO.PurchaseOrderItemDTO itemDTO : updatePurchaseOrderDto.getItems()){
+                PurchaseOrderItemEntity item = new PurchaseOrderItemEntity();
+                item.setPurchaseOrder(purchaseOrder);
+                item.setItemCode(itemDTO.getItemCode());
+                item.setItemName(itemDTO.getItemName());
+                item.setUnit(itemDTO.getUnit());
+                item.setQuantity(itemDTO.getQuantity());
+                item.setPrice(itemDTO.getPrice());
+                item.setTotal(itemDTO.getTotal());
+                item.setDiscountPercent(itemDTO.getDiscountPercent());
+                item.setDiscountValue(itemDTO.getDiscountValue());
+                item.setTaxPercent(itemDTO.getTaxPercent());
+                item.setTaxValue(itemDTO.getTaxValue());
+                item.setGrossTotal(itemDTO.getGrossTotal());
+                item.setNote(itemDTO.getNote());
+                purchaseOrderItemRepository.save(item);
+                for(CreatePurchaseOrderDTO.PurchaseOrderItemProgressDTO itemProgressDTO : itemDTO.getProgress()){
+                    PurchaseOrderItemProgressEntity progressEntity = new PurchaseOrderItemProgressEntity();
+                    progressEntity.setPurchaseOrderItem(item);
+                    progressEntity.setDate(itemProgressDTO.getDate());
+                    progressEntity.setQuantity(itemProgressDTO.getQuantity());
+                    purchaseOrderItemProgressRepository.save(progressEntity);
+                }
+
+            }
 
             // Tạo CommonResponse
             return new CommonResponse<PurchaseOrderEntity>()

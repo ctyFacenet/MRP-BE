@@ -125,6 +125,8 @@ public class MqqPriceService {
                     newPriceEntity.setItemCode(pdn1.getItemCode());
                     newPriceEntity.setPrice(pdn1.getPrice().doubleValue());
                     newPriceEntity.setCurrency(pdn1.getCurrency());
+                    newPriceEntity.setRangeStart(0);
+                    newPriceEntity.setRangeEnd(0);
                     newPriceEntity.setPromotion(false);
                     newPriceEntity.setTimeStart(pdn1.getDocDate());  // docDate map vào timeStart
                     newPriceEntity.setIsActive((byte) 1); // giả định trạng thái active
@@ -141,6 +143,8 @@ public class MqqPriceService {
                         existingPrice.setPrice(pdn1.getPrice().doubleValue());
                         existingPrice.setCurrency(pdn1.getCurrency());
                         existingPrice.setTimeStart(pdn1.getDocDate());
+                        existingPrice.setRangeStart(0);
+                        existingPrice.setRangeEnd(0);
                         existingPrice.setPromotion(false);
                         existingPrice.setIsActive((byte) 1); // Cập nhật trạng thái
                         priceEntitiesToUpdate.add(existingPrice);
@@ -152,6 +156,8 @@ public class MqqPriceService {
                         newPriceEntity.setPrice(pdn1.getPrice().doubleValue());
                         newPriceEntity.setCurrency(pdn1.getCurrency());
                         newPriceEntity.setTimeStart(pdn1.getDocDate());
+                        newPriceEntity.setRangeStart(0);
+                        newPriceEntity.setRangeEnd(0);
                         newPriceEntity.setPromotion(false);
                         newPriceEntity.setIsActive((byte) 1);
                         newPriceEntity.setSap(1);

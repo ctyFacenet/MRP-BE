@@ -60,12 +60,11 @@ public interface PurchaseRecommendationPlanRepository extends PagingAndSortingRe
         "from PurchaseRecommendationPurchasePlanEntity pl " +
         "join PurchaseRecommendationDetailEntity pd on pl.purchaseRecommendationDetailId = pd.purchaseRecommendationDetailId " +
         "where pd.purchaseRecommendation.mrpPoId = :soCode and pl.itemCode = :itemCode and pl.isActive = true " +
-        "and ((pl.status in :status and pd.purchaseRecommendation.mrpSubCode <> :mrpSubCode) or (pd.purchaseRecommendation.mrpSubCode = :mrpSubCode )) "
+        "and pd.purchaseRecommendation.mrpSubCode = :mrpSubCode"
     )
     List<RecommendationPlanDto> findOtherPlanByStatus(@Param("soCode") String soCode,
                                                       @Param("mrpSubCode") String mrpSubCode,
-                                                      @Param("itemCode") String itemCode,
-                                                      @Param("status") List<Integer> status);
+                                                      @Param("itemCode") String itemCode);
 
     PurchaseRecommendationPurchasePlanEntity findByRecommendationPurchasePlanId(Integer id);
 
