@@ -21,6 +21,9 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -712,10 +715,10 @@ public class ReportService {
             .data(branchGroupDTOS);
     }
 
-    public List<ReportXPDTO> getPOReport(ReportXPDTO reportXPDTO) {
+    public Page<ReportXPDTO> getPOReport(PageFilterInput<ReportXPDTO> input, Pageable pageable) {
 
-        Date startDate = Date.from(reportXPDTO.getStartTime());
-        Date endDate = Date.from(reportXPDTO.getEndTime());
+        Date startDate = Date.from(input.getFilter().getStartTime());
+        Date endDate = Date.from(input.getFilter().getEndTime());
 
         StringBuilder sql = new StringBuilder("SELECT pr.so_code as soCode, po.po_code as poCode, " +
             "poi.item_code as itemCode, poi.item_name as itemDescription, po.vendor_name as vendorName, " +
@@ -727,29 +730,36 @@ public class ReportService {
             "LEFT JOIN purchase_order_purchase_request popr ON po.id = popr.purchase_order_id " +
             "LEFT JOIN purchase_request pr ON popr.purchase_request_code LIKE CONCAT('%', pr.pr_code, '%') " +
             "LEFT JOIN product_order so ON pr.so_code = so.product_order_code " +
-            "JOIN product_order_detail sod ON so.product_order_code = sod.product_order_code AND poi.item_code = sod.product_code " +
+            "LEFT JOIN product_order_detail sod ON so.product_order_code = sod.product_order_code AND poi.item_code = sod.product_code " +
             "LEFT JOIN purchase_request_detail prd ON prd.item_code = poi.item_code AND prd.pr_code = pr.pr_code " +
             "LEFT JOIN purchase_order_item_progress poip ON poi.id = poip.purchase_order_item_id " +
-            "WHERE poi.item_code IS NOT NULL");
+            "WHERE poi.item_code IS NOT NULL " +
+            "AND po.created_at BETWEEN ?1 AND ?2 ");
+
+        int paramIndex = 3;
 
         // Dynamic filters based on the DTO input
-        if (reportXPDTO.getSoCode() != null && !reportXPDTO.getSoCode().isEmpty()) {
-            sql.append(" AND LOWER(pr.so_code) LIKE LOWER(?3)");
+        if (input.getFilter().getSoCode() != null && !input.getFilter().getSoCode().isEmpty()) {
+            sql.append(" AND LOWER(pr.so_code) LIKE LOWER(?" + paramIndex + ")");
+            paramIndex++;
         }
-        if (reportXPDTO.getPoCode() != null && !reportXPDTO.getPoCode().isEmpty()) {
-            sql.append(" AND LOWER(po.po_code) LIKE LOWER(?4)");
+        if (input.getFilter().getPoCode() != null && !input.getFilter().getPoCode().isEmpty()) {
+            sql.append(" AND LOWER(po.po_code) LIKE LOWER(?" + paramIndex + ")");
+            paramIndex++;
         }
-        if (reportXPDTO.getItemCode() != null && !reportXPDTO.getItemCode().isEmpty()) {
-            sql.append(" AND LOWER(poi.item_code) LIKE LOWER(?5)");
+        if (input.getFilter().getItemCode() != null && !input.getFilter().getItemCode().isEmpty()) {
+            sql.append(" AND LOWER(poi.item_code) LIKE LOWER(?" + paramIndex + ")");
+            paramIndex++;
         }
-        if (reportXPDTO.getVendorName() != null && !reportXPDTO.getVendorName().isEmpty()) {
-            sql.append(" AND LOWER(po.vendor_name) LIKE LOWER(?6)");
+        if (input.getFilter().getVendorName() != null && !input.getFilter().getVendorName().isEmpty()) {
+            sql.append(" AND LOWER(po.vendor_name) LIKE LOWER(?" + paramIndex + ")");
+            paramIndex++;
         }
-        if (reportXPDTO.getStatus() != null) {
-            sql.append(" AND po.status = ?7");
+        if (input.getFilter().getStatus() != null) {
+            sql.append(" AND po.status = ?" + paramIndex );
         }
 
-        sql.append(" GROUP BY pr.so_code, po.po_code, poi.item_code, po.vendor_name, prd.required_quantity, po.approval_date, po.status ORDER BY po.approval_date DESC");
+        // sql.append(" GROUP BY pr.so_code, po.po_code, poi.item_code, po.vendor_name, prd.required_quantity, po.created_at, po.status ORDER BY po.created_at DESC");
 
         // Create the query
         Query query = entityManager.createNativeQuery(sql.toString());
@@ -758,25 +768,35 @@ public class ReportService {
         query.setParameter(1, startDate);
         query.setParameter(2, endDate);
 
-        int paramIndex = 3;
-        if (reportXPDTO.getSoCode() != null && !reportXPDTO.getSoCode().isEmpty()) {
-            query.setParameter(paramIndex, "%" + reportXPDTO.getSoCode() + "%");
+        paramIndex--;
+        if (input.getFilter().getSoCode() != null && !input.getFilter().getSoCode().isEmpty()) {
+            query.setParameter(paramIndex, "%" + input.getFilter().getSoCode() + "%");
         }
-        paramIndex++;
-        if (reportXPDTO.getPoCode() != null && !reportXPDTO.getPoCode().isEmpty()) {
-            query.setParameter(paramIndex, "%" + reportXPDTO.getPoCode() + "%");
+
+        if (input.getFilter().getPoCode() != null && !input.getFilter().getPoCode().isEmpty()) {
+            query.setParameter(paramIndex, "%" + input.getFilter().getPoCode() + "%");
         }
-        paramIndex++;
-        if (reportXPDTO.getItemCode() != null && !reportXPDTO.getItemCode().isEmpty()) {
-            query.setParameter(paramIndex, "%" + reportXPDTO.getItemCode() + "%");
+
+        if (input.getFilter().getItemCode() != null && !input.getFilter().getItemCode().isEmpty()) {
+            query.setParameter(paramIndex, "%" + input.getFilter().getItemCode() + "%");
         }
-        paramIndex++;
-        if (reportXPDTO.getVendorName() != null && !reportXPDTO.getVendorName().isEmpty()) {
-            query.setParameter(paramIndex, "%" + reportXPDTO.getVendorName() + "%");
+
+        if (input.getFilter().getVendorName() != null && !input.getFilter().getVendorName().isEmpty()) {
+            query.setParameter(paramIndex, "%" + input.getFilter().getVendorName() + "%");
         }
-        paramIndex++;
-        if (reportXPDTO.getStatus() != null) {
-            query.setParameter(paramIndex, reportXPDTO.getStatus());
+
+        if (input.getFilter().getStatus() != null) {
+            query.setParameter(paramIndex, input.getFilter().getStatus());
+        }
+
+        if (input.getFilter().getApprovalDate() != null ) {
+            java.sql.Date approvalDate = new java.sql.Date(input.getFilter().getApprovalDate().toInstant().toEpochMilli());
+            query.setParameter(paramIndex, approvalDate);
+        }
+
+        if (input.getFilter().getArrivalDate() != null ) {
+            java.sql.Date arrivalDate = new java.sql.Date(input.getFilter().getArrivalDate().toInstant().toEpochMilli());
+            query.setParameter(paramIndex, arrivalDate);
         }
 
         // Retrieve and map results
@@ -790,18 +810,18 @@ public class ReportService {
             dto.setItemCode((String) result[2]);
             dto.setItemDescription((String) result[3]);
             dto.setVendorName((String) result[4]);
-            dto.setRequiredPurchaseQty(((Number) result[5]).intValue());
-            dto.setApprovedPurchaseQty(((Number) result[6]).intValue());
-            dto.setApprovalDate(Date.from((Instant) result[7]));
-            dto.setReceivedQty(((Number) result[8]).intValue());
-            dto.setArrivalDate(Date.from((Instant) result[9]));
+            dto.setRequiredPurchaseQty(result[5]!=null ? ((Number) result[5]).intValue() : 0);
+            dto.setApprovedPurchaseQty(result[6]!=null ? ((Number) result[6]).intValue() : 0);
+            dto.setApprovalDate((Date) result[7]);
+            dto.setReceivedQty(result[8]!=null ? ((Number) result[8]).intValue() : 0);
+            dto.setArrivalDate((Date) result[9]);
             dto.setStatus((String) result[10]);
-            dto.setUnreceivedQty(((Number) result[6]).intValue() - ((Number) result[8]).intValue());
-            dto.setCompletionRate((double) (((Number) result[8]).intValue()/((Number) result[6]).intValue()));
+            dto.setUnreceivedQty(dto.getApprovedPurchaseQty() - dto.getReceivedQty());
+            dto.setCompletionRate(dto.getApprovedPurchaseQty() != 0 ? (double) (dto.getReceivedQty()/(dto.getApprovedPurchaseQty())) : 0);
             reportList.add(dto);
         }
-
-        return reportList;
+        int totalRows = reportList.size();
+        return new PageImpl<>(reportList, pageable, totalRows);
     }
 
 }
