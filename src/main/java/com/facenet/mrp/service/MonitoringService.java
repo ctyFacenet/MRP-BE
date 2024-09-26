@@ -33,6 +33,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -40,14 +41,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -74,7 +78,8 @@ public class MonitoringService {
 
     @Autowired
     PurchaseOrderItemProgressRepository purchaseOrderItemProgressRepository;
-
+    @Autowired
+    PurchaseRequestEntityRepository purchaseRequestEntityRepository;
     @Autowired
     PurchaseRecommendationDetailRepository recommendationDetailRepository;
 
@@ -206,60 +211,187 @@ public class MonitoringService {
             .dataCount(count)
             .data(result);
     }
+    @Transactional
+    public PageResponse<List<PurchaseOrderProgressDTO>> findPurchaseOrderProgress(PageFilterInput<PurchaseOrderProgressDTO> request,Pageable pageable) {
+        PurchaseOrderProgressDTO filter = request.getFilter();
+        ////
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    public PageResponse<List<PurchaseOrderProgressDTO>> findPurchaseOrderProgress(PageFilterInput<FindPurchaseOrderProgressFilter> request) {
-        FindPurchaseOrderProgressFilter filter = request.getFilter();
-        Pageable pageable = PageRequest.of(request.getPageNumber(), request.getPageSize());
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append("SELECT po.id, po.po_code, po.vendor_name, po.vendor_code, ")
+            .append("po.order_date, po.delivery_date, po.request_user, po.status, po.created_at, ")
+            .append("po.created_by, po.updated_at ")
+            .append("FROM purchase_order po ")
+            .append("WHERE 1=1  ");
+        // Kiểm tra và thêm điều kiện lọc cho mã PO
+        if (filter.getPoCode() != null && !filter.getPoCode().isEmpty()) {
+            sqlBuilder.append(" AND po.po_code LIKE :poCode");
 
-        Page<PurchaseOrderEntity> purchaseOrderPage = purchaseOrderRepository.findAll(pageable);
-        List<PurchaseOrderEntity> purchaseOrders = purchaseOrderPage.getContent();
+        }
 
-        List<PurchaseOrderProgressDTO> purchaseOrderProgressDTOList = new ArrayList<>();
+        // Kiểm tra và thêm điều kiện lọc cho tên nhà cung cấp
+        if (filter.getVendorName() != null && !filter.getVendorName().isEmpty()) {
+            sqlBuilder.append(" AND po.vendor_name LIKE :vendorName");
+        }
 
-        for (PurchaseOrderEntity entity : purchaseOrders) {
+    // Kiểm tra và thêm điều kiện lọc cho mã nhà cung cấp
+        if (filter.getVendorCode() != null && !filter.getVendorCode().isEmpty()) {
+            sqlBuilder.append(" AND po.vendor_code LIKE :vendorCode");
+        }
+
+    // Kiểm tra và thêm điều kiện lọc cho ngày đặt hàng
+        if (filter.getOrderDate() != null) {
+            sqlBuilder.append(" AND DATE(po.order_date) = :orderDate");
+        }
+
+    // Kiểm tra và thêm điều kiện lọc cho ngày giao hàng
+        if (filter.getDeliveryDate() != null) {
+            sqlBuilder.append(" AND DATE(po.delivery_date) = :deliveryDate");
+        }
+
+    // Kiểm tra và thêm điều kiện lọc cho người yêu cầu
+        if (filter.getRequestUser() != null && !filter.getRequestUser().isEmpty()) {
+            sqlBuilder.append(" AND po.request_user LIKE :requestUser");
+        }
+
+      // Cuối cùng, có thể thêm phần sắp xếp kết quả nếu cần
+        sqlBuilder.append(" ORDER BY po.po_code"); // Sắp xếp theo ngày tạo
+        // Tạo truy vấn từ chuỗi SQL
+        System.out.println(sqlBuilder.toString());
+
+        Query query = entityManager.createNativeQuery(sqlBuilder.toString());
+
+        // Đặt tham số cho PO Code nếu có
+        if (filter.getPoCode() != null && !filter.getPoCode().isEmpty()) {
+            query.setParameter("poCode", "%" + filter.getPoCode() + "%");
+        }
+
+
+        // Đặt tham số cho tên nhà cung cấp nếu có
+        if (filter.getVendorName() != null && !filter.getVendorName().isEmpty()) {
+            query.setParameter("vendorName", "%" + filter.getVendorName() + "%");
+        }
+
+        // Đặt tham số cho mã nhà cung cấp nếu có
+        if (filter.getVendorCode() != null && !filter.getVendorCode().isEmpty()) {
+            query.setParameter("vendorCode", "%" + filter.getVendorCode() + "%");
+        }
+
+        // Đặt tham số cho ngày đặt hàng nếu có
+        if (filter.getOrderDate() != null) {
+            query.setParameter("orderDate", filter.getOrderDate());
+        }
+
+        // Đặt tham số cho ngày giao hàng nếu có
+        if (filter.getDeliveryDate() != null) {
+            query.setParameter("deliveryDate", filter.getDeliveryDate());
+        }
+
+        // Đặt tham số cho người yêu cầu nếu có
+        if (filter.getRequestUser() != null && !filter.getRequestUser().isEmpty()) {
+            query.setParameter("requestUser", "%" + filter.getRequestUser() + "%");
+        }
+
+
+        List<Object[]> results; // Khai báo đúng kiểu là List<Object[]>
+        int totalRows = query.getResultList().size(); // Count the total rows
+        List<PurchaseOrderProgressDTO> poProgressList = new ArrayList<>();
+
+        if (pageable.isPaged()) {
+            results = query.setFirstResult((int) pageable.getOffset()).setMaxResults(pageable.getPageSize()).getResultList();
+
+        } else {
+            results = query.getResultList(); // No pagination
+        }
+
+        ////
+
+        for (Object[] row : results) {
             PurchaseOrderProgressDTO dto = new PurchaseOrderProgressDTO();
-            dto.setId(entity.getId());
-            dto.setPoCode(entity.getPoCode());
-            dto.setVendorName(entity.getVendorName());
-            dto.setVendorCode(entity.getVendorCode());
-            dto.setOrderDate(entity.getOrderDate());
-            dto.setDeliveryDate(entity.getDeliveryDate());
-            dto.setRequestUser(entity.getRequestUser());
-            dto.setCreatedAt(entity.getCreatedAt());
-            dto.setCreatedBy(entity.getCreatedBy());
-            dto.setUpdatedAt(entity.getUpdatedAt());
+            Long poId = (row[0] != null) ? ((Integer) row[0]).longValue() : null; // Kiểm tra null trước khi ép kiểu
+            dto.setId(poId);
 
-            List<String> prCodes = purchaseOrderPurchaseRequestRepository.findAllByPurchaseOrderId(entity.getId())
+            dto.setPoCode(row[1] != null ? (String) row[1] : null); // Kiểm tra null
+            dto.setVendorName(row[2] != null ? (String) row[2] : null); // Kiểm tra null
+            dto.setVendorCode(row[3] != null ? (String) row[3] : null); // Kiểm tra null
+
+// Kiểm tra null cho các trường kiểu Timestamp
+            if (row[4] != null && row[4] instanceof Timestamp timestamp4) {
+                java.sql.Date sqlDate4 = new java.sql.Date(timestamp4.getTime());
+                dto.setOrderDate(sqlDate4);
+            } else {
+                dto.setOrderDate(null); // Hoặc gán giá trị mặc định khác nếu cần
+            }
+
+            if (row[5] != null && row[5] instanceof Timestamp timestamp5) {
+                java.sql.Date sqlDate5 = new java.sql.Date(timestamp5.getTime());
+                dto.setDeliveryDate(sqlDate5);
+            } else {
+                dto.setDeliveryDate(null); // Hoặc gán giá trị mặc định khác nếu cần
+            }
+
+            dto.setRequestUser(row[6] != null ? (String) row[6] : null); // Kiểm tra null
+            dto.setStatus(row[7] != null ? (String) row[7] : null); // Kiểm tra null
+
+            if (row[8] != null && row[8] instanceof Timestamp timestamp8) {
+                java.sql.Date sqlDate8 = new java.sql.Date(timestamp8.getTime());
+                dto.setCreatedAt(sqlDate8);
+            } else {
+                dto.setCreatedAt(null); // Hoặc gán giá trị mặc định khác nếu cần
+            }
+
+            dto.setCreatedBy(row[9] != null ? (String) row[9] : null); // Kiểm tra null
+
+            if (row[10] != null && row[10] instanceof Timestamp timestamp10) {
+                java.sql.Date sqlDate10 = new java.sql.Date(timestamp10.getTime());
+                dto.setUpdatedAt(sqlDate10);
+            } else {
+                dto.setUpdatedAt(null); // Hoặc gán giá trị mặc định khác nếu cần
+            }
+
+
+            List<String> prCodes = purchaseOrderPurchaseRequestRepository.findAllByPurchaseOrderId(poId)
                 .stream()
                 .map(PurchaseorderPurchaseRequestEntity::getPurchaseRequestCode)
                 .collect(Collectors.toList());
             dto.setPrCodes(prCodes);
-
-            List<PurchaseOrderItemEntity> items = purchaseOrderItemRepository.findByPurchaseOrderId(entity.getId());
+            List<String> soCodes=new ArrayList<>();
+            List<String> mrpCodes =new ArrayList<>();
+            for(String prCode: prCodes){
+                PurchaseRequestEntity entity = purchaseRequestEntityRepository.findByPrCode(prCode);
+                soCodes.add(entity.getSoCode());
+                mrpCodes.add(entity.getMrpCode());
+            }
+            dto.setSoCodes(soCodes);
+            dto.setMrpCodes(mrpCodes);
+            List<PurchaseOrderItemEntity> items = purchaseOrderItemRepository.findByPurchaseOrderId(poId);
             int unmetDeadlines = 0;
             double totalItemQuantity = 0;
             double totalProgressQuantity = 0;
-
-            for (PurchaseOrderItemEntity item : items) {
-                totalItemQuantity += item.getQuantity();
-                List<PurchaseOrderItemProgressEntity> progressEntities = purchaseOrderItemProgressRepository.findByPurchaseOrderItemId(item.getId());
-                totalProgressQuantity += progressEntities.stream().mapToDouble(PurchaseOrderItemProgressEntity::getQuantity).sum();
-                unmetDeadlines += progressEntities.stream().filter(progress -> progress.getDate().after(entity.getDeliveryDate())).count();
+            if (row[5] != null && row[5] instanceof Timestamp timestamp5) {
+                java.sql.Date sqlDate5 = new java.sql.Date(timestamp5.getTime());
+                for (PurchaseOrderItemEntity item : items) {
+                    totalItemQuantity += item.getQuantity();
+                    List<PurchaseOrderItemProgressEntity> progressEntities = purchaseOrderItemProgressRepository.findByPurchaseOrderItemId(item.getId());
+                    totalProgressQuantity += progressEntities.stream().mapToDouble(PurchaseOrderItemProgressEntity::getQuantity).sum();
+                    unmetDeadlines += (int) progressEntities.stream().filter(progress -> progress.getDate().after(sqlDate5)).count();
+                }
             }
-
             if (totalItemQuantity > 0) {
                 dto.setBuyingProgress((int) ((totalProgressQuantity / totalItemQuantity) * 100));
             } else {
                 dto.setBuyingProgress(0);
             }
             dto.setUnmetDeadlineCount(unmetDeadlines);
-            purchaseOrderProgressDTOList.add(dto);
+            poProgressList.add(dto);
         }
 
         return new PageResponse<List<PurchaseOrderProgressDTO>>()
-            .result("00", "Thành công", true)
-            .data(purchaseOrderProgressDTOList)
-            .dataCount(purchaseOrderItemRepository.count());
+            .errorCode("00")
+            .message("Thành công")
+            .isOk(true)
+            .dataCount(totalRows)
+            .data(poProgressList);
     }
 
     public PageResponse<List<PurchaseOrderEntity>> createPurchaseOrder(CreatePurchaseOrderDTO createPurchaseOrderDto) {
