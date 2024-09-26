@@ -792,9 +792,9 @@ public class ReportService {
             dto.setVendorName((String) result[4]);
             dto.setRequiredPurchaseQty(((Number) result[5]).intValue());
             dto.setApprovedPurchaseQty(((Number) result[6]).intValue());
-            dto.setApprovalDate((Instant) result[7]);
+            dto.setApprovalDate(Date.from((Instant) result[7]));
             dto.setReceivedQty(((Number) result[8]).intValue());
-            dto.setArrivalDate((Instant) result[9]);
+            dto.setArrivalDate(Date.from((Instant) result[9]));
             dto.setStatus((String) result[10]);
             dto.setUnreceivedQty(((Number) result[6]).intValue() - ((Number) result[8]).intValue());
             dto.setCompletionRate((double) (((Number) result[8]).intValue()/((Number) result[6]).intValue()));
