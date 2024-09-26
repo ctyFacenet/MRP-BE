@@ -462,6 +462,7 @@ public class MonitoringService {
             purchaseOrder.setOrderDate(updatePurchaseOrderDto.getOrderDate());
             purchaseOrder.setDeliveryDate(updatePurchaseOrderDto.getDeliveryDate());
             purchaseOrder.setRequestUser(updatePurchaseOrderDto.getRequestUser());
+            purchaseOrder.setStatus(updatePurchaseOrderDto.getStatus());
             purchaseOrder.setNote(updatePurchaseOrderDto.getNote());
             purchaseOrder.setUnit(updatePurchaseOrderDto.getUnit());
             purchaseOrder.setShippingType(updatePurchaseOrderDto.getShippingType());
