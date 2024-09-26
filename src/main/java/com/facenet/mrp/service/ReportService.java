@@ -25,7 +25,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -709,4 +711,97 @@ public class ReportService {
             .result("00", "Thành công", true)
             .data(branchGroupDTOS);
     }
+
+    public List<ReportXPDTO> getPOReport(ReportXPDTO reportXPDTO) {
+
+        Date startDate = Date.from(reportXPDTO.getStartTime());
+        Date endDate = Date.from(reportXPDTO.getEndTime());
+
+        StringBuilder sql = new StringBuilder("SELECT pr.so_code as soCode, po.po_code as poCode, " +
+            "poi.item_code as itemCode, poi.item_name as itemDescription, po.vendor_name as vendorName, " +
+            "SUM(sod.quantity) as requiredPurchaseQty, " +
+            "SUM(poip.quantity) as approvedPurchaseQty, pr.pr_create_date, sum(poip.quantity) as receivedQty, " +
+            "po.delivery_date as arriveDate, po.status as status " +
+            "FROM purchase_order_item poi " +
+            "LEFT JOIN purchase_order po ON poi.purchase_order_id = po.id " +
+            "LEFT JOIN purchase_order_purchase_request popr ON po.id = popr.purchase_order_id " +
+            "LEFT JOIN purchase_request pr ON popr.purchase_request_code LIKE CONCAT('%', pr.pr_code, '%') " +
+            "LEFT JOIN product_order so ON pr.so_code = so.product_order_code " +
+            "JOIN product_order_detail sod ON so.product_order_code = sod.product_order_code AND poi.item_code = sod.product_code " +
+            "LEFT JOIN purchase_request_detail prd ON prd.item_code = poi.item_code AND prd.pr_code = pr.pr_code " +
+            "LEFT JOIN purchase_order_item_progress poip ON poi.id = poip.purchase_order_item_id " +
+            "WHERE poi.item_code IS NOT NULL");
+
+        // Dynamic filters based on the DTO input
+        if (reportXPDTO.getSoCode() != null && !reportXPDTO.getSoCode().isEmpty()) {
+            sql.append(" AND LOWER(pr.so_code) LIKE LOWER(?3)");
+        }
+        if (reportXPDTO.getPoCode() != null && !reportXPDTO.getPoCode().isEmpty()) {
+            sql.append(" AND LOWER(po.po_code) LIKE LOWER(?4)");
+        }
+        if (reportXPDTO.getItemCode() != null && !reportXPDTO.getItemCode().isEmpty()) {
+            sql.append(" AND LOWER(poi.item_code) LIKE LOWER(?5)");
+        }
+        if (reportXPDTO.getVendorName() != null && !reportXPDTO.getVendorName().isEmpty()) {
+            sql.append(" AND LOWER(po.vendor_name) LIKE LOWER(?6)");
+        }
+        if (reportXPDTO.getStatus() != null) {
+            sql.append(" AND po.status = ?7");
+        }
+
+        sql.append(" GROUP BY pr.so_code, po.po_code, poi.item_code, po.vendor_name, prd.required_quantity, po.approval_date, po.status ORDER BY po.approval_date DESC");
+
+        // Create the query
+        Query query = entityManager.createNativeQuery(sql.toString());
+
+        // Set parameters for the query
+        query.setParameter(1, startDate);
+        query.setParameter(2, endDate);
+
+        int paramIndex = 3;
+        if (reportXPDTO.getSoCode() != null && !reportXPDTO.getSoCode().isEmpty()) {
+            query.setParameter(paramIndex, "%" + reportXPDTO.getSoCode() + "%");
+        }
+        paramIndex++;
+        if (reportXPDTO.getPoCode() != null && !reportXPDTO.getPoCode().isEmpty()) {
+            query.setParameter(paramIndex, "%" + reportXPDTO.getPoCode() + "%");
+        }
+        paramIndex++;
+        if (reportXPDTO.getItemCode() != null && !reportXPDTO.getItemCode().isEmpty()) {
+            query.setParameter(paramIndex, "%" + reportXPDTO.getItemCode() + "%");
+        }
+        paramIndex++;
+        if (reportXPDTO.getVendorName() != null && !reportXPDTO.getVendorName().isEmpty()) {
+            query.setParameter(paramIndex, "%" + reportXPDTO.getVendorName() + "%");
+        }
+        paramIndex++;
+        if (reportXPDTO.getStatus() != null) {
+            query.setParameter(paramIndex, reportXPDTO.getStatus());
+        }
+
+        // Retrieve and map results
+        List<Object[]> results = query.getResultList();
+        List<ReportXPDTO> reportList = new ArrayList<>();
+
+        for (Object[] result : results) {
+            ReportXPDTO dto = new ReportXPDTO();
+            dto.setSoCode((String) result[0]);
+            dto.setPoCode((String) result[1]);
+            dto.setItemCode((String) result[2]);
+            dto.setItemDescription((String) result[3]);
+            dto.setVendorName((String) result[4]);
+            dto.setRequiredPurchaseQty(((Number) result[5]).intValue());
+            dto.setApprovedPurchaseQty(((Number) result[6]).intValue());
+            dto.setApprovalDate((Instant) result[7]);
+            dto.setReceivedQty(((Number) result[8]).intValue());
+            dto.setArrivalDate((Instant) result[9]);
+            dto.setStatus((String) result[10]);
+            dto.setUnreceivedQty(((Number) result[6]).intValue() - ((Number) result[8]).intValue());
+            dto.setCompletionRate((double) (((Number) result[8]).intValue()/((Number) result[6]).intValue()));
+            reportList.add(dto);
+        }
+
+        return reportList;
+    }
+
 }
