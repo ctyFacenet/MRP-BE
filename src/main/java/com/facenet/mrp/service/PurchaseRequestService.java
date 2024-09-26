@@ -6,10 +6,7 @@ import com.facenet.mrp.domain.sap.*;
 import com.facenet.mrp.repository.mrp.PurchaseRequestDetailEntityRepository;
 import com.facenet.mrp.repository.mrp.PurchaseRequestEntityRepository;
 import com.facenet.mrp.security.SecurityUtils;
-import com.facenet.mrp.service.dto.PurchaseRequestDTO;
-import com.facenet.mrp.service.dto.PurchaseRequestDetailEntityDto;
-import com.facenet.mrp.service.dto.PurchaseRequestEntityDto;
-import com.facenet.mrp.service.dto.QPurchaseRequestDTO;
+import com.facenet.mrp.service.dto.*;
 import com.facenet.mrp.service.dto.request.PurchaseRequestDetailPagingDTO;
 import com.facenet.mrp.service.dto.request.PurchaseRequestPagingDTO;
 import com.facenet.mrp.service.dto.response.PageResponse;
@@ -29,11 +26,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -58,13 +54,15 @@ public class PurchaseRequestService {
     private final PurchaseRequestDetailEntityRepository purchaseRequestDetailEntityRepository;
     private final PurchaseRequestEntityRepository purchaseRequestEntityRepository;
     private final KeycloakService keycloakService;
+    private final ReportService reportService;
 
-    public PurchaseRequestService(PurchaseRequestEntityMapper purchaseRequestEntityMapper, PurchaseRequestDetailEntityMapper purchaseRequestDetailEntityMapper, PurchaseRequestDetailEntityRepository purchaseRequestDetailEntityRepository, PurchaseRequestEntityRepository purchaseRequestEntityRepository, KeycloakService keycloakService) {
+    public PurchaseRequestService(PurchaseRequestEntityMapper purchaseRequestEntityMapper, PurchaseRequestDetailEntityMapper purchaseRequestDetailEntityMapper, PurchaseRequestDetailEntityRepository purchaseRequestDetailEntityRepository, PurchaseRequestEntityRepository purchaseRequestEntityRepository, KeycloakService keycloakService, ReportService reportService) {
         this.purchaseRequestEntityMapper = purchaseRequestEntityMapper;
         this.purchaseRequestDetailEntityMapper = purchaseRequestDetailEntityMapper;
         this.purchaseRequestDetailEntityRepository = purchaseRequestDetailEntityRepository;
         this.purchaseRequestEntityRepository = purchaseRequestEntityRepository;
         this.keycloakService = keycloakService;
+        this.reportService = reportService;
     }
 
     public PageResponse<List<PurchaseRequestDTO>> getPurchaseRequestsWithPaging(PageFilterInput<PurchaseRequestDTO> input) {
@@ -338,5 +336,139 @@ public class PurchaseRequestService {
             (totalRows + pageable.getPageSize() - 1) / pageable.getPageSize()
         );
         return new PageImpl<>(results, pageable, totalRows);
+    }
+
+    @Transactional
+    public Page<ReportXPDTO> getSOReport(PageFilterInput<ReportXPDTO> input, Pageable pageable)
+    {
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("SELECT ")
+            .append("    pr.so_code AS MaSO, ")
+            .append("    GROUP_CONCAT(pur.po_code ORDER BY pur.po_code SEPARATOR ', ') as MaPO, ")
+            .append("    GROUP_CONCAT(pr_detail.ncc_name ORDER BY pr_detail.ncc_name SEPARATOR ', ') as TenKhachHang, ")
+            .append("    GROUP_CONCAT(pr.pr_create_user ORDER BY pr.pr_create_user SEPARATOR ', ') as NguoiDatHang, ")
+            .append("    GROUP_CONCAT(pr.approval_user ORDER BY pr.approval_user SEPARATOR ', ') as NguoiMuaHang, ")
+            .append("    pur.created_at AS ThoiGianDatHang, ")
+            .append("    pur.delivery_date AS ThoiGianTraHang ")
+            .append("FROM product_order pro ")
+            .append("JOIN purchase_request pr ON pro.product_order_code = pr.so_code ")
+            .append("JOIN purchase_request_detail pr_detail ON pr.pr_code = pr_detail.pr_code ")
+            .append("JOIN purchase_order_purchase_request pur_pr ON FIND_IN_SET(pr.pr_code, pur_pr.purchase_request_code) ")
+            .append("JOIN purchase_order pur ON pur.id = pur_pr.purchase_order_id ")
+            .append("WHERE pro.created_at >= ?1 ")
+            .append("  AND pro.created_at <= ?2");
+
+        int paramIndex = 3;
+
+        if(input.getFilter().getSoCode() != null && !input.getFilter().getSoCode().isEmpty()) {
+            sql.append(" AND LOWER(pr.so_code) LIKE LOWER(? " + paramIndex + ")");
+            paramIndex++;
+        }
+        if(input.getFilter().getPoCode() != null && !input.getFilter().getPoCode().isEmpty()) {
+            sql.append(" AND LOWER(pur.po_code) LIKE LOWER(?" + paramIndex + ")");
+            paramIndex++;
+        }
+        if(input.getFilter().getCustomerName() != null && !input.getFilter().getCustomerName().isEmpty()) {
+            sql.append(" AND LOWER(pr_detail.ncc_name) LIKE LOWER(?" + paramIndex + ")");
+            paramIndex++;
+        }
+        if(input.getFilter().getOrderer() != null && !input.getFilter().getOrderer().isEmpty()) {
+            sql.append(" AND LOWER(pr.pr_create_user) LIKE LOWER(?" + paramIndex + ")");
+            paramIndex++;
+        }
+        if(input.getFilter().getBuyer() != null && !input.getFilter().getBuyer().isEmpty()) {
+            sql.append(" AND LOWER(pr.approval_user) LIKE LOWER(?" + paramIndex + ")");
+            paramIndex++;
+        }
+        if(input.getFilter().getOrderTime() != null) {
+            sql.append(" AND Date(pur.created_at) = ?" + paramIndex );
+            paramIndex++;
+        }
+        if(input.getFilter().getDeliveryTime() != null) {
+            sql.append(" AND Date(pur.delivery_date) = ?"+ paramIndex );
+            paramIndex++;
+        }
+
+        paramIndex--;
+        Query query = entityManager.createNativeQuery(sql.toString());
+
+        // Set parameters
+        query.setParameter(1, Date.from(input.getFilter().getStartTime()));
+        query.setParameter(2, Date.from(input.getFilter().getEndTime()));
+
+        if (input.getFilter().getSoCode() != null && !input.getFilter().getSoCode().isEmpty()) {
+            query.setParameter(paramIndex, "%" + input.getFilter().getSoCode() + "%");
+        }
+
+        if (input.getFilter().getPoCode() != null && !input.getFilter().getPoCode().isEmpty()) {
+            query.setParameter(paramIndex, "%" + input.getFilter().getPoCode() + "%");
+        }
+
+        if (input.getFilter().getCustomerName() != null && !input.getFilter().getCustomerName().isEmpty()) {
+            query.setParameter(paramIndex, "%" + input.getFilter().getCustomerName() + "%");
+        }
+
+        if (input.getFilter().getOrderer() != null && !input.getFilter().getOrderer().isEmpty()) {
+            query.setParameter(paramIndex, "%" + input.getFilter().getOrderer() + "%");
+        }
+
+        if (input.getFilter().getBuyer() != null && !input.getFilter().getBuyer().isEmpty()) {
+            query.setParameter(paramIndex, "%" + input.getFilter().getBuyer() + "%");
+        }
+
+        if (input.getFilter().getOrderTime() != null ) {
+            query.setParameter(paramIndex, input.getFilter().getOrderTime());
+        }
+
+        if (input.getFilter().getDeliveryTime() != null ) {
+            query.setParameter(paramIndex, input.getFilter().getDeliveryTime());
+        }
+
+        if (pageable.getPageSize() > 0) {
+            query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
+            query.setMaxResults(pageable.getPageSize());
+        }
+
+        List<Object[]> results = query.getResultList();
+        List<ReportXPDTO> reportList = new ArrayList<>();
+        if(results.get(0)[0] == null) {
+            int totalRows = 0;
+            return new PageImpl<>(reportList, pageable, totalRows);
+        }
+
+        int totalRequiredItemQty;
+        int totalPrItemQty;
+
+        for(Object[] item : results)
+        {
+            ReportXPDTO report = new ReportXPDTO();
+            List<String> soCodes = new ArrayList<>();
+            List<String> fcCodes = new ArrayList<>();
+            report.setSoCode((String)item[0]);
+            soCodes.add((String)item[0]);
+
+            report.setPoCode((String)item[1]);
+            report.setCustomerName((String)item[2]);
+            report.setOrderer((String)item[3]);
+            report.setBuyer((String)item[4]);
+            report.setOrderTime((Date)item[5]);
+            report.setDeliveryTime((Date)item[6]);
+
+            totalRequiredItemQty = reportService.getSuppliesCount(soCodes, fcCodes).size();
+            totalPrItemQty = reportService.getPrCount(soCodes, fcCodes).size();
+            logger.info("Number: {} - {}", totalRequiredItemQty, totalPrItemQty);
+            report.setTotalRequiredItemQty(totalRequiredItemQty);
+            report.setTotalPrItemQty(totalPrItemQty);
+
+            report.setUnreceivedQty(totalRequiredItemQty - totalPrItemQty);
+            report.setCompletionRate((totalPrItemQty * 1.0) / totalRequiredItemQty);
+
+            reportList.add(report);
+        }
+
+        int totalRows = reportList.size();
+
+        return new PageImpl<>(reportList, pageable, totalRows);
     }
 }
