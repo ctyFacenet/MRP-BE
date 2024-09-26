@@ -52,7 +52,7 @@ public class OnOrderMonitoringResource {
 
     @PostMapping("/list-po")
     @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR', 'VIEW')")
-    public ResponseEntity<PageResponse<List<PurchaseOrderProgressDTO>>> listAllPurchaseOrder(@RequestBody PageFilterInput<PurchaseOrderProgressDTO> body) {
+    public ResponseEntity<PageResponse<List<PurchaseOrderProgressDTO>>> listAllPurchaseOrder(@RequestBody PageFilterInput<FindPurchaseOrderProgressFilter> body) {
         Pageable pageable = body.getPageSize() == 0 ? Pageable.unpaged() : PageRequest.of(body.getPageNumber(), body.getPageSize());
         PageResponse<List<PurchaseOrderProgressDTO>> result = monitoringService.findPurchaseOrderProgress(body, pageable);
         // Trả về ResponseEntity với PageResponse

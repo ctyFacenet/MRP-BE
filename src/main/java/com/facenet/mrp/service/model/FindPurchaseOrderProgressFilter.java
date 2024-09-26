@@ -6,24 +6,27 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class FindPurchaseOrderProgressFilter {
-    private String soCode;
-    private String mrpSubCode;
-    private String itemCode;
-    private String poCode;
+    private Long id;
     private String prCode;
+    private String poCode;
+    private String soCode;
     private String mrpCode;
-    private String contractNumber;
-    private String vendorCode;
     private String vendorName;
-    private String poCreateUser;
-    private Date poCreateDate;
-    private Date dueDate;
-    private String itemName;
-    private Boolean getDetail;
+    private String vendorCode;
+    private Date orderDate;
+    private Date deliveryDate;
+    private String requestUser;
+    private int buyingProgress;
+    private int unmetDeadlineCount;
+    private String status;
+    private Date createdAt;
+    private String createdBy;
+    private Date updatedAt;
 }
