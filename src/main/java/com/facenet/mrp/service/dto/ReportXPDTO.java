@@ -28,12 +28,15 @@ public class ReportXPDTO {
     private Integer totalRequiredItemQty;    // Tổng số lượng vật tư cần mua
     private Integer totalPrItemQty;          // Tổng số lượng vật tư đã lên PR
 
-    public String getSoFcCode() {
+    private Instant startTime;  //thời gian bắt đầu filter
+    private Instant endTime;    //thời gian kết thúc filter
+
+    public String getSoCode() {
         return soCode;
     }
 
-    public void setSoFcCode(String soFcCode) {
-        this.soCode = soFcCode;
+    public void setSoCode(String soCode) {
+        this.soCode = soCode;
     }
 
     public String getPoCode() {
@@ -218,5 +221,21 @@ public class ReportXPDTO {
 
     public void setTotalPrItemQty(Integer totalPrItemQty) {
         this.totalPrItemQty = totalPrItemQty;
+    }
+
+    public Instant getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(Instant startTime) {
+        this.startTime = startTime;
+    }
+
+    public Instant getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Instant endTime) {
+        this.endTime = endTime;
     }
 }
