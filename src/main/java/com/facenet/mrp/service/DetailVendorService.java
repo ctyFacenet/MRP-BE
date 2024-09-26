@@ -84,7 +84,7 @@ public class DetailVendorService {
     private RateExchangeService rateExchangeService;
 
     //hàm lấy thông tin ncc chi tiết
-    public PageResponse<?> getData(PageFilterInput<VendorDetailForm> input, String vendorCode, Pageable pageable) throws JsonProcessingException {
+    public PageResponse<?> getData(PageFilterInput<VendorDetailForm> input, String vendorCode, Pageable pageable) throws IOException {
         PageResponse<List<DataItemInVendor>> data = getAllData(input, vendorCode, pageable);
         List<DataItemInVendor> list = data.getData();
         ContactPersonDTO contactPersonDTO = ocrdRepository.getContactPerson(vendorCode);
@@ -112,7 +112,7 @@ public class DetailVendorService {
     }
 
     //hàm lấy thông tin leadtime và mqq price theo item
-    public PageResponse<List<DataItemInVendor>> getAllData(PageFilterInput<VendorDetailForm> input, String vendorCode, Pageable pageable) throws JsonProcessingException {
+    public PageResponse<List<DataItemInVendor>> getAllData(PageFilterInput<VendorDetailForm> input, String vendorCode, Pageable pageable) throws IOException {
         List<DataItemInVendor> listData = new ArrayList<>();
         PageResponse<List<ItemInVendorDTO>> listVendor = getAllItemAlongVendor(input, vendorCode, pageable);
         List<ItemInVendorDTO> list = listVendor.getData();
@@ -128,7 +128,7 @@ public class DetailVendorService {
 //                    dataItemInVendor.setCurrency(leadTime.getCurrency());
 //                    dataItemInVendor.setNote(mqqLeadTimeDTO.getNote());
             List<MoqDTO> moqDTOList = mqqPriceRepository.findMoqMinAndLeadTimeByItemCodeAndVendorCode(vendorCode, item.getItemCode());
-            Map<String, Float> rateExchange = rateExchangeService.getRateExchange();
+            Map<String, Float> rateExchange = rateExchangeService.getRateExchange2();
             // xét giá trị ban đầu cho dataItemInVendor.priceMQQ để so sánh tìm exchange
             if (moqDTOList.size() > 0) {
                 dataItemInVendor.setLeadTime(moqDTOList.get(0).getLeadTime());
