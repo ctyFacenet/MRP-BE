@@ -15,8 +15,8 @@ public class PurchaseOrderProgressDTO {
     private Long id;
     private List<String> prCodes;
     private String poCode;
-    private String soCode;
-    private String mrpCode;
+    private List<String> soCodes;
+    private List<String> mrpCodes;
     private String vendorName;
     private String vendorCode;
     private Date orderDate;

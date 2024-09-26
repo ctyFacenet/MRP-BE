@@ -18,6 +18,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -49,9 +52,11 @@ public class OnOrderMonitoringResource {
 
     @PostMapping("/list-po")
     @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR', 'VIEW')")
-    public ResponseEntity<PageResponse<List<PurchaseOrderProgressDTO>>> listAllPurchaseOrder(@RequestBody PageFilterInput<FindPurchaseOrderProgressFilter> body) {
-        PageResponse<List<PurchaseOrderProgressDTO>> data = monitoringService.findPurchaseOrderProgress(body);
-        return ResponseEntity.ok(data);
+    public ResponseEntity<PageResponse<List<PurchaseOrderProgressDTO>>> listAllPurchaseOrder(@RequestBody PageFilterInput<PurchaseOrderProgressDTO> body) {
+        Pageable pageable = body.getPageSize() == 0 ? Pageable.unpaged() : PageRequest.of(body.getPageNumber(), body.getPageSize());
+        PageResponse<List<PurchaseOrderProgressDTO>> result = monitoringService.findPurchaseOrderProgress(body, pageable);
+        // Trả về ResponseEntity với PageResponse
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/create-po")
