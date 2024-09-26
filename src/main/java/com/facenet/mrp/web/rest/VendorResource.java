@@ -68,7 +68,7 @@ public class VendorResource {
 
     @PostMapping(value = "/vendor-information/vendor-detail/{vendorCode}")
     @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'TK', 'MH', 'VIEW', 'VIEWSC', 'SUPPLIER')")
-    public CommonResponse getDetailVendor(@RequestBody PageFilterInput<VendorDetailForm> pageForm, @PathVariable String vendorCode) throws IOException {
+    public CommonResponse getDetailVendor(@RequestBody PageFilterInput<VendorDetailForm> pageForm, @PathVariable String vendorCode) throws JsonProcessingException {
         Pageable page = PageRequest.of(pageForm.getPageNumber(),pageForm.getPageSize());
         PageResponse<?> list = detailVendorService.getData(pageForm,vendorCode,page);
         if(list == null){
