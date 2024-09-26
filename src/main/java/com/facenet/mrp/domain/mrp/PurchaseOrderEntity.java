@@ -39,6 +39,9 @@ public class PurchaseOrderEntity {
     @Column(name = "request_user", nullable = false)
     private String requestUser;
 
+    @Column(name = "status")
+    private String status;
+
     @Column(name = "note")
     private String note;
 
@@ -83,6 +86,9 @@ public class PurchaseOrderEntity {
 
     @Column(name = "final_total")
     private Double finalTotal;
+
+    @Column(name = "is_draft")
+    private Boolean isDraft;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)

@@ -270,6 +270,7 @@ public class MonitoringService {
         purchaseOrder.setOrderDate(createPurchaseOrderDto.getOrderDate());
         purchaseOrder.setDeliveryDate(createPurchaseOrderDto.getDeliveryDate());
         purchaseOrder.setRequestUser(createPurchaseOrderDto.getRequestUser());
+        purchaseOrder.setStatus(createPurchaseOrderDto.getStatus());
         purchaseOrder.setNote(createPurchaseOrderDto.getNote());
         purchaseOrder.setUnit(createPurchaseOrderDto.getUnit());
         purchaseOrder.setShippingType(createPurchaseOrderDto.getShippingType());
@@ -285,6 +286,7 @@ public class MonitoringService {
         purchaseOrder.setWholeTaxPercent(createPurchaseOrderDto.getWholeTaxPercent());
         purchaseOrder.setWholeTaxValue(createPurchaseOrderDto.getWholeTaxValue());
         purchaseOrder.setFinalTotal(createPurchaseOrderDto.getFinalTotal());
+        purchaseOrder.setIsDraft(createPurchaseOrderDto.getIsDraft());
         purchaseOrder.setCreatedAt(new Date());
 
         PurchaseOrderEntity savedPurchaseOrder = purchaseOrderRepository.save(purchaseOrder);
@@ -465,6 +467,7 @@ public class MonitoringService {
             purchaseOrder.setReceiveAddress(updatePurchaseOrderDto.getReceiveAddress());
             purchaseOrder.setPaymentType(updatePurchaseOrderDto.getPaymentType());
             purchaseOrder.setPaymentAddress(updatePurchaseOrderDto.getPaymentAddress());
+            purchaseOrder.setIsDraft(updatePurchaseOrderDto.getIsDraft());
             PurchaseOrderEntity savedPurchaseOrder = purchaseOrderRepository.save(purchaseOrder);
             //Xóa thông tin cũ ở các bảng
             List<PurchaseorderPurchaseRequestEntity> existsPurchaseOrderRequest  = purchaseOrderPurchaseRequestRepository.findAllByPurchaseOrderId(poId);

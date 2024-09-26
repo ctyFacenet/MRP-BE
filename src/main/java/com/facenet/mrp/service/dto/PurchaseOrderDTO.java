@@ -36,6 +36,7 @@ public class PurchaseOrderDTO {
     private Double wholeTaxPercent;
     private Double wholeTaxValue;
     private Double finalTotal;
+    private Boolean isDraft;
     private List<PurchaseOrderItemDTO> items;
 
     @Setter
