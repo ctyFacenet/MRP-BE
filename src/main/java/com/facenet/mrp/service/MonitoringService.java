@@ -383,6 +383,7 @@ public class MonitoringService {
         purchaseOrderDTO.setWholeTaxPercent(purchaseOrderEntity.getWholeTaxPercent());
         purchaseOrderDTO.setWholeTaxValue(purchaseOrderEntity.getWholeTaxValue());
         purchaseOrderDTO.setFinalTotal(purchaseOrderEntity.getFinalTotal());
+        purchaseOrderDTO.setIsDraft(purchaseOrderEntity.getIsDraft());
 
         List<String> prCodes = purchaseOrderPurchaseRequestRepository.findAllByPurchaseOrderId(purchaseOrderEntity.getId())
             .stream()
