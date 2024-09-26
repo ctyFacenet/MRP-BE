@@ -14,7 +14,6 @@ import com.facenet.mrp.service.dto.request.PurchaseRequestDetailPagingDTO;
 import com.facenet.mrp.service.dto.request.PurchaseRequestPagingDTO;
 import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
-import com.facenet.mrp.service.mapper.PurchaseRequestApiMapper;
 import com.facenet.mrp.service.mapper.PurchaseRequestDetailEntityMapper;
 import com.facenet.mrp.service.mapper.PurchaseRequestEntityMapper;
 import com.facenet.mrp.service.model.PageFilterInput;
@@ -23,10 +22,8 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.Criteria;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -43,7 +40,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -61,12 +57,14 @@ public class PurchaseRequestService {
     private final PurchaseRequestDetailEntityMapper purchaseRequestDetailEntityMapper;
     private final PurchaseRequestDetailEntityRepository purchaseRequestDetailEntityRepository;
     private final PurchaseRequestEntityRepository purchaseRequestEntityRepository;
+    private final KeycloakService keycloakService;
 
-    public PurchaseRequestService(PurchaseRequestEntityMapper purchaseRequestEntityMapper, PurchaseRequestDetailEntityMapper purchaseRequestDetailEntityMapper, PurchaseRequestDetailEntityRepository purchaseRequestDetailEntityRepository, PurchaseRequestEntityRepository purchaseRequestEntityRepository) {
+    public PurchaseRequestService(PurchaseRequestEntityMapper purchaseRequestEntityMapper, PurchaseRequestDetailEntityMapper purchaseRequestDetailEntityMapper, PurchaseRequestDetailEntityRepository purchaseRequestDetailEntityRepository, PurchaseRequestEntityRepository purchaseRequestEntityRepository, KeycloakService keycloakService) {
         this.purchaseRequestEntityMapper = purchaseRequestEntityMapper;
         this.purchaseRequestDetailEntityMapper = purchaseRequestDetailEntityMapper;
         this.purchaseRequestDetailEntityRepository = purchaseRequestDetailEntityRepository;
         this.purchaseRequestEntityRepository = purchaseRequestEntityRepository;
+        this.keycloakService = keycloakService;
     }
 
     public PageResponse<List<PurchaseRequestDTO>> getPurchaseRequestsWithPaging(PageFilterInput<PurchaseRequestDTO> input) {
@@ -202,6 +200,13 @@ public class PurchaseRequestService {
             purchaseRequestDetailEntity.setPrCode(newCode);
             purchaseRequestDetailEntityRepository.save(purchaseRequestDetailEntity);
         }
+        // Save full name for user
+        purchaseRequestEntity.setPrCreateUser (
+            keycloakService.getFullNameByUsername(purchaseRequestEntityDto.getPrCreateUser())
+        );
+        purchaseRequestEntity.setApprovalUser(
+            keycloakService.getFullNameByUsername(purchaseRequestEntityDto.getApprovalUser())
+        );
         purchaseRequestEntity.setStatus(Constants.PurchaseRequestStatus.NEWLY_CREATED);
         purchaseRequestEntityRepository.save(purchaseRequestEntity);
     }
