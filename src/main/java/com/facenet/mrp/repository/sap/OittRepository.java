@@ -6,6 +6,8 @@ import com.facenet.mrp.service.dto.DetailBomVersionDTO;
 import com.facenet.mrp.service.dto.mrp.CloneBomDTO;
 import com.facenet.mrp.service.dto.mrp.MrpDetailDTO;
 import com.facenet.mrp.service.dto.sap.CoittCitt1DTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -60,4 +62,12 @@ public interface OittRepository extends JpaRepository<OittEntity, Integer> {
 
     @Query(value = "select x from OittEntity x")
     List<OittEntity> getAllOitt();
+
+    @Query(value = "select new com.facenet.mrp.service.dto.DetailBomVersionDTO(a.code,oi.itemName,a.quantity,a.warehouse,b.uStatus) " +
+        "from Itt1Entity a " +
+        "join OittEntity b on a.father = b.code " +
+        "join OitmEntity oi on oi.itemCode = b.code " +
+        "where b.uStatus = '0' and b.code = :productCode ")
+    Page<DetailBomVersionDTO> getDetailBomVersionByProductPaging(Pageable pageable, @Param("productCode") String productCode);
+
 }
