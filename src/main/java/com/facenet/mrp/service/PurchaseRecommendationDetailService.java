@@ -1,8 +1,10 @@
 package com.facenet.mrp.service;
 
 import com.facenet.mrp.domain.mrp.*;
+import com.facenet.mrp.domain.sap.OitmEntity;
 import com.facenet.mrp.repository.mrp.*;
 import com.facenet.mrp.repository.sap.OcrdRepository;
+import com.facenet.mrp.repository.sap.OitmRepository;
 import com.facenet.mrp.security.SecurityUtils;
 import com.facenet.mrp.service.dto.*;
 import com.facenet.mrp.service.dto.mrp.OnOrderMonitoringDTO;
@@ -65,11 +67,13 @@ public class PurchaseRecommendationDetailService {
     private final ApprovalUserAuthorizationRepository approvalUserAuthorizationRepository;
     private final MrpSubRepository mrpSubRepository;
     private final PurchaseRequestService purchaseRequestService;
+    private final OitmRepository oitmRepository;
 
     public PurchaseRecommendationDetailService(PurchaseHasRecommendationRepository purchaseHasRecommendationRepository, PurchaseRecommendationBatchRepository purchaseRecommendationBatchRepository, PurchaseRecommendationDetailRepository purchaseRecommendationDetailRepository, PurchaseRecommendationRepository purchaseRecommendationRepository, OcrdRepository ocrdRepository, MqqPriceRepository mqqPriceRepository, ItemHoldRepository itemHoldRepository, ItemHoldMapper itemHoldMapper, @Qualifier("mrpEntityManager") EntityManager entityManager, PurchaseRecommendationPlanRepository planRepository, RateExchangeService rateExchangeService, RecommendationPlanMapper planMapper, PurchaseRequestApiMapper purchaseRequestApiMapper,
                                                ConfigRepository configRepository,
                                                ApprovalUserAuthorizationRepository approvalUserAuthorizationRepository,
-                                               MrpSubRepository mrpSubRepository, PurchaseRequestService purchaseRequestService) {
+                                               MrpSubRepository mrpSubRepository, PurchaseRequestService purchaseRequestService,
+                                               OitmRepository oitmRepository) {
         this.purchaseHasRecommendationRepository = purchaseHasRecommendationRepository;
         this.purchaseRecommendationBatchRepository = purchaseRecommendationBatchRepository;
         this.purchaseRecommendationDetailRepository = purchaseRecommendationDetailRepository;
@@ -84,6 +88,7 @@ public class PurchaseRecommendationDetailService {
         this.approvalUserAuthorizationRepository = approvalUserAuthorizationRepository;
         this.mrpSubRepository = mrpSubRepository;
         this.purchaseRequestService = purchaseRequestService;
+        this.oitmRepository = oitmRepository;
     }
 
     /**
@@ -741,35 +746,60 @@ public class PurchaseRecommendationDetailService {
         List<PurchaseRecommendationDetailDTO> data = new ArrayList<>();
         data = getAllItemsHasRecommendation(purchaseRecommendationId, batch, input).getData();
         String[] columns = {"STT", "Tên vật tư", "Xuất xứ", "ĐVT", "Số lượng", "Thời gian", "Ghi chú", "Người mua"};
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        try (Workbook workbook = new XSSFWorkbook())
-        {
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat vietnameseDateFormat = new SimpleDateFormat("'Ngày' dd 'tháng' MM 'năm' yyyy");
+
+        try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("PHIẾU YÊU CẦU MUA VẬT TƯ");
+
+            Font defaultFont = workbook.createFont();
+            defaultFont.setFontName("Times New Roman");
+            defaultFont.setFontHeightInPoints((short) 13);
+
+            CellStyle defaultStyle = workbook.createCellStyle();
+            defaultStyle.setFont(defaultFont);
+            defaultStyle.setAlignment(HorizontalAlignment.CENTER); // Center alignment
 
             CellStyle titleStyle = workbook.createCellStyle();
             Font titleFont = workbook.createFont();
             titleFont.setBold(true);
             titleFont.setFontHeightInPoints((short) 16);
+            titleFont.setFontName("Times New Roman");
             titleStyle.setFont(titleFont);
             titleStyle.setAlignment(HorizontalAlignment.CENTER);
 
-            // Main title
+            // Main title row with "Số:"
             Row titleRow = sheet.createRow(0);
             Cell titleCell = titleRow.createCell(0);
             titleCell.setCellValue("PHIẾU YÊU CẦU MUA VẬT TƯ");
             titleCell.setCellStyle(titleStyle);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
+
+            // Add "Số:" in column G
+            Cell titleCellWithNumber = titleRow.createCell(6);
+            titleCellWithNumber.setCellValue("Số:");
+            titleCellWithNumber.setCellStyle(titleStyle);
 
             CellStyle unitStyle = workbook.createCellStyle();
+            unitStyle.setFont(defaultFont);
             unitStyle.setAlignment(HorizontalAlignment.CENTER);
 
             Row unitRow = sheet.createRow(1);
             Cell unitCell = unitRow.createCell(0);
             unitCell.setCellValue("Đơn vị đề nghị: Xưởng phích nước - thủy tinh");
-            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 7));
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 5));
             unitCell.setCellStyle(unitStyle);
 
+            // Header row
             Row headerRow = sheet.createRow(2);
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(defaultFont);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
             for (int i = 0; i < columns.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(columns[i]);
@@ -781,29 +811,87 @@ public class PurchaseRecommendationDetailService {
             int stt = 1;
             for (PurchaseRecommendationDetailDTO prDTO : data) {
                 Row row = sheet.createRow(rowNum++);
-
+                CellStyle dataStyle = workbook.createCellStyle();
+                dataStyle.setFont(defaultFont);
+                dataStyle.setBorderTop(BorderStyle.THIN);    // THINer border
+                dataStyle.setBorderBottom(BorderStyle.THIN); // THINer border
+                dataStyle.setBorderLeft(BorderStyle.THIN);   // THINer border
+                dataStyle.setBorderRight(BorderStyle.THIN);  // THINer border
+                OitmEntity oitmEntity = oitmRepository.getByItemCode(prDTO.getItemCode());
                 row.createCell(0).setCellValue(stt++);
                 row.createCell(1).setCellValue(prDTO.getItemDescription());
                 row.createCell(2).setCellValue(prDTO.getVendorName());
-                row.createCell(3).setCellValue(prDTO.getUnit());
+                row.createCell(3).setCellValue(oitmEntity.getSalUnitMsr());
                 row.createCell(4).setCellValue(prDTO.getSumRequestQuantity());
-                row.createCell(5).setCellValue(prDTO.getReceiveDate());
+                if (prDTO.getReceiveDate() != null) {
+                    row.createCell(5).setCellValue(dateFormatter.format(prDTO.getReceiveDate()));
+                } else {
+                    row.createCell(5).setCellValue("");
+                }
                 row.createCell(6).setCellValue(prDTO.getNote());
-                row.createCell(7).setCellValue("");
+                row.createCell(7).setCellValue(prDTO.getAssignedUser());
+
+                // Apply style to each cell
+                for (int i = 0; i < columns.length; i++) {
+                    row.getCell(i).setCellStyle(dataStyle);
+                }
             }
 
+            // Adjust column sizes for better fit
             for (int i = 0; i < columns.length; i++) {
-                sheet.autoSizeColumn(i);
+                sheet.autoSizeColumn(i);  // Adjust the column width based on the content
             }
 
-            // FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
-            // workbook.write(out);
+            // Add "Mục đích sử dụng" row and merge A to H, align text to the left
+            Row usageRow = sheet.createRow(rowNum++);
+            Cell usageCell = usageRow.createCell(0);
+            usageCell.setCellValue("Mục đích sử dụng:");
+            CellStyle leftAlignStyle = workbook.createCellStyle();
+            leftAlignStyle.setFont(defaultFont);
+            leftAlignStyle.setAlignment(HorizontalAlignment.LEFT); // Left-aligned
+            usageCell.setCellStyle(leftAlignStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 7));
+
+            // Add the approval row (Duyệt, Đơn vị mua hàng, and Ngày)
+            Row approvalRow = sheet.createRow(rowNum++);
+
+            // Merge A-B into "Duyệt"
+            Cell approveCell = approvalRow.createCell(0);
+            approveCell.setCellValue("DUYỆT");
+            approveCell.setCellStyle(defaultStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 1));
+
+            // Merge C-D into "Đơn vị mua hàng"
+            Cell buyingUnitCell = approvalRow.createCell(2);
+            buyingUnitCell.setCellValue("ĐƠN VỊ MUA HÀNG");
+            buyingUnitCell.setCellStyle(defaultStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 2, 3));
+
+            // Merge E-H into the current date in Vietnamese format
+            Cell dateCell = approvalRow.createCell(4);
+            dateCell.setCellValue(vietnameseDateFormat.format(new Date()));
+            dateCell.setCellStyle(defaultStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 4, 7));
+
+            // Add the "Đơn vị đề nghị" row and merge E-H
+            Row suggestionRow = sheet.createRow(rowNum++);
+            Cell suggestionCell = suggestionRow.createCell(4);
+            suggestionCell.setCellValue("ĐƠN VỊ ĐỀ NGHỊ");
+            suggestionCell.setCellStyle(defaultStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 4, 7));
+            FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
+            workbook.write(out);
             // Convert workbook to byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
             return outputStream.toByteArray();
+
         } catch (IOException e) {
             return null;
         }
     }
+
+
+
+
 }

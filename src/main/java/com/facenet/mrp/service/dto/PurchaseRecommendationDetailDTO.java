@@ -27,6 +27,7 @@ public class PurchaseRecommendationDetailDTO implements Serializable {
     private Integer groupType;
     private String groupName;
     private String group;
+    private String assignedUser;
 
     public PurchaseRecommendationDetailDTO() {
     }
@@ -206,5 +207,13 @@ public class PurchaseRecommendationDetailDTO implements Serializable {
 
     public void setGroup(String group) {
         this.group = group;
+    }
+
+    public String getAssignedUser() {
+        return assignedUser;
+    }
+
+    public void setAssignedUser(String assignedUser) {
+        this.assignedUser = assignedUser;
     }
 }
