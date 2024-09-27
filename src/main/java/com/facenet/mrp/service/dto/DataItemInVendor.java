@@ -29,7 +29,6 @@ public class DataItemInVendor {
 
     private String currency;
     private String note;
-    private Integer sap;
 
     public String getNote() {
         return note;
@@ -141,14 +140,6 @@ public class DataItemInVendor {
 
     public void setCurrency(String currency) {
         this.currency = currency;
-    }
-
-    public Integer getSap() {
-        return sap;
-    }
-
-    public void setSap(Integer sap) {
-        this.sap = sap;
     }
 
     public DataItemInVendor() {

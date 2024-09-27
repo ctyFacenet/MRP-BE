@@ -5,6 +5,7 @@ import com.facenet.mrp.repository.mrp.*;
 import com.facenet.mrp.repository.sap.Pdn1Repository;
 import com.facenet.mrp.repository.sap.Por1Repository;
 import com.facenet.mrp.repository.sap.Prq1Repository;
+import com.facenet.mrp.service.dto.PoExcelDTO;
 import com.facenet.mrp.service.dto.PurchaseOrderDTO;
 import com.facenet.mrp.service.dto.mrp.*;
 import com.facenet.mrp.service.dto.request.AddMonitoringItemRequest;
@@ -740,7 +741,6 @@ public class MonitoringService {
         purchaseOrderDTO.setOrderDate(purchaseOrderEntity.getOrderDate());
         purchaseOrderDTO.setDeliveryDate(purchaseOrderEntity.getDeliveryDate());
         purchaseOrderDTO.setRequestUser(purchaseOrderEntity.getRequestUser());
-        purchaseOrderDTO.setStatus(purchaseOrderEntity.getStatus());
         purchaseOrderDTO.setNote(purchaseOrderEntity.getNote());
         purchaseOrderDTO.setUnit(purchaseOrderEntity.getUnit());
         purchaseOrderDTO.setShippingType(purchaseOrderEntity.getShippingType());
@@ -910,7 +910,7 @@ public class MonitoringService {
         sheet.addMergedRegion(merge);
 
     }
-    public ResponseEntity<InputStreamResource> exportToExcel(CreatePurchaseOrderDTO input){
+    public ResponseEntity<InputStreamResource> exportToExcel(PoExcelDTO input){
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Purchase Order Detail");
             Row headerRow1 = sheet.createRow(0);
@@ -922,10 +922,10 @@ public class MonitoringService {
             headerRow2.createCell(1).setCellValue(input.getPoCode());
             Row headerRow3 = sheet.createRow(2);
             headerRow3.createCell(0).setCellValue("Mã MRP");
-            String mrpString = String.join(", ",input.getPrCodes());
+            String mrpString = String.join(", ",input.getMrpCodes());
             headerRow3.createCell(1).setCellValue(mrpString);
             int rowDetail = 5;
-            for(CreatePurchaseOrderDTO.PurchaseOrderItemDTO itemDTO : input.getItems()){
+            for(PoExcelDTO.PurchaseOrderItemDTO itemDTO : input.getItems()){
                 Row row =sheet.createRow(rowDetail);
                 mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 0, 0, itemDTO.getItemCode());
                 mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 1, 1, itemDTO.getItemName());
@@ -941,7 +941,7 @@ public class MonitoringService {
                 Row row2 = sheet.createRow(rowDetail+1);
                 row.createCell(10).setCellValue("Nhập thời gian theo format (yyyy/MM/dd");
                 row2.createCell(10).setCellValue("Nhập số lượng po");
-                for(CreatePurchaseOrderDTO.PurchaseOrderItemProgressDTO itemProgressDTO : itemDTO.getProgress()){
+                for(PoExcelDTO.PurchaseOrderItemProgressDTO itemProgressDTO : itemDTO.getProgress()){
                     Cell dateCell = row.createCell(rowProgress);
                     dateCell.setCellValue(itemProgressDTO.getDate());
                     CellStyle dateStyle = workbook.createCellStyle();

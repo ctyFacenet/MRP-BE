@@ -147,10 +147,10 @@ public class BomResource {
             .data(results);
     }
 
-    @GetMapping("/get-bom/{productCode}")
+    @GetMapping("/get-bom/{productCode}/{version}")
     @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX', 'VIEW','BOM')")
-    public CommonResponse<List<BomItemDetailDTO>> getBomDetailV2(@PathVariable String productCode) {
-        return bomService.getBomDetailV2(productCode);
+    public CommonResponse<List<BomItemDetailDTO>> getBomDetailV2(@PathVariable String productCode, @PathVariable String version) {
+        return bomService.getBomDetailV2(productCode, version);
     }
     /**
      * Lấy thông tin chi tiết BOM

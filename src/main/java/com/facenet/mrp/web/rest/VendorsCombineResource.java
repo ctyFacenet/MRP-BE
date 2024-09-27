@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,18 +65,6 @@ public class VendorsCombineResource {
             return ResponseEntity.ok("Đồng bộ dữ liệu thành công từ SAP.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi đồng bộ dữ liệu từ SAP: " + e.getMessage());
-        }
-    }
-
-    @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteVendorItem(
-        @RequestParam String itemCode,
-        @RequestParam String vendorCode) {
-        try {
-            vendorsCombineService.deleteVendorItem(itemCode, vendorCode);
-            return ResponseEntity.ok(new CommonResponse<>().success().message("Vendor item deleted successfully"));
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new CommonResponse<>().errorCode("500").message(e.getMessage()));
         }
     }
 }

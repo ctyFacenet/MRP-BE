@@ -22,8 +22,7 @@ public interface ItemRepository extends JpaRepository<ItemEntity, Integer> {
                                             @Param("itemCode") String itemCode,
                                             @Param("itemName") String itemName,
                                             Pageable pageable);
-    @Query("select i.sap from VendorItemEntity i where i.vendorCode = :vendorCode and i.itemCode = :itemCode")
-    Integer getSap(@Param("vendorCode") String vendorCode, @Param("itemCode") String itemCode);
+
     List<ItemEntity> getAllByItemCodeIn(Collection<String> itemList);
 
     default Map<String, ItemEntity> getAllByItemCodeInMap(Collection<String> itemList) {

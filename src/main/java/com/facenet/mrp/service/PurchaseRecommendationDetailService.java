@@ -452,7 +452,6 @@ public class PurchaseRecommendationDetailService {
         for (PurchaseRecommendationDetailEntity entity : entities) {
             double newQuantity = updateForm.get(itemIndex.get(entity.getItemCode())).getQuantity();
             entity.setQuantity(newQuantity);
-            entity.setAssignedUser(updateForm.get(itemIndex.get(entity.getItemCode())).getAssignedUser());
             entity.setReceiveDate(updateForm.get(itemIndex.get(entity.getItemCode())).getReceiveDate());
         }
         purchaseRecommendationDetailRepository.saveAll(entities);

@@ -83,9 +83,6 @@ public class PurchaseRecommendationDetailEntity {
     @LastModifiedBy
     private String updatedBy;
 
-    @Column(name = "assigned_user")
-    private String assignedUser;
-
     @Transient
     private Double price = Double.MAX_VALUE;
 
@@ -247,13 +244,5 @@ public class PurchaseRecommendationDetailEntity {
 
     public void setMoqPriceEntity(MqqPriceEntity moqPriceEntity) {
         this.moqPriceEntity = moqPriceEntity;
-    }
-
-    public String getAssignedUser() {
-        return assignedUser;
-    }
-
-    public void setAssignedUser(String assignedUser) {
-        this.assignedUser = assignedUser;
     }
 }

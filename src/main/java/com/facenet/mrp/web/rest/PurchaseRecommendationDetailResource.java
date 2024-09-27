@@ -173,7 +173,8 @@ public class PurchaseRecommendationDetailResource {
             String filename = "Phiếu_yêu_cầu_mua_vật_tư.xlsx";
             headers.setContentDispositionFormData(filename, filename);
             headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-            return new ResponseEntity<>(excelData, headers, HttpStatus.OK);
+            ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(excelData, headers, HttpStatus.OK);
+            return responseEntity;
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(("Error occurred during export: " + e.getMessage()).getBytes());
         }

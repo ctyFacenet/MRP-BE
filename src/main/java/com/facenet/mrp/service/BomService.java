@@ -5,7 +5,6 @@ import com.facenet.mrp.domain.sap.QOitmEntity;
 import com.facenet.mrp.domain.sap.QOittEntity;
 import com.facenet.mrp.repository.sap.CoittRepository;
 import com.facenet.mrp.repository.sap.Itt1Repository;
-import com.facenet.mrp.repository.sap.OittRepository;
 import com.facenet.mrp.service.dto.BomDTO;
 import com.facenet.mrp.service.dto.BomItemDetailDTO;
 import com.facenet.mrp.service.dto.BomItemDetailDraftDTO;
@@ -34,14 +33,11 @@ public class BomService {
     private final EntityManager entityManager;
     private final CoittRepository coittRepository;
     private final Itt1Repository itt1Repository;
-    private final OittRepository oittRepository;
 
-    public BomService(@Qualifier("sapEntityManager") EntityManager entityManager, CoittRepository coittRepository, Itt1Repository itt1Repository,
-                      OittRepository oittRepository) {
+    public BomService(@Qualifier("sapEntityManager") EntityManager entityManager, CoittRepository coittRepository, Itt1Repository itt1Repository) {
         this.entityManager = entityManager;
         this.coittRepository = coittRepository;
         this.itt1Repository = itt1Repository;
-        this.oittRepository = oittRepository;
     }
 
     /**
@@ -133,20 +129,20 @@ public class BomService {
             .data(list);
     }
 
-    public CommonResponse<List<BomItemDetailDTO>> getBomDetailV2(String productCode) {
+    public CommonResponse<List<BomItemDetailDTO>> getBomDetailV2(String productCode, String version) {
         List<BomItemDetailDTO> list = new ArrayList<>();
         System.out.println("---------------"+productCode);
-        dequy(new BomItemDetailDTO(),list,1,productCode);
+        dequy(new BomItemDetailDTO(),list,1,productCode, version);
         if (list == null || list.isEmpty()) throw new CustomException("record.notfound");
         return new CommonResponse<List<BomItemDetailDTO>>()
             .result("00", "Thành công", true)
             .data(list);
     }
 
-    private List<BomItemDetailDTO> dequy(BomItemDetailDTO bomItemDetailDTO,List<BomItemDetailDTO> resultList,Integer count,String productCode){
+    private List<BomItemDetailDTO> dequy(BomItemDetailDTO bomItemDetailDTO,List<BomItemDetailDTO> resultList,Integer count,String productCode, String version){
         List<String> itemList = new ArrayList<>();
         List<BomItemDetailDTO> list = new ArrayList<>();
-        List<BomItemDetailDTO> result = oittRepository.getAllItemsOfBom(productCode);
+        List<BomItemDetailDTO> result = coittRepository.getAllItemsOfBom(productCode, version);
         for(BomItemDetailDTO item: result){
             if(!itemList.contains(item.getMaterialCode())){
                 itemList.add(item.getMaterialCode());
@@ -161,9 +157,9 @@ public class BomService {
         }
         resultList.addAll(list);
         for(BomItemDetailDTO item: list){
-            if(item.getMaterialGroup().equals("BTP") || item.getMaterialGroup().equals("TP")){
+            if(item.getMaterialGroup().equals("BTP")){
                 count ++;
-                dequy(item,resultList,count,item.getMaterialCode());
+                dequy(item,resultList,count,item.getMaterialCode(), item.getVersion());
             }
         }
         return resultList;
