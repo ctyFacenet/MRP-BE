@@ -21,16 +21,24 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.transaction.Transactional;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -715,7 +723,8 @@ public class ReportService {
             .data(branchGroupDTOS);
     }
 
-    public Page<ReportXPDTO> getPOReport(PageFilterInput<ReportXPDTO> input, Pageable pageable) {
+    @Transactional
+    public PageResponse<List<ReportXPDTO>> getPOReport(PageFilterInput<ReportXPDTO> input, Pageable pageable) {
 
         Date startDate = Date.from(input.getFilter().getStartTime());
         Date endDate = Date.from(input.getFilter().getEndTime());
@@ -724,7 +733,8 @@ public class ReportService {
             "poi.item_code as itemCode, poi.item_name as itemDescription, po.vendor_name as vendorName, " +
             "SUM(sod.quantity) as requiredPurchaseQty, " +
             "SUM(poip.quantity) as approvedPurchaseQty, pr.pr_create_date, sum(poip.quantity) as receivedQty, " +
-            "po.delivery_date as arriveDate, po.status as status " +
+            "po.delivery_date as arriveDate, po.status as status, " +
+            "poi.price as price, MAX(poip.date) " +
             "FROM purchase_order_item poi " +
             "LEFT JOIN purchase_order po ON poi.purchase_order_id = po.id " +
             "LEFT JOIN purchase_order_purchase_request popr ON po.id = popr.purchase_order_id " +
@@ -757,6 +767,14 @@ public class ReportService {
         }
         if (input.getFilter().getStatus() != null) {
             sql.append(" AND po.status = ?" + paramIndex );
+        }
+        if(input.getFilter().getActualArrivalDate() != null) {
+            sql.append(" AND Date(MAX(poip.date)) = ?" + paramIndex );
+            paramIndex++;
+        }
+        if(input.getFilter().getPRCreatedDate() != null) {
+            sql.append(" AND Date(pr.pr_create_date) = ?" + paramIndex );
+            paramIndex++;
         }
 
         // sql.append(" GROUP BY pr.so_code, po.po_code, poi.item_code, po.vendor_name, prd.required_quantity, po.created_at, po.status ORDER BY po.created_at DESC");
@@ -799,8 +817,26 @@ public class ReportService {
             query.setParameter(paramIndex, arrivalDate);
         }
 
+        if (input.getFilter().getActualArrivalDate() != null ) {
+            java.sql.Date arrivalDate = new java.sql.Date(input.getFilter().getActualArrivalDate().toInstant().toEpochMilli());
+            query.setParameter(paramIndex, arrivalDate);
+        }
+
+        if (input.getFilter().getPRCreatedDate() != null ) {
+            java.sql.Date arrivalDate = new java.sql.Date(input.getFilter().getPRCreatedDate().toInstant().toEpochMilli());
+            query.setParameter(paramIndex, arrivalDate);
+        }
+
         // Retrieve and map results
-        List<Object[]> results = query.getResultList();
+        List<Object[]> results;
+
+        int totalRows = query.getResultList().size(); // Count the total rows
+        if (pageable.isPaged()) {
+            results = query.setFirstResult((int) pageable.getOffset()).setMaxResults(pageable.getPageSize()).getResultList();
+        } else {
+            results = query.getResultList(); // No pagination
+        }
+
         List<ReportXPDTO> reportList = new ArrayList<>();
 
         for (Object[] result : results) {
@@ -812,16 +848,439 @@ public class ReportService {
             dto.setVendorName((String) result[4]);
             dto.setRequiredPurchaseQty(result[5]!=null ? ((Number) result[5]).intValue() : 0);
             dto.setApprovedPurchaseQty(result[6]!=null ? ((Number) result[6]).intValue() : 0);
+            dto.setPRCreatedDate((Date) result[7]);
             dto.setApprovalDate((Date) result[7]);
             dto.setReceivedQty(result[8]!=null ? ((Number) result[8]).intValue() : 0);
             dto.setArrivalDate((Date) result[9]);
             dto.setStatus((String) result[10]);
+            dto.setPrice((Double) result[11]);
+            dto.setActualArrivalDate((Date) result[12]);
             dto.setUnreceivedQty(dto.getApprovedPurchaseQty() - dto.getReceivedQty());
-            dto.setCompletionRate(dto.getApprovedPurchaseQty() != 0 ? (double) (dto.getReceivedQty()/(dto.getApprovedPurchaseQty())) : 0);
+            dto.setCompletionRate(dto.getApprovedPurchaseQty() != 0 ? (double) (dto.getReceivedQty()*100.0/(dto.getApprovedPurchaseQty())) : 0);
             reportList.add(dto);
         }
-        int totalRows = reportList.size();
-        return new PageImpl<>(reportList, pageable, totalRows);
+
+        return new PageResponse<List<ReportXPDTO>>()
+            .errorCode("00")
+            .message("Thành công")
+            .isOk(true)
+            .dataCount(totalRows)
+            .data(reportList);
     }
 
+    @Transactional
+    public PageResponse<List<ReportXPDTO>> getSOReport(PageFilterInput<ReportXPDTO> input, Pageable pageable)
+    {
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("SELECT ")
+            .append("    pr.so_code AS MaSO, ")
+            .append("    GROUP_CONCAT(DISTINCT(pur.po_code) ORDER BY pur.po_code SEPARATOR ', ') as MaPO, ")
+            .append("    GROUP_CONCAT(DISTINCT(pr_detail.ncc_name) ORDER BY pr_detail.ncc_name SEPARATOR ', ') as TenKhachHang, ")
+            .append("    GROUP_CONCAT(DISTINCT(pr.pr_create_user) ORDER BY pr.pr_create_user SEPARATOR ', ') as NguoiDatHang, ")
+            .append("    GROUP_CONCAT(DISTINCT(pr.approval_user) ORDER BY pr.approval_user SEPARATOR ', ') as NguoiMuaHang, ")
+            .append("    pur.created_at AS ThoiGianDatHang, ")
+            .append("    pur.delivery_date AS ThoiGianTraHang ")
+            .append("FROM product_order pro ")
+            .append("JOIN purchase_request pr ON pro.product_order_code = pr.so_code ")
+            .append("JOIN purchase_request_detail pr_detail ON pr.pr_code = pr_detail.pr_code ")
+            .append("JOIN purchase_order_purchase_request pur_pr ON FIND_IN_SET(pr.pr_code, pur_pr.purchase_request_code) ")
+            .append("JOIN purchase_order pur ON pur.id = pur_pr.purchase_order_id ")
+            .append("WHERE pro.created_at >= ?1 ")
+            .append("  AND pro.created_at <= ?2");
+
+        int paramIndex = 3;
+
+        if(input.getFilter().getSoCode() != null && !input.getFilter().getSoCode().isEmpty()) {
+            sql.append(" AND LOWER(pr.so_code) LIKE LOWER(? " + paramIndex + ")");
+            paramIndex++;
+        }
+        if(input.getFilter().getPoCode() != null && !input.getFilter().getPoCode().isEmpty()) {
+            sql.append(" AND LOWER(pur.po_code) LIKE LOWER(?" + paramIndex + ")");
+            paramIndex++;
+        }
+        if(input.getFilter().getCustomerName() != null && !input.getFilter().getCustomerName().isEmpty()) {
+            sql.append(" AND LOWER(pr_detail.ncc_name) LIKE LOWER(?" + paramIndex + ")");
+            paramIndex++;
+        }
+        if(input.getFilter().getOrderer() != null && !input.getFilter().getOrderer().isEmpty()) {
+            sql.append(" AND LOWER(pr.pr_create_user) LIKE LOWER(?" + paramIndex + ")");
+            paramIndex++;
+        }
+        if(input.getFilter().getBuyer() != null && !input.getFilter().getBuyer().isEmpty()) {
+            sql.append(" AND LOWER(pr.approval_user) LIKE LOWER(?" + paramIndex + ")");
+            paramIndex++;
+        }
+        if(input.getFilter().getOrderTime() != null) {
+            sql.append(" AND Date(pur.created_at) = ?" + paramIndex );
+            paramIndex++;
+        }
+        if(input.getFilter().getDeliveryTime() != null) {
+            sql.append(" AND Date(pur.delivery_date) = ?"+ paramIndex );
+            paramIndex++;
+        }
+
+        paramIndex--;
+        Query query = entityManager.createNativeQuery(sql.toString());
+
+        // Set parameters
+        query.setParameter(1, Date.from(input.getFilter().getStartTime()));
+        query.setParameter(2, Date.from(input.getFilter().getEndTime()));
+
+        if (input.getFilter().getSoCode() != null && !input.getFilter().getSoCode().isEmpty()) {
+            query.setParameter(paramIndex, "%" + input.getFilter().getSoCode() + "%");
+        }
+
+        if (input.getFilter().getPoCode() != null && !input.getFilter().getPoCode().isEmpty()) {
+            query.setParameter(paramIndex, "%" + input.getFilter().getPoCode() + "%");
+        }
+
+        if (input.getFilter().getCustomerName() != null && !input.getFilter().getCustomerName().isEmpty()) {
+            query.setParameter(paramIndex, "%" + input.getFilter().getCustomerName() + "%");
+        }
+
+        if (input.getFilter().getOrderer() != null && !input.getFilter().getOrderer().isEmpty()) {
+            query.setParameter(paramIndex, "%" + input.getFilter().getOrderer() + "%");
+        }
+
+        if (input.getFilter().getBuyer() != null && !input.getFilter().getBuyer().isEmpty()) {
+            query.setParameter(paramIndex, "%" + input.getFilter().getBuyer() + "%");
+        }
+
+        if (input.getFilter().getOrderTime() != null ) {
+            java.sql.Date orderDate = new java.sql.Date(input.getFilter().getOrderTime().toInstant().toEpochMilli());
+            query.setParameter(paramIndex, orderDate);
+        }
+
+        if (input.getFilter().getDeliveryTime() != null ) {
+            java.sql.Date deliveryTime = new java.sql.Date(input.getFilter().getDeliveryTime().toInstant().toEpochMilli());
+            query.setParameter(paramIndex, deliveryTime);
+        }
+
+        // Retrieve and map results
+        List<Object[]> results;
+
+        int totalRows = query.getResultList().size(); // Count the total rows
+        if (pageable.isPaged()) {
+            results = query.setFirstResult((int) pageable.getOffset()).setMaxResults(pageable.getPageSize()).getResultList();
+        } else {
+            results = query.getResultList(); // No pagination
+        }
+
+        List<ReportXPDTO> reportList = new ArrayList<>();
+
+        int totalRequiredItemQty;
+        int totalPrItemQty;
+
+        for(Object[] item : results)
+        {
+            ReportXPDTO report = new ReportXPDTO();
+            List<String> soCodes = new ArrayList<>();
+            List<String> fcCodes = new ArrayList<>();
+            report.setSoCode((String)item[0]);
+            soCodes.add((String)item[0]);
+
+            report.setPoCode((String)item[1]);
+            report.setCustomerName((String)item[2]);
+            report.setOrderer((String)item[3]);
+            report.setBuyer((String)item[4]);
+            report.setOrderTime((Date)item[5]);
+            report.setDeliveryTime((Date)item[6]);
+
+            totalRequiredItemQty = getSuppliesCount(soCodes, fcCodes).size();
+            totalPrItemQty = getPrCount(soCodes, fcCodes).size();
+            logger.info("Number: {} - {}", totalRequiredItemQty, totalPrItemQty);
+            report.setTotalRequiredItemQty(totalRequiredItemQty);
+            report.setTotalPrItemQty(totalPrItemQty);
+            report.setUnreceivedQty(totalRequiredItemQty - totalPrItemQty);
+            report.setCompletionRate(totalRequiredItemQty !=0 ? (totalPrItemQty * 100.0) / totalRequiredItemQty : 0);
+            reportList.add(report);
+        }
+
+        return new PageResponse<List<ReportXPDTO>>()
+            .errorCode("00")
+            .message("Thành công")
+            .isOk(true)
+            .dataCount(totalRows)
+            .data(reportList);
+    }
+
+    // FORM 1
+    @Transactional
+    public byte[] exportSOReportToExcel(PageFilterInput<ReportXPDTO> input, Pageable pageable)
+    {
+        List<ReportXPDTO> data;
+        data = getSOReport(input, pageable).getData();
+        String[] columns = { "STT", "MÃ SO/FC", "MÃ PO", "Tên khách hàng", "Người đặt hàng",
+            "Người mua hàng", "Thời gian đặt hàng", "Thời gian trả hàng",
+            "Tổng số lượng vật tư cần mua", "Tổng số lượng vật tư đã lên PR",
+            "Tổng số lượng hàng chưa về", "Tỉ lệ hoàn thành (%)"
+        };
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        try (Workbook workbook = new XSSFWorkbook())
+        {
+            Sheet sheet = workbook.createSheet("BÁO CÁO TỔNG HỢP MRP");
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle styleDouble = workbook.createCellStyle();
+            DataFormat format = workbook.createDataFormat();
+            styleDouble.setDataFormat(format.getFormat("0.0"));
+
+            // Title
+            Row titleRow = sheet.createRow(0);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("BÁO CÁO TỔNG HỢP MRP");
+            //titleCell.setCellStyle(titleStyle);
+            titleCell.setCellStyle(initTitleStyle(workbook));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, columns.length-1));
+
+            CellStyle cellStyle = workbook.createCellStyle();
+            cellStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            Row headerRow = sheet.createRow(1);
+            for(int i = 0; i < columns.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                // cell.setCellStyle(cellStyle);
+                cell.setCellStyle(initHeaderStyle(workbook));
+                cell.setCellValue(columns[i]);
+            }
+
+            // Write data rows
+            int rowNum = 2; int stt = 1;
+            for(ReportXPDTO dto : data) {
+                Row row = sheet.createRow(rowNum++);
+
+                row.createCell(0).setCellValue(stt++);
+                row.createCell(1).setCellValue(dto.getSoCode());
+                row.createCell(2).setCellValue(dto.getPoCode());
+                row.createCell(3).setCellValue(dto.getCustomerName());
+                row.createCell(4).setCellValue(dto.getOrderer());
+                row.createCell(5).setCellValue(dto.getBuyer());
+                row.createCell(6).setCellValue(dateFormat.format(dto.getOrderTime()));
+                row.createCell(7).setCellValue(dateFormat.format(dto.getDeliveryTime()));
+                row.createCell(8).setCellValue(dto.getTotalRequiredItemQty());
+                row.createCell(9).setCellValue(dto.getTotalPrItemQty());
+                row.createCell(10).setCellValue(dto.getUnreceivedQty());
+
+                Cell cell = row.createCell(11);
+                cell.setCellValue(dto.getCompletionRate());
+                cell.setCellStyle(styleDouble);
+
+            }
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
+            workbook.write(out);
+            // Convert workbook to byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // FORM 2
+    @Transactional
+    public byte[] exportPurchaseByNCCReportToExcel(PageFilterInput<ReportXPDTO> input, Pageable pageable) throws IOException {
+        List<ReportXPDTO> data;
+        data = getPOReport(input, pageable).getData();
+        String[] columns = { "STT", "MÃ SO/FC", "MÃ PO", "Mã vật tư", "Mô tả vật tư",
+            "Tên NCC", "Số lượng cần mua", "Số lượng đã được phê duyệt đặt hàng", "Ngày duyệt",
+            "Số lượng đã về", "Ngày hàng về", "Số lượng chưa về", "Tỉ lệ hoàn thành (%)", "Tình trạng"
+        };
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("BÁO CÁO CHI TIẾT GIAO DỊCH ĐẶT HÀNG");
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle styleDouble = workbook.createCellStyle();
+            DataFormat format = workbook.createDataFormat();
+            styleDouble.setDataFormat(format.getFormat("0.0"));
+
+            // Title
+            Row titleRow = sheet.createRow(0);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("BÁO CÁO CHI TIẾT GIAO DỊCH ĐẶT HÀNG");
+            // titleCell.setCellStyle(titleStyle);
+            titleCell.setCellStyle(initTitleStyle(workbook));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, columns.length-1));
+
+            CellStyle cellStyle = workbook.createCellStyle();
+            cellStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            Row headerRow = sheet.createRow(1);
+            for(int i = 0; i < columns.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                // cell.setCellStyle(cellStyle);
+                cell.setCellStyle(initHeaderStyle(workbook));
+                cell.setCellValue(columns[i]);
+            }
+
+            // Write data rows
+            int rowNum = 2; int stt = 1;
+            for(ReportXPDTO dto : data) {
+                Row row = sheet.createRow(rowNum++);
+
+                row.createCell(0).setCellValue(stt++);
+                row.createCell(1).setCellValue(dto.getSoCode());
+                row.createCell(2).setCellValue(dto.getPoCode());
+                row.createCell(3).setCellValue(dto.getItemCode());
+                row.createCell(4).setCellValue(dto.getItemDescription());
+                row.createCell(5).setCellValue(dto.getVendorName());
+                row.createCell(6).setCellValue(dto.getRequiredPurchaseQty());
+                row.createCell(7).setCellValue(dto.getApprovedPurchaseQty());
+                row.createCell(8).setCellValue(dateFormat.format(dto.getApprovalDate()));
+                row.createCell(9).setCellValue(dto.getReceivedQty());
+                row.createCell(10).setCellValue(dateFormat.format(dto.getArrivalDate()));
+                row.createCell(11).setCellValue(dto.getUnreceivedQty());
+
+                Cell cell = row.createCell(12);
+                cell.setCellValue(dto.getCompletionRate());
+                cell.setCellStyle(styleDouble);
+
+                row.createCell(13).setCellValue(dto.getStatus());
+            }
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
+            workbook.write(out);
+            // Convert workbook to byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // FORM 3
+
+    @Transactional
+    public byte[] exportNCCReportToExcel(PageFilterInput<ReportXPDTO> input, Pageable pageable) throws IOException
+    {
+        List<ReportXPDTO> data;
+        data = getPOReport(input, pageable).getData();
+        String[] columns = { "STT", "Mã vật tư", "Mô tả vật tư",
+            "Tên NCC", "Số lượng hàng đã duyệt đặt hàng", "Đơn giá",
+            "Ngày đặt hàng", "YC ngày hàng về", "Ngày thực tế hàng về"
+        };
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("BÁO CÁO THỐNG KÊ NHÀ CUNG CẤP");
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle styleDouble = workbook.createCellStyle();
+            DataFormat format = workbook.createDataFormat();
+            styleDouble.setDataFormat(format.getFormat("0.0"));
+
+            // Title
+            Row titleRow = sheet.createRow(0);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("BÁO CÁO THỐNG KÊ NHÀ CUNG CẤP");
+            // titleCell.setCellStyle(titleStyle);
+            titleCell.setCellStyle(initTitleStyle(workbook));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, columns.length-1));
+
+            CellStyle cellStyle = workbook.createCellStyle();
+            cellStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            Row headerRow = sheet.createRow(1);
+            for(int i = 0; i < columns.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                // cell.setCellStyle(cellStyle);
+                cell.setCellStyle(initHeaderStyle(workbook));
+                cell.setCellValue(columns[i]);
+            }
+
+            // Write data rows
+            int rowNum = 2; int stt = 1;
+            for(ReportXPDTO dto : data) {
+                Row row = sheet.createRow(rowNum++);
+
+                row.createCell(0).setCellValue(stt++);
+                row.createCell(1).setCellValue(dto.getItemCode());
+                row.createCell(2).setCellValue(dto.getItemDescription());
+                row.createCell(3).setCellValue(dto.getVendorName());
+                row.createCell(4).setCellValue(dto.getApprovedPurchaseQty());
+                row.createCell(5).setCellValue(dto.getPrice());
+                row.createCell(6).setCellValue(dateFormat.format(dto.getPRCreatedDate()));
+                row.createCell(7).setCellValue(dateFormat.format(dto.getArrivalDate()));
+                row.createCell(8).setCellValue(dateFormat.format(dto.getActualArrivalDate()));
+            }
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
+            workbook.write(out);
+            // Convert workbook to byte array
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    private CellStyle initTitleStyle(Workbook workbook) {
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setWrapText(true);
+        cellStyle.setFillForegroundColor(IndexedColors.PALE_BLUE.getIndex());
+        cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        Font titleFont = workbook.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontHeightInPoints((short) 16);
+
+        cellStyle.setFont(titleFont);
+
+        return cellStyle;
+    }
+
+    private CellStyle initHeaderStyle(Workbook workbook) {
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setWrapText(true);
+        cellStyle.setFillForegroundColor(IndexedColors.WHITE.getIndex());
+        cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        return cellStyle;
+    }
 }
