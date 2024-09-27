@@ -14,7 +14,10 @@ import com.facenet.mrp.service.model.PageFilterInput;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
@@ -69,14 +72,22 @@ public class PurchaseRequestResource {
         return new PageResponse<List<PurchaseRequestDetailEntity>>().data(result.getContent()).dataCount(result.getTotalElements());
     }
 
-    @PostMapping("/report")
-    public PageResponse<List<ReportXPDTO>> reportPurchaseRequest(@RequestBody PageFilterInput<ReportXPDTO> input)
-    {
-        Pageable pageable = input.getPageSize() == 0
-            ? PageRequest.of(0, Integer.MAX_VALUE)
-            : PageRequest.of(input.getPageNumber(), input.getPageSize());
-
-        Page<ReportXPDTO> result = purchaseRequestService.getSOReport(input, pageable);
-        return new PageResponse<List<ReportXPDTO>>().data(result.getContent()).dataCount(result.getTotalElements());
-    }
+//    @PostMapping(value="/to-excel-so", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+//    public ResponseEntity<byte[]> exportToExcelSO(@RequestBody PageFilterInput<ReportXPDTO> input) {
+//        try {
+//            Pageable pageable = input.getPageSize() == 0
+//                ? PageRequest.of(0, Integer.MAX_VALUE)
+//                : PageRequest.of(input.getPageNumber(), input.getPageSize());
+//
+//            byte[] excelData = purchaseRequestService.exportSOReportToExcel(input, pageable);
+//            HttpHeaders headers = new HttpHeaders();
+//            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+//            String filename = "BÁO_CÁO_TỔNG_HỢP_MRP.xlsx";
+//            headers.setContentDispositionFormData(filename, filename);
+//            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+//            return new ResponseEntity<>(excelData, headers, HttpStatus.OK);
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(("Error occurred during export: " + e.getMessage()).getBytes());
+//        }
+//    }
 }
