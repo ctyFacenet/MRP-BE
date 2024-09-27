@@ -22,4 +22,8 @@ public interface VendorItemRepository extends JpaRepository<VendorItemEntity, St
 
     VendorItemEntity findByItemCodeAndVendorCode(String itemCode, String vendor);
     List<VendorItemEntity> findAllBySap(int sap);
+
+    @Modifying
+    @Query("delete from VendorItemEntity v where v.itemCode = :itemCode and v.vendorCode = :vendorCode and v.sap is null")
+    void deleteByItemCodeAndVendorCode(@Param("itemCode") String itemCode, @Param("vendorCode") String vendorCode);
 }

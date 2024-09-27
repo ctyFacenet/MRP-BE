@@ -72,6 +72,14 @@ public class DetailBomVersionDTO implements Serializable {
         this.status = status;
     }
 
+    public DetailBomVersionDTO(String itemCode, String itemDescription, Double quantity, String whsCode, String status) {
+        this.itemCode = itemCode;
+        this.itemDescription = itemDescription;
+        this.quantity = quantity;
+        this.whsCode = whsCode;
+        this.status = status;
+    }
+
     public DetailBomVersionDTO(String itemCode, String itemDescription, String whsCode) {
         this.itemCode = itemCode;
         this.itemDescription = itemDescription;

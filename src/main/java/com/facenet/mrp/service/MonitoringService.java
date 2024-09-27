@@ -740,6 +740,7 @@ public class MonitoringService {
         purchaseOrderDTO.setOrderDate(purchaseOrderEntity.getOrderDate());
         purchaseOrderDTO.setDeliveryDate(purchaseOrderEntity.getDeliveryDate());
         purchaseOrderDTO.setRequestUser(purchaseOrderEntity.getRequestUser());
+        purchaseOrderDTO.setStatus(purchaseOrderEntity.getStatus());
         purchaseOrderDTO.setNote(purchaseOrderEntity.getNote());
         purchaseOrderDTO.setUnit(purchaseOrderEntity.getUnit());
         purchaseOrderDTO.setShippingType(purchaseOrderEntity.getShippingType());
