@@ -25,17 +25,20 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.formula.functions.T;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -43,6 +46,7 @@ import org.springframework.util.CollectionUtils;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -894,8 +898,72 @@ public class MonitoringService {
                 .result("404", "không tìm thấy", false);
         }
     }
+/**
+ * Export PO to Excel
+ *
+ */
+    private void mergeCellExcel (Sheet sheet,Row row,Workbook workbook,int rowStart, int rowEnd, int colStart, int colEnd, Object value){
+        Cell cell = row.createCell(colStart);
+        cell.setCellValue(value.toString());
+        CellRangeAddress merge = new CellRangeAddress(rowStart, rowEnd, colStart, colEnd);
+        sheet.addMergedRegion(merge);
 
+    }
+    public ResponseEntity<InputStreamResource> exportToExcel(CreatePurchaseOrderDTO input){
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("Purchase Order Detail");
+            Row headerRow1 = sheet.createRow(0);
+            headerRow1.createCell(0).setCellValue("Mã PR");
+            String prString = String.join(", ",input.getPrCodes());
+            headerRow1.createCell(1).setCellValue(prString);
+            Row headerRow2 = sheet.createRow(1);
+            headerRow2.createCell(0).setCellValue("Mã PO");
+            headerRow2.createCell(1).setCellValue(input.getPoCode());
+            Row headerRow3 = sheet.createRow(2);
+            headerRow3.createCell(0).setCellValue("Mã MRP");
+            String mrpString = String.join(", ",input.getPrCodes());
+            headerRow3.createCell(1).setCellValue(mrpString);
+            int rowDetail = 5;
+            for(CreatePurchaseOrderDTO.PurchaseOrderItemDTO itemDTO : input.getItems()){
+                Row row =sheet.createRow(rowDetail);
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 0, 0, itemDTO.getItemCode());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 1, 1, itemDTO.getItemName());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 2, 2, itemDTO.getUnit());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 3, 3, itemDTO.getQuantity());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 4, 4, itemDTO.getPrice());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 5, 5, itemDTO.getTotal());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 6, 6, itemDTO.getDiscountPercent());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 7, 7, itemDTO.getTaxValue());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 8, 8, itemDTO.getGrossTotal());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 9, 9, itemDTO.getNote());
+                int rowProgress = 11;
+                Row row2 = sheet.createRow(rowDetail+1);
+                row.createCell(10).setCellValue("Nhập thời gian theo format (yyyy/MM/dd");
+                row2.createCell(10).setCellValue("Nhập số lượng po");
+                for(CreatePurchaseOrderDTO.PurchaseOrderItemProgressDTO itemProgressDTO : itemDTO.getProgress()){
+                    Cell dateCell = row.createCell(rowProgress);
+                    dateCell.setCellValue(itemProgressDTO.getDate());
+                    CellStyle dateStyle = workbook.createCellStyle();
+                    CreationHelper creationHelper = workbook.getCreationHelper();
+                    dateStyle.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-mm-dd")); // Định dạng ngày tháng
+                    dateCell.setCellStyle(dateStyle);
+                    row2.createCell(rowProgress).setCellValue(itemProgressDTO.getQuantity());
+                    rowProgress++;
+                }
+                rowDetail=rowDetail+2;
+            }
+            workbook.write(out);
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray());
 
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=product_records.xlsx");
+            headers.add(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            return new ResponseEntity<>(new InputStreamResource(inputStream), headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(null);
+        }
+    }
     /**
      * ham lay sach item trong po va tien do cua item
      *
