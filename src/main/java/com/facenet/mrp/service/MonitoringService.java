@@ -941,7 +941,9 @@ public class MonitoringService {
                 Row row2 = sheet.createRow(rowDetail+1);
                 row.createCell(10).setCellValue("Nhập thời gian theo format (yyyy/MM/dd");
                 row2.createCell(10).setCellValue("Nhập số lượng po");
+                sheet.setColumnWidth(10, 50 * 256);
                 for(PoExcelDTO.PurchaseOrderItemProgressDTO itemProgressDTO : itemDTO.getProgress()){
+                    sheet.setColumnWidth(rowProgress, 15 * 256);
                     Cell dateCell = row.createCell(rowProgress);
                     dateCell.setCellValue(itemProgressDTO.getDate());
                     CellStyle dateStyle = workbook.createCellStyle();
