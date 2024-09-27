@@ -2,7 +2,10 @@ package com.facenet.mrp.web.rest;
 
 import com.facenet.mrp.domain.sap.Citt1Entity;
 import com.facenet.mrp.domain.sap.CoittEntity;
+import com.facenet.mrp.domain.sap.OittEntity;
 import com.facenet.mrp.repository.sap.CoittRepository;
+import com.facenet.mrp.repository.sap.OitmRepository;
+import com.facenet.mrp.repository.sap.OittRepository;
 import com.facenet.mrp.service.BomService;
 import com.facenet.mrp.service.dto.BomDTO;
 import com.facenet.mrp.service.dto.BomItemDetailDTO;
@@ -25,12 +28,18 @@ import java.util.List;
 public class BomResource {
     private final BomService bomService;
 
-    public BomResource(BomService bomService) {
+    public BomResource(BomService bomService,
+                       OittRepository oittRepository,
+                       OitmRepository oitmRepository) {
         this.bomService = bomService;
+        this.oittRepository = oittRepository;
+        this.oitmRepository = oitmRepository;
     }
 
     @Autowired
     private CoittRepository repository;
+    private final OittRepository oittRepository;
+    private final OitmRepository oitmRepository;
 
     /**
      * Lấy danh sách BOM
@@ -51,8 +60,8 @@ public class BomResource {
 
     private PageResponse<List<BomDTO>> search(PageFilterInput<BomFilterInput> input){
         PageResponse<List<BomDTO>> pageResponse = bomService.getAllBom(input);
-        List<CoittCitt1DTO> coittCitt1DTOS = repository.getAllDistinct();
-        List<CoittEntity> coittEntities = repository.getAllCoitt();
+        List<CoittCitt1DTO> coittCitt1DTOS = oittRepository.getAllDistinct();
+        List<OittEntity> coittEntities = oittRepository.getAllOitt();
 
         HashMap<String,List<CoittCitt1DTO>> coittCitt1HashMap = new HashMap<>();
         ArrayList<CoittCitt1DTO> listChild;
@@ -76,25 +85,25 @@ public class BomResource {
                     List<CoittCitt1DTO> dtoList = coittCitt1HashMap.get(key);
 
                     for (CoittCitt1DTO coittCitt1DTO: dtoList){
-                        for (CoittEntity coittEntity: coittEntities){
+                        for (OittEntity coittEntity: coittEntities){
                             if((coittCitt1DTO.getuItemCode()+"_"+coittCitt1DTO.getuVersionsCitt1())
-                                .equals(coittEntity.getuProNo()+"_"+coittEntity.getuVersions())){
+                                .equals(coittEntity.getCode()+"_1.0")){
                                 BomDTO newBom = new BomDTO();
-                                newBom.setProductCode(coittEntity.getuProNo());
-                                newBom.setDescription(coittEntity.getuProNam());
-                                newBom.setWarehouse(coittEntity.getuWhsCod());
-                                newBom.setDocUrl(coittEntity.getuDocUrl());
+                                newBom.setProductCode(coittEntity.getCode());
+                                newBom.setDescription(oitmRepository.getItemName(coittEntity.getCode()));
+                                newBom.setWarehouse(coittEntity.getToWH());
+//                                newBom.setDocUrl(coittEntity.getuDocUrl());
                                 newBom.setLevel(2);
                                 newBom.setRoot(bomDTO.getProductCode()+"_"+bomDTO.getVersion());
                                 newBom.setCreateTime(coittEntity.getCreateDate());
-                                newBom.setFromDate(coittEntity.getuFromDate());
+//                                newBom.setFromDate(coittEntity.getuFromDate());
                                 newBom.setGroupItem(101);
-                                newBom.setQuota(coittEntity.getuQuantity());
-                                newBom.setSpeciality(coittEntity.getuSpec());
-                                newBom.setRemark(coittEntity.getRemark());
-                                newBom.setToDate(coittEntity.getuToDate());
-                                newBom.setStatus(coittEntity.getuActive());
-                                newBom.setVersion(coittEntity.getuVersions());
+                                newBom.setQuota(coittEntity.getQauntity());
+//                                newBom.setSpeciality(coittEntity.getuSpec());
+//                                newBom.setRemark(coittEntity.getRemark());
+//                                newBom.setToDate(coittEntity.getuToDate());
+                                newBom.setStatus(coittEntity.getuStatus());
+                                newBom.setVersion("1.0");
                                 results.add(newBom);
                             }
                         }
@@ -138,10 +147,10 @@ public class BomResource {
             .data(results);
     }
 
-    @GetMapping("/get-bom/{productCode}/{version}")
+    @GetMapping("/get-bom/{productCode}")
     @PreAuthorize("hasAnyAuthority('DHSX', 'KHDH', 'K', 'TK', 'HT', 'MH', 'QLSX', 'VIEW','BOM')")
-    public CommonResponse<List<BomItemDetailDTO>> getBomDetailV2(@PathVariable String productCode, @PathVariable String version) {
-        return bomService.getBomDetailV2(productCode, version);
+    public CommonResponse<List<BomItemDetailDTO>> getBomDetailV2(@PathVariable String productCode) {
+        return bomService.getBomDetailV2(productCode);
     }
     /**
      * Lấy thông tin chi tiết BOM

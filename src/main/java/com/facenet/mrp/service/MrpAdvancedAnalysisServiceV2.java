@@ -491,7 +491,7 @@ public class MrpAdvancedAnalysisServiceV2 {
 
             // nếu là BTP thì query tiếp con của nó
 //            if (StringUtils.hasText(mrpDetailDTO.getBomVersion())) {
-            if (mrpDetailDTO.getGroupItemInt() != null && mrpDetailDTO.getGroupItemInt() == Constants.BTP) {
+            if (mrpDetailDTO.getGroupItemInt() != null && (mrpDetailDTO.getGroupItemInt() == Constants.BTP || mrpDetailDTO.getGroupItemInt() == Constants.TP)) {
                 String newParentPath = parentPath + "_" + mrpDetailDTO.getItemCode();
 
                 // Build BTP

@@ -267,6 +267,7 @@ public class PurchaseRecommendationService {
             boolean isValidItem = false;
             for (DetailItemSyntheticDTO analysisResult : item.getDetailData()) {
                 if (analysisResult.getOriginQuantity() != 0) {
+                    log.info("Đã vào đây");
                     isValidItem = true;
                     break;
                 }
@@ -288,7 +289,18 @@ public class PurchaseRecommendationService {
 
             choosePrice(prde, moqPrice.get(item.getItemCode()));
 
-            prde = purchaseRecommendationDetailRepository.save(prde);
+            // Lưu đối tượng PurchaseRecommendationDetailEntity và kiểm tra kết quả
+            try {
+                prde = purchaseRecommendationDetailRepository.save(prde);
+
+                // Nếu lưu thành công, log thông tin chi tiết
+                log.info("Saved PurchaseRecommendationDetailEntity: [ItemCode: {}, Quantity: {}, Status: {}, RequiredQuantity: {}]",
+                    prde.getItemCode(), prde.getQuantity(), prde.getStatus(), prde.getRequiredQuantity());
+            } catch (Exception e) {
+                // Log thông tin lỗi nếu xảy ra ngoại lệ
+                log.error("Failed to save PurchaseRecommendationDetailEntity for ItemCode: {}, Error: {}", prde.getItemCode(), e.getMessage());
+                throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "error.save.purchaseRecommendationDetail", String.valueOf(e));
+            }
 
             if (item.getRequestNumber() == 0) {
                 planEntities.add(planMapper.toEntity(prde, item.getDetailData().get(1), Constants.PurchaseRecommendationPlan.CHECKED));
@@ -353,7 +365,12 @@ public class PurchaseRecommendationService {
 //            System.out.println("Không có giá trị thích hợp.");
 //        }
 //        ------------------------------------------------------
-        int maxTimeUsed = priceList.stream().max(Comparator.comparing(MoqDTO::getTimeUsed)).get().getTimeUsed();
+//        int maxTimeUsed = priceList.stream().max(Comparator.comparing(MoqDTO::getTimeUsed)).get().getTimeUsed();
+        int maxTimeUsed = priceList.stream()
+            .filter(p -> p.getTimeUsed() != null)  // Bỏ các phần tử có giá trị null
+            .max(Comparator.comparing(MoqDTO::getTimeUsed))
+            .map(MoqDTO::getTimeUsed)              // Lấy giá trị timeUsed
+            .orElse(0);
         Date maxStartTime = new Date(Long.MIN_VALUE);
         MoqDTO bestPrice = priceList.get(0);
         boolean isFoundSuitableRange = false;

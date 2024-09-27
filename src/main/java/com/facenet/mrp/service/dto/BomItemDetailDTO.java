@@ -63,8 +63,24 @@ public class BomItemDetailDTO {
         this.issueMethod = issueMethod;
     }
 
+    public BomItemDetailDTO(Integer materialGroup, String materialCode, String materialDescription, String technicalName, Double quantity, String unit, String warehouse) {
+        this.materialGroup = materialGroup;
+        this.materialCode = materialCode;
+        this.materialDescription = materialDescription;
+        this.technicalName = technicalName;
+        this.quantity = quantity;
+        this.unit = unit;
+        this.warehouse = warehouse;
+    }
+
     public String getMaterialGroup() {
-        return materialGroup == 101 ? "BTP" : "NVL";
+        if (materialGroup == 104) {
+            return "TP";
+        } else if (materialGroup == 101) {
+            return "BTP";
+        } else {
+            return "NVL";
+        }
     }
 
     @JsonIgnore

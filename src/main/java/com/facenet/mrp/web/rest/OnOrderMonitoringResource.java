@@ -1,19 +1,26 @@
 package com.facenet.mrp.web.rest;
 
+import com.facenet.mrp.domain.mrp.PurchaseOrderEntity;
 import com.facenet.mrp.service.MonitoringService;
 import com.facenet.mrp.service.MqqPriceService;
+import com.facenet.mrp.service.dto.PurchaseOrderDTO;
 import com.facenet.mrp.service.dto.mrp.*;
 import com.facenet.mrp.service.dto.request.AddMonitoringItemRequest;
 import com.facenet.mrp.service.dto.request.AddMonitoringRequest;
+import com.facenet.mrp.service.dto.request.CreatePurchaseOrderDTO;
 import com.facenet.mrp.service.dto.request.ListMonitoringRequest;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
+import com.facenet.mrp.service.model.FindPurchaseOrderProgressFilter;
 import com.facenet.mrp.service.model.MonitoringFilter;
 import com.facenet.mrp.service.model.PageFilterInput;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -42,6 +49,46 @@ public class OnOrderMonitoringResource {
         PageResponse<List<OnOrderMonitoringDTO>> data = monitoringService.monitoringDTOList(bodyRequest);
         return ResponseEntity.ok(data);
     }
+
+    @PostMapping("/list-po")
+    @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR', 'VIEW')")
+    public ResponseEntity<PageResponse<List<PurchaseOrderProgressDTO>>> listAllPurchaseOrder(@RequestBody PageFilterInput<FindPurchaseOrderProgressFilter> body) {
+        Pageable pageable = body.getPageSize() == 0 ? Pageable.unpaged() : PageRequest.of(body.getPageNumber(), body.getPageSize());
+        PageResponse<List<PurchaseOrderProgressDTO>> result = monitoringService.findPurchaseOrderProgress(body, pageable);
+        // Trả về ResponseEntity với PageResponse
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/create-po")
+    @PreAuthorize("hasAnyAuthority('GSTD-Create')")
+    public ResponseEntity<CommonResponse> createPo(@RequestBody CreatePurchaseOrderDTO createPoRequest) {
+        PageResponse<List<PurchaseOrderEntity>> data = monitoringService.createPurchaseOrder(createPoRequest);
+        return ResponseEntity.ok(data);
+    }
+    @PostMapping("/update-po/{prId}")
+    public ResponseEntity<CommonResponse> updatePo(@PathVariable Long prId, @RequestBody CreatePurchaseOrderDTO updatePoRequest) {
+        CommonResponse<PurchaseOrderEntity> response = monitoringService.updatePurchaseOrder(prId, updatePoRequest);
+        if (response.getResult().isOk()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
+
+    @GetMapping("/get-po/{id}")
+    @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR', 'VIEW')")
+    public ResponseEntity<CommonResponse<PurchaseOrderDTO>> getPurchaseOrderById(@PathVariable Long id) {
+        CommonResponse<PurchaseOrderDTO> data = monitoringService.findPurchaseOrderById(id);
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/get-progress-by-item-id/{id}")
+    @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR', 'VIEW')")
+    public ResponseEntity<CommonResponse<List<PurchaseOrderDTO.PurchaseOrderItemProgressDTO>>> getPurchaseOrderItemProgressByItemId(@PathVariable Long id) {
+        CommonResponse<List<PurchaseOrderDTO.PurchaseOrderItemProgressDTO>> data = monitoringService.findPurchaseOrderItemProgressByItemId(id);
+        return ResponseEntity.ok(data);
+    }
+
 
     @PostMapping("/list-all-pr")
     @PreAuthorize("hasAnyAuthority('GSTD-View', 'PROGRESSPR', 'VIEW')")

@@ -86,7 +86,7 @@ public class MqqPriceService {
             .collect(Collectors.groupingBy(mqq -> mqq.getItemCode() + "|" + mqq.getVendorCode()));
 
         // Bước 3: Lấy tất cả các bản ghi từ SAP (Pdn1Entity) và nhóm theo itemCode và baseCard
-        List<Pdn1Entity> pdn1Records = pdn1Repository.findAll();
+        List<Pdn1Entity> pdn1Records = pdn1Repository.findAllFrom2024();
         Map<String, List<Pdn1Entity>> pdn1GroupedRecords = pdn1Records.stream()
             .collect(Collectors.groupingBy(pdn1 -> pdn1.getItemCode() + "|" + pdn1.getBaseCard()));
 
@@ -102,7 +102,8 @@ public class MqqPriceService {
         Map<String, LeadTimeEntity> leadTimeMap = leadTimeEntities.stream()
             .collect(Collectors.toMap(
                 lead -> lead.getItemCode() + "|" + lead.getVendorCode(),
-                lead -> lead
+                lead -> lead,
+                (existing, replacement) -> existing
             ));
 
         // Bước 5: Lặp qua từng cặp itemCode và baseCard từ SAP, lấy 3 bản ghi gần nhất
@@ -124,6 +125,8 @@ public class MqqPriceService {
                     newPriceEntity.setItemCode(pdn1.getItemCode());
                     newPriceEntity.setPrice(pdn1.getPrice().doubleValue());
                     newPriceEntity.setCurrency(pdn1.getCurrency());
+                    newPriceEntity.setRangeStart(0);
+                    newPriceEntity.setRangeEnd(0);
                     newPriceEntity.setPromotion(false);
                     newPriceEntity.setTimeStart(pdn1.getDocDate());  // docDate map vào timeStart
                     newPriceEntity.setIsActive((byte) 1); // giả định trạng thái active
@@ -140,6 +143,8 @@ public class MqqPriceService {
                         existingPrice.setPrice(pdn1.getPrice().doubleValue());
                         existingPrice.setCurrency(pdn1.getCurrency());
                         existingPrice.setTimeStart(pdn1.getDocDate());
+                        existingPrice.setRangeStart(0);
+                        existingPrice.setRangeEnd(0);
                         existingPrice.setPromotion(false);
                         existingPrice.setIsActive((byte) 1); // Cập nhật trạng thái
                         priceEntitiesToUpdate.add(existingPrice);
@@ -151,6 +156,8 @@ public class MqqPriceService {
                         newPriceEntity.setPrice(pdn1.getPrice().doubleValue());
                         newPriceEntity.setCurrency(pdn1.getCurrency());
                         newPriceEntity.setTimeStart(pdn1.getDocDate());
+                        newPriceEntity.setRangeStart(0);
+                        newPriceEntity.setRangeEnd(0);
                         newPriceEntity.setPromotion(false);
                         newPriceEntity.setIsActive((byte) 1);
                         newPriceEntity.setSap(1);

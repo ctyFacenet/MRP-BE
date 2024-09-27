@@ -5,10 +5,7 @@ import com.facenet.mrp.domain.sap.CoittEntity;
 import com.facenet.mrp.domain.sap.OitmEntity;
 import com.facenet.mrp.repository.mrp.MrpBomDetailRepository;
 import com.facenet.mrp.repository.mrp.ProductOrderDetailRepository;
-import com.facenet.mrp.repository.sap.CoittRepository;
-import com.facenet.mrp.repository.sap.OitmCustomRepository;
-import com.facenet.mrp.repository.sap.OitmRepository;
-import com.facenet.mrp.repository.sap.OitwRepository;
+import com.facenet.mrp.repository.sap.*;
 import com.facenet.mrp.service.dto.DetailBomVersionDTO;
 import com.facenet.mrp.service.dto.ListBomDTO;
 import com.facenet.mrp.service.dto.ViewBomDTO;
@@ -58,6 +55,8 @@ public class CoittServiceImpl implements CoittService {
     OitwRepository oitwRepository;
     @Autowired
     private OitmRepository oitmRepository;
+    @Autowired
+    private OittRepository oittRepository;
 
     /**
      * Hàm lấy danh sách Bom version có trạng thái là active cho mã sản phẩm tương ứng
@@ -136,7 +135,7 @@ public class CoittServiceImpl implements CoittService {
         }
 
         log.info("get list bom by product code {} and bom version {}", itemCode, version);
-        Page<DetailBomVersionDTO> detailBomVersionDTOS = coittRepository.getDetailBomVersionByProductPaging(pageable, itemCode, version);
+        Page<DetailBomVersionDTO> detailBomVersionDTOS =oittRepository.getDetailBomVersionByProductPaging(pageable, itemCode);
         if (detailBomVersionDTOS != null && !CollectionUtils.isEmpty(detailBomVersionDTOS.getContent())) {
             //Lấy list PoCode
             detailBomVersionDTOS.forEach(detail -> {

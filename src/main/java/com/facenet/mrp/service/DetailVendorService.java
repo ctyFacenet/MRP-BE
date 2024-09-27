@@ -283,8 +283,8 @@ public class DetailVendorService {
                 itemRepository.save(itemEntity);
             }
 
-            if (!ocrdRepository.existsByCardCode(itemInVendorDTO.getVendorCode()))
-                throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.vendor", itemInVendorDTO.getVendorCode());
+//            if (!ocrdRepository.existsByCardCode(itemInVendorDTO.getVendorCode()))
+//                throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.vendor", itemInVendorDTO.getVendorCode());
 
             if (!vendorRepository.existsAllByVendorCode(itemInVendorDTO.getVendorCode())) {
                 VendorEntity vendorEntity = new VendorEntity();
@@ -315,8 +315,8 @@ public class DetailVendorService {
             itemRepository.save(itemEntity);
         }
 
-        if (!ocrdRepository.existsByCardCode(itemInVendorDTO.getVendorCode()))
-            throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.vendor", itemInVendorDTO.getVendorCode());
+//        if (!ocrdRepository.existsByCardCode(itemInVendorDTO.getVendorCode()))
+//            throw new CustomException(HttpStatus.BAD_REQUEST, "invalid.vendor", itemInVendorDTO.getVendorCode());
 
         if (!vendorRepository.existsAllByVendorCode(itemInVendorDTO.getVendorCode())) {
             VendorEntity vendorEntity = new VendorEntity();

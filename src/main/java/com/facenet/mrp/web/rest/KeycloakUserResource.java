@@ -32,11 +32,17 @@ public class KeycloakUserResource {
     @GetMapping("/approval-users")
     public CommonResponse getApprovalUsers() {
         RealmResource realmResource = keycloak.realm(realm);
-        logger.info(keycloak.toString());
-        String token = keycloak.tokenManager().getAccessTokenString();
-        logger.info("Access Token: " + token);
         return new CommonResponse<>()
             .success()
             .data(realmResource.roles().get(role).getUserMembers());
+    }
+
+    @GetMapping("/all-users")
+    public CommonResponse getUsers() {
+        RealmResource realmResource = keycloak.realm(realm);
+        List<UserRepresentation> users = realmResource.users().list();  // Fetch all users
+        return new CommonResponse<>()
+            .success()
+            .data(users);
     }
 }
