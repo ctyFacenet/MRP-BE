@@ -6,6 +6,7 @@ public class UpdatePurchaseRecommendationForm {
     private String itemCode;
     private Double quantity;
     private Date receiveDate;
+    private String assignedUser;
 
     public String getItemCode() {
         return itemCode;
@@ -29,5 +30,13 @@ public class UpdatePurchaseRecommendationForm {
 
     public void setReceiveDate(Date receiveDate) {
         this.receiveDate = receiveDate;
+    }
+
+    public String getAssignedUser() {
+        return assignedUser;
+    }
+
+    public void setAssignedUser(String assignedUser) {
+        this.assignedUser = assignedUser;
     }
 }
