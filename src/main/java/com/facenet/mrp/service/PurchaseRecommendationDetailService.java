@@ -804,7 +804,7 @@ public class PurchaseRecommendationDetailService {
             for (int i = 0; i < columns.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(columns[i]);
-                cell.setCellStyle(unitStyle);
+                cell.setCellStyle(headerStyle);
             }
 
             // Write data rows
