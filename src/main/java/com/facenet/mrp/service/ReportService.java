@@ -1077,8 +1077,8 @@ public class ReportService {
                 sheet.autoSizeColumn(i);
             }
 
-            FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
-            workbook.write(out);
+//            FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
+//            workbook.write(out);
             // Convert workbook to byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
@@ -1160,8 +1160,8 @@ public class ReportService {
                 sheet.autoSizeColumn(i);
             }
 
-            FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
-            workbook.write(out);
+//            FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
+//            workbook.write(out);
             // Convert workbook to byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
@@ -1236,8 +1236,8 @@ public class ReportService {
                 sheet.autoSizeColumn(i);
             }
 
-            FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
-            workbook.write(out);
+//            FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
+//            workbook.write(out);
             // Convert workbook to byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
