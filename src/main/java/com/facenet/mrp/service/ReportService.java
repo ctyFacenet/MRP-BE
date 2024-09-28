@@ -1228,9 +1228,24 @@ public class ReportService {
                 row.createCell(3).setCellValue(dto.getVendorName());
                 row.createCell(4).setCellValue(dto.getApprovedPurchaseQty());
                 row.createCell(5).setCellValue(dto.getPrice());
-                row.createCell(6).setCellValue(dateFormat.format(dto.getPRCreatedDate()));
-                row.createCell(7).setCellValue(dateFormat.format(dto.getArrivalDate()));
-                row.createCell(8).setCellValue(dateFormat.format(dto.getActualArrivalDate()));
+
+                if (dto.getPRCreatedDate() != null) {
+                    row.createCell(6).setCellValue(dateFormat.format(dto.getPRCreatedDate()));
+                } else {
+                    row.createCell(6).setCellValue("");
+                }
+
+                if (dto.getArrivalDate() != null) {
+                    row.createCell(7).setCellValue(dateFormat.format(dto.getArrivalDate()));
+                } else {
+                    row.createCell(7).setCellValue("");
+                }
+
+                if (dto.getActualArrivalDate() != null) {
+                    row.createCell(8).setCellValue(dateFormat.format(dto.getActualArrivalDate()));
+                } else {
+                    row.createCell(8).setCellValue("");
+                }
             }
             for (int i = 0; i < columns.length; i++) {
                 sheet.autoSizeColumn(i);
