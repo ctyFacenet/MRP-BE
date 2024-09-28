@@ -880,8 +880,8 @@ public class PurchaseRecommendationDetailService {
             suggestionCell.setCellValue("ĐƠN VỊ ĐỀ NGHỊ");
             suggestionCell.setCellStyle(defaultStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 4, 7));
-            FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
-            workbook.write(out);
+//            FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
+//            workbook.write(out);
             // Convert workbook to byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
