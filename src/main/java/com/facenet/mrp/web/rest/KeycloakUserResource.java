@@ -36,4 +36,13 @@ public class KeycloakUserResource {
             .success()
             .data(realmResource.roles().get(role).getUserMembers());
     }
+
+    @GetMapping("/all-users")
+    public CommonResponse getUsers() {
+        RealmResource realmResource = keycloak.realm(realm);
+        List<UserRepresentation> users = realmResource.users().list();  // Fetch all users
+        return new CommonResponse<>()
+            .success()
+            .data(users);
+    }
 }

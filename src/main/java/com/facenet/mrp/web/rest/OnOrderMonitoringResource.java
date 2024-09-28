@@ -3,7 +3,6 @@ package com.facenet.mrp.web.rest;
 import com.facenet.mrp.domain.mrp.PurchaseOrderEntity;
 import com.facenet.mrp.service.MonitoringService;
 import com.facenet.mrp.service.MqqPriceService;
-import com.facenet.mrp.service.dto.PoExcelDTO;
 import com.facenet.mrp.service.dto.PurchaseOrderDTO;
 import com.facenet.mrp.service.dto.mrp.*;
 import com.facenet.mrp.service.dto.request.AddMonitoringItemRequest;
@@ -202,7 +201,7 @@ public class OnOrderMonitoringResource {
     }
 
     @PostMapping("/to-excel")
-    public ResponseEntity<?> exportToExcel(@RequestBody PoExcelDTO input) {
+    public ResponseEntity<?> exportToExcel(@RequestBody CreatePurchaseOrderDTO input) {
         try {
             return monitoringService.exportToExcel(input);
 

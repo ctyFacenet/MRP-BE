@@ -3,6 +3,7 @@ package com.facenet.mrp.service;
 import com.facenet.mrp.domain.mrp.ItemEntity;
 import com.facenet.mrp.domain.mrp.VendorItemEntity;
 import com.facenet.mrp.domain.mrp.VendorEntity;
+import com.facenet.mrp.domain.mrp.VendorItemEntityPK;
 import com.facenet.mrp.domain.sap.QOcrdEntity;
 import com.facenet.mrp.repository.mrp.ItemRepository;
 import com.facenet.mrp.repository.mrp.VendorItemRepository;
@@ -292,6 +293,9 @@ public class VendorService {
         itemRepository.saveAll(itemsToSave);
     }
 
-
+    @Transactional
+    public void deleteVendorItem(String itemCode, String vendorCode) {
+        vendorItemRepository.deleteByItemCodeAndVendorCode(itemCode, vendorCode);
+    }
 
 }
