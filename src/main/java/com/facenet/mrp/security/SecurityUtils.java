@@ -29,7 +29,7 @@ public final class SecurityUtils {
      */
     public static Optional<String> getCurrentUserLogin() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
-        return Optional.ofNullable(extractPrincipal(securityContext.getAuthentication(), "name"));
+        return Optional.ofNullable(extractPrincipal(securityContext.getAuthentication(), "preferred_username"));
     }
 
     public static Optional<String> getCurrentUsername() {
