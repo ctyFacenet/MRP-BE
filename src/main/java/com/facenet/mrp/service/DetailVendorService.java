@@ -162,6 +162,7 @@ public class DetailVendorService {
             dataItemInVendor.setProductType(item.getType());
             dataItemInVendor.setTotalInventory(item.getOnHand());
             dataItemInVendor.setUnit(item.getUnit());
+            dataItemInVendor.setSap(itemRepository.getSap(vendorCode, item.getItemCode()));
             listData.add(dataItemInVendor);
         }
         return new PageResponse<List<DataItemInVendor>>()

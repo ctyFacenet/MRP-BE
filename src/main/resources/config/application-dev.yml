@@ -165,7 +165,7 @@ spring:
       client:
         provider:
           oidc:
-            issuer-uri: https://sso.xfactory.vn/auth/realms/QLSX
+            issuer-uri: http://222.252.25.37:5005/auth/realms/QLSX
         #            issuer-uri: http://192.168.68.90:8080/auth/realms/QLSX
         registration:
           oidc:
@@ -215,7 +215,7 @@ jhipster:
       queue-size: 512
 
 keycloak:
-  auth-server-url: https://sso.xfactory.vn/auth
+  auth-server-url: http://222.252.25.37:5005/auth
   #  auth-server-url: http://192.168.68.90:8080/auth
   realm: master
   resource: admin-cli
@@ -229,7 +229,7 @@ keycloak:
     role: MRP_QL
 
 keycloak_planning:
-  baseUrl: https://sso.xfactory.vn/auth
+  baseUrl: http://222.252.25.37:5005/auth
   realm: QLSX
   clientId: planning_backend
   clientSecret: E1c4gANY6yIjQg0M38fiFdwlWagFfX6M

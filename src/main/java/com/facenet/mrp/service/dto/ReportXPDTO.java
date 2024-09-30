@@ -28,6 +28,9 @@ public class ReportXPDTO {
     private Integer totalOrderedQty;         // Tổng số lượng sản phẩm đặt hàng
     private Integer totalRequiredItemQty;    // Tổng số lượng vật tư cần mua
     private Integer totalPrItemQty;          // Tổng số lượng vật tư đã lên PR
+    private Double price; // Đơn giá
+    private Date actualArrivalDate;
+    private Date PRCreatedDate; // Ngày phê duệt khuyen nghi
 
     private Instant startTime;  //thời gian bắt đầu filter
     private Instant endTime;    //thời gian kết thúc filter
@@ -238,5 +241,29 @@ public class ReportXPDTO {
 
     public void setEndTime(Instant endTime) {
         this.endTime = endTime;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public Date getActualArrivalDate() {
+        return actualArrivalDate;
+    }
+
+    public void setActualArrivalDate(Date actualArrivalDate) {
+        this.actualArrivalDate = actualArrivalDate;
+    }
+
+    public Date getPRCreatedDate() {
+        return PRCreatedDate;
+    }
+
+    public void setPRCreatedDate(Date PRCreatedDate) {
+        this.PRCreatedDate = PRCreatedDate;
     }
 }

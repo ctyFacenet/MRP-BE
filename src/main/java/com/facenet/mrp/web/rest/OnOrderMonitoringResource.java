@@ -200,11 +200,11 @@ public class OnOrderMonitoringResource {
         return result;
     }
 
-//    @GetMapping("/to-excel")
-//    public ResponseEntity<?> exportToExcel() {
+//    @PostMapping("/to-excel")
+//    public ResponseEntity<?> exportToExcel(@RequestBody CreatePurchaseOrderDTO input) {
 //        try {
-//            monitoringService.exportToExcel();
-//            return ResponseEntity.ok().build();
+//            return monitoringService.exportToExcel(input);
+//
 //        } catch (Exception e) {
 //            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred during export: " + e.getMessage());
 //        }

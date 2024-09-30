@@ -480,7 +480,15 @@ public class MrpAdvancedAnalysisServiceV3 {
 //        mrpDetailDTO.getDetailResult().clear();
     }
 
-    public void analysisLevelNvl(MrpDetailDTO parentItem, Map<String, List<List<MrpResultDTO>>> itemOnDuplicateMap, String itemStartDate, Map<String, Double> inStockQuantityMap, Map<String, List<CurrentWarehouseInventory>> inStockQuantityMapWithWhsCode, Map<String, Double> prQuantityMap, Map<String, Double> poQuantityMap, Map<String, List<ItemQuantityWithDate>> itemHoldQuantity, Map<String, List<ItemQuantityWithDate>> itemHoldQuantityByWhs, Map<String, List<ItemQuantityWithDate>> itemOnOrderQuantityMap, String soCode, Calendar totalStartTime, Calendar totalEndTime, String whsName, Integer level, String parentPath, String analysisPeriod) throws ParseException {
+    public void analysisLevelNvl(MrpDetailDTO parentItem, Map<String, List<List<MrpResultDTO>>> itemOnDuplicateMap,
+                                 String itemStartDate, Map<String, Double> inStockQuantityMap,
+                                 Map<String, List<CurrentWarehouseInventory>> inStockQuantityMapWithWhsCode,
+                                 Map<String, Double> prQuantityMap, Map<String, Double> poQuantityMap,
+                                 Map<String, List<ItemQuantityWithDate>> itemHoldQuantity,
+                                 Map<String, List<ItemQuantityWithDate>> itemHoldQuantityByWhs,
+                                 Map<String, List<ItemQuantityWithDate>> itemOnOrderQuantityMap, String soCode,
+                                 Calendar totalStartTime, Calendar totalEndTime, String whsName, Integer level,
+                                 String parentPath, String analysisPeriod) throws ParseException {
         MrpResultDTO mrpResultDTO;
         int countLevel = level + 1;
         double requiredQuantity;
