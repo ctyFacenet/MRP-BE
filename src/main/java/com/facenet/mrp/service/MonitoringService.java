@@ -924,36 +924,84 @@ public class MonitoringService {
             headerRow3.createCell(0).setCellValue("Mã MRP");
             String mrpString = String.join(", ",input.getMrpCodes());
             headerRow3.createCell(1).setCellValue(mrpString);
+            Row headRow4 = sheet.createRow(4);
+            headRow4.createCell(0).setCellValue("STT");
+            headRow4.createCell(1).setCellValue("Mã vật tư");
+            headRow4.createCell(2).setCellValue("Mô tả");
+            headRow4.createCell(3).setCellValue("Đơn vị tính");
+            headRow4.createCell(4).setCellValue("Số lượng ");
+            headRow4.createCell(5).setCellValue("Đơn giá");
+            headRow4.createCell(6).setCellValue("Tổng");
+            headRow4.createCell(7).setCellValue("Giảm giá");
+            headRow4.createCell(8).setCellValue("Tax");
+            headRow4.createCell(9).setCellValue("Giá cuối");
+            headRow4.createCell(10).setCellValue("Ghi chú");
+            sheet.setColumnWidth(0,10*256);
+            sheet.setColumnWidth(1,15*256);
+            sheet.setColumnWidth(2,40*256);
+            sheet.setColumnWidth(3,15*256);
+            sheet.setColumnWidth(4,10*256);
+            sheet.setColumnWidth(5,10*256);
+            sheet.setColumnWidth(6,5*256);
+            sheet.setColumnWidth(7,10*256);
+            sheet.setColumnWidth(8,5*256);
+            sheet.setColumnWidth(9,10*256);
+            sheet.setColumnWidth(10,40*256);
+
             int rowDetail = 5;
+            int maxColProgress = 12;
+            int itemNumber =1 ;
             for(PoExcelDTO.PurchaseOrderItemDTO itemDTO : input.getItems()){
                 Row row =sheet.createRow(rowDetail);
-                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 0, 0, itemDTO.getItemCode());
-                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 1, 1, itemDTO.getItemName());
-                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 2, 2, itemDTO.getUnit());
-                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 3, 3, itemDTO.getQuantity());
-                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 4, 4, itemDTO.getPrice());
-                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 5, 5, itemDTO.getTotal());
-                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 6, 6, itemDTO.getDiscountPercent());
-                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 7, 7, itemDTO.getTaxValue());
-                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 8, 8, itemDTO.getGrossTotal());
-                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 9, 9, itemDTO.getNote());
-                int rowProgress = 11;
+                mergeCellExcel(sheet,row,workbook,rowDetail,rowDetail+1,0,0,itemNumber++);
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 1, 1, itemDTO.getItemCode());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 2, 2, itemDTO.getItemName());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 3, 3, itemDTO.getUnit());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 4, 4, itemDTO.getQuantity());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 5, 5, itemDTO.getPrice());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 6, 6, itemDTO.getTotal());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 7, 7, itemDTO.getDiscountPercent());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 8, 8, itemDTO.getTaxValue());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 9, 9, itemDTO.getGrossTotal());
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 10, 10, itemDTO.getNote());
+                int colProgress = 12;
                 Row row2 = sheet.createRow(rowDetail+1);
-                row.createCell(10).setCellValue("Nhập thời gian theo format (yyyy/MM/dd");
-                row2.createCell(10).setCellValue("Nhập số lượng po");
-                sheet.setColumnWidth(10, 50 * 256);
+                row.createCell(11).setCellValue("Nhập thời gian theo format (yyyy/MM/dd");
+                row2.createCell(11).setCellValue("Nhập số lượng po");
+                sheet.setColumnWidth(11,40*256);
                 for(PoExcelDTO.PurchaseOrderItemProgressDTO itemProgressDTO : itemDTO.getProgress()){
-                    sheet.setColumnWidth(rowProgress, 15 * 256);
-                    Cell dateCell = row.createCell(rowProgress);
+                    Cell dateCell = row.createCell(colProgress);
+                    sheet.setColumnWidth(colProgress, 15 * 256); // Đặt độ rộng cho cột
+
                     dateCell.setCellValue(itemProgressDTO.getDate());
                     CellStyle dateStyle = workbook.createCellStyle();
                     CreationHelper creationHelper = workbook.getCreationHelper();
                     dateStyle.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-mm-dd")); // Định dạng ngày tháng
                     dateCell.setCellStyle(dateStyle);
-                    row2.createCell(rowProgress).setCellValue(itemProgressDTO.getQuantity());
-                    rowProgress++;
+                    row2.createCell(colProgress).setCellValue(itemProgressDTO.getQuantity());
+                    colProgress++;
                 }
+                if(maxColProgress<colProgress-1) maxColProgress=colProgress-1;
                 rowDetail=rowDetail+2;
+            }
+            mergeCellExcel(sheet,headRow4,workbook,4,4,12,maxColProgress,"Tiến độ mua hàng");
+            for(int i=0;i<=maxColProgress;i++){
+                Cell cellFont = headRow4.getCell(i);
+
+                if (cellFont == null) {
+                    cellFont = headRow4.createCell(i);
+                }
+                CellStyle titleStyle = workbook.createCellStyle();
+                titleStyle.setAlignment(HorizontalAlignment.CENTER);
+                titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                titleStyle.setFillForegroundColor(IndexedColors.GREEN.getIndex()); // Màu nền xanh
+                titleStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND); // Thiết lập kiểu gạch nền
+
+                Font titleFont = workbook.createFont();
+                titleFont.setColor(IndexedColors.RED.getIndex());
+                titleFont.setBold(true);
+                titleStyle.setFont(titleFont);
+                cellFont.setCellStyle(titleStyle);
             }
             workbook.write(out);
             ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray());
