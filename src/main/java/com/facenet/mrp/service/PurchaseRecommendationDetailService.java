@@ -565,7 +565,8 @@ public class PurchaseRecommendationDetailService {
                 qMqqPriceEntity.timeEnd,
                 qPurchaseRecommendationBatch.status,
                 qPurchaseRecommendationBatch.note,
-                qPurchaseRecommendationBatch.createdAt
+                qPurchaseRecommendationBatch.createdAt,
+                qPurchaseRecommendationDetail.assignedUser
             ))
             .from(qPurchaseRecommendationBatch)
             .leftJoin(qMqqPriceEntity).on(qPurchaseRecommendationBatch.moqPriceId.eq(qMqqPriceEntity.itemPriceId))
