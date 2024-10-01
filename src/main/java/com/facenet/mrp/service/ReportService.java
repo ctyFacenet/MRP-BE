@@ -731,8 +731,8 @@ public class ReportService {
 
         StringBuilder sql = new StringBuilder("SELECT pr.so_code as soCode, po.po_code as poCode, " +
             "poi.item_code as itemCode, poi.item_name as itemDescription, po.vendor_name as vendorName, " +
-            "prd.required_quantity as requiredPurchaseQty, " +
-            "prd.quantity as approvedPurchaseQty, pr.pr_create_date, sum(poip.quantity) as receivedQty, " +
+            "pred.required_quantity, " +
+            "pred.quantity, pr.pr_create_date, sum(poip.quantity) as receivedQty, " +
             "po.delivery_date as arriveDate, po.status as status, " +
             "poi.price as price, MAX(poip.date) " +
             "FROM purchase_order_item poi " +
@@ -740,9 +740,10 @@ public class ReportService {
             "LEFT JOIN purchase_order_purchase_request popr ON po.id = popr.purchase_order_id " +
             "LEFT JOIN purchase_request pr ON popr.purchase_request_code LIKE CONCAT('%', pr.pr_code, '%') " +
             "LEFT JOIN product_order so ON pr.so_code = so.product_order_code " +
-            "LEFT JOIN product_order_detail sod ON so.product_order_code = sod.product_order_code AND poi.item_code = sod.product_code " +
             "LEFT JOIN purchase_request_detail prd ON prd.item_code = poi.item_code AND prd.pr_code = pr.pr_code " +
             "LEFT JOIN purchase_order_item_progress poip ON poi.id = poip.purchase_order_item_id " +
+            "LEFT JOIN purchase_recommendation pre ON pre.mrp_sub_code = pr.mrp_code " +
+            "LEFT JOIN purchase_recommendation_detail pred ON pred.purchase_recommendation_id = pre.purchase_recommendation_id AND pred.item_code = poi.item_code " +
             "WHERE poi.item_code IS NOT NULL " +
             "AND po.created_at BETWEEN ?1 AND ?2 ");
 
