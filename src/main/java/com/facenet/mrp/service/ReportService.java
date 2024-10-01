@@ -777,7 +777,7 @@ public class ReportService {
             paramIndex++;
         }
 
-         sql.append(" GROUP BY poi.item_code ORDER BY po.created_at DESC");
+         sql.append(" GROUP BY poi.item_code, po.po_code, po.vendor_code ORDER BY po.created_at DESC");
 
         // Create the query
         Query query = entityManager.createNativeQuery(sql.toString());
