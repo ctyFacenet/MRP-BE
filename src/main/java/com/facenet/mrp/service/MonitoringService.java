@@ -904,70 +904,128 @@ public class MonitoringService {
  * Export PO to Excel
  *
  */
-    private void mergeCellExcel (Sheet sheet,Row row,Workbook workbook,int rowStart, int rowEnd, int colStart, int colEnd, Object value){
-        Cell cell = row.createCell(colStart);
-        cell.setCellValue(value.toString());
-        CellRangeAddress merge = new CellRangeAddress(rowStart, rowEnd, colStart, colEnd);
-        sheet.addMergedRegion(merge);
+private void mergeCellExcel (Sheet sheet,Row row,Workbook workbook,int rowStart, int rowEnd, int colStart, int colEnd, Object value){
+    Cell cell = row.createCell(colStart);
+    cell.setCellValue(value.toString());
+    CellRangeAddress merge = new CellRangeAddress(rowStart, rowEnd, colStart, colEnd);
+    sheet.addMergedRegion(merge);
 
+}
+    public ResponseEntity<InputStreamResource> exportToExcel(PoExcelDTO input){
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("Purchase Order Detail");
+            Row headerRow1 = sheet.createRow(0);
+            headerRow1.createCell(0).setCellValue("Mã PR");
+            headerRow1.createCell(1).setCellValue(input.getPrCodes() != null ? String.join(", ", input.getPrCodes()) : "");
+            Row headerRow2 = sheet.createRow(1);
+            headerRow2.createCell(0).setCellValue("Mã PO");
+            headerRow2.createCell(1).setCellValue(input.getPoCode() != null ? input.getPoCode() : "");
+            Row headerRow3 = sheet.createRow(2);
+            headerRow3.createCell(0).setCellValue("Mã MRP");
+            String mrpString = String.join(", ",input.getMrpCodes());
+            headerRow3.createCell(1).setCellValue(input.getMrpCodes() != null ? String.join(", ", input.getMrpCodes()) : "");
+            Row headRow4 = sheet.createRow(4);
+            headRow4.createCell(0).setCellValue("STT");
+            headRow4.createCell(1).setCellValue("Mã vật tư");
+            headRow4.createCell(2).setCellValue("Mô tả");
+            headRow4.createCell(3).setCellValue("Đơn vị tính");
+            headRow4.createCell(4).setCellValue("Số lượng ");
+            headRow4.createCell(5).setCellValue("Đơn giá");
+            headRow4.createCell(6).setCellValue("Tổng");
+            headRow4.createCell(7).setCellValue("Giảm giá");
+            headRow4.createCell(8).setCellValue("Tax");
+            headRow4.createCell(9).setCellValue("Giá cuối");
+            headRow4.createCell(10).setCellValue("Ghi chú");
+            sheet.setColumnWidth(0,10*256);
+            sheet.setColumnWidth(1,15*256);
+            sheet.setColumnWidth(2,40*256);
+            sheet.setColumnWidth(3,15*256);
+            sheet.setColumnWidth(4,10*256);
+            sheet.setColumnWidth(5,10*256);
+            sheet.setColumnWidth(6,5*256);
+            sheet.setColumnWidth(7,10*256);
+            sheet.setColumnWidth(8,5*256);
+            sheet.setColumnWidth(9,10*256);
+            sheet.setColumnWidth(10,40*256);
+
+            int rowDetail = 5;
+            int maxColProgress = 12;
+            int itemNumber =1 ;
+            for(PoExcelDTO.PurchaseOrderItemDTO itemDTO : input.getItems()){
+                Row row =sheet.createRow(rowDetail);
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 0, 0, itemNumber++);
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 1, 1, itemDTO.getItemCode() != null ? itemDTO.getItemCode() : "");
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 2, 2, itemDTO.getItemName() != null ? itemDTO.getItemName() : "");
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 3, 3, itemDTO.getUnit() != null ? itemDTO.getUnit() : "");
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 4, 4, itemDTO.getQuantity() != null ? itemDTO.getQuantity().toString() : "");
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 5, 5, itemDTO.getPrice() != null ? itemDTO.getPrice().toString() : "");
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 6, 6, itemDTO.getTotal() != null ? itemDTO.getTotal().toString() : "");
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 7, 7, itemDTO.getDiscountPercent() != null ? itemDTO.getDiscountPercent().toString() : "");
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 8, 8, itemDTO.getTaxValue() != null ? itemDTO.getTaxValue().toString() : "");
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 9, 9, itemDTO.getGrossTotal() != null ? itemDTO.getGrossTotal().toString() : "");
+                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 10, 10, itemDTO.getNote() != null ? itemDTO.getNote() : "");
+
+                int colProgress = 12;
+                Row row2 = sheet.createRow(rowDetail+1);
+                row.createCell(11).setCellValue("Nhập thời gian theo format (yyyy/MM/dd");
+                row2.createCell(11).setCellValue("Nhập số lượng po");
+                sheet.setColumnWidth(11,40*256);
+                for(PoExcelDTO.PurchaseOrderItemProgressDTO itemProgressDTO : itemDTO.getProgress()){
+                    Cell dateCell = row.createCell(colProgress);
+                    sheet.setColumnWidth(colProgress, 15 * 256); // Đặt độ rộng cho cột
+
+                    CellStyle dateStyle = workbook.createCellStyle();
+                    CreationHelper creationHelper = workbook.getCreationHelper();
+                    dateStyle.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-mm-dd")); // Định dạng ngày tháng
+                    dateCell.setCellStyle(dateStyle);
+                    if (itemProgressDTO.getDate() != null) {
+                        dateCell.setCellValue(itemProgressDTO.getDate());
+                        dateCell.setCellStyle(dateStyle);
+                    } else {
+                        dateCell.setCellValue("");
+                    }
+                    row2.createCell(colProgress).setCellValue(itemProgressDTO.getQuantity());
+                    colProgress++;
+                }
+                if(maxColProgress<colProgress-1) maxColProgress=colProgress-1;
+                rowDetail=rowDetail+2;
+            }
+            if(maxColProgress>12) {
+                mergeCellExcel(sheet, headRow4, workbook, 4, 4, 12, maxColProgress, "Tiến độ mua hàng");
+            }else {
+                headRow4.createCell(12).setCellValue("Tiến độ mua hàng");
+            }
+            for(int i=0;i<=maxColProgress;i++){
+                Cell cellFont = headRow4.getCell(i);
+
+                if (cellFont == null) {
+                    cellFont = headRow4.createCell(i);
+                }
+                CellStyle titleStyle = workbook.createCellStyle();
+                titleStyle.setAlignment(HorizontalAlignment.CENTER);
+                titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                titleStyle.setFillForegroundColor(IndexedColors.GREEN.getIndex()); // Màu nền xanh
+                titleStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND); // Thiết lập kiểu gạch nền
+
+                Font titleFont = workbook.createFont();
+                titleFont.setColor(IndexedColors.RED.getIndex());
+                titleFont.setBold(true);
+                titleStyle.setFont(titleFont);
+                cellFont.setCellStyle(titleStyle);
+            }
+            workbook.write(out);
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=product_records.xlsx");
+            headers.add(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            return new ResponseEntity<>(new InputStreamResource(inputStream), headers, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(null);
+        }
     }
-//    public ResponseEntity<InputStreamResource> exportToExcel(CreatePurchaseOrderDTO input){
-//        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-//            Sheet sheet = workbook.createSheet("Purchase Order Detail");
-//            Row headerRow1 = sheet.createRow(0);
-//            headerRow1.createCell(0).setCellValue("Mã PR");
-//            String prString = String.join(", ",input.getPrCodes());
-//            headerRow1.createCell(1).setCellValue(prString);
-//            Row headerRow2 = sheet.createRow(1);
-//            headerRow2.createCell(0).setCellValue("Mã PO");
-//            headerRow2.createCell(1).setCellValue(input.getPoCode());
-//            Row headerRow3 = sheet.createRow(2);
-//            headerRow3.createCell(0).setCellValue("Mã MRP");
-//            String mrpString = String.join(", ",input.getPrCodes());
-//            headerRow3.createCell(1).setCellValue(mrpString);
-//            int rowDetail = 5;
-//            for(CreatePurchaseOrderDTO.PurchaseOrderItemDTO itemDTO : input.getItems()){
-//                Row row =sheet.createRow(rowDetail);
-//                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 0, 0, itemDTO.getItemCode());
-//                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 1, 1, itemDTO.getItemName());
-//                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 2, 2, itemDTO.getUnit());
-//                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 3, 3, itemDTO.getQuantity());
-//                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 4, 4, itemDTO.getPrice());
-//                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 5, 5, itemDTO.getTotal());
-//                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 6, 6, itemDTO.getDiscountPercent());
-//                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 7, 7, itemDTO.getTaxValue());
-//                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 8, 8, itemDTO.getGrossTotal());
-//                mergeCellExcel(sheet, row, workbook, rowDetail, rowDetail + 1, 9, 9, itemDTO.getNote());
-//                int rowProgress = 11;
-//                Row row2 = sheet.createRow(rowDetail+1);
-//                row.createCell(10).setCellValue("Nhập thời gian theo format (yyyy/MM/dd");
-//                row2.createCell(10).setCellValue("Nhập số lượng po");
-//                sheet.setColumnWidth(10, 50 * 256);
-//                for(PoExcelDTO.PurchaseOrderItemProgressDTO itemProgressDTO : itemDTO.getProgress()){
-//                    sheet.setColumnWidth(rowProgress, 15 * 256);
-//                    Cell dateCell = row.createCell(rowProgress);
-//                    dateCell.setCellValue(itemProgressDTO.getDate());
-//                    CellStyle dateStyle = workbook.createCellStyle();
-//                    CreationHelper creationHelper = workbook.getCreationHelper();
-//                    dateStyle.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-mm-dd")); // Định dạng ngày tháng
-//                    dateCell.setCellStyle(dateStyle);
-//                    row2.createCell(rowProgress).setCellValue(itemProgressDTO.getQuantity());
-//                    rowProgress++;
-//                }
-//                rowDetail=rowDetail+2;
-//            }
-//            workbook.write(out);
-//            ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray());
-//
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.add("Content-Disposition", "attachment; filename=product_records.xlsx");
-//            headers.add(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-//            return new ResponseEntity<>(new InputStreamResource(inputStream), headers, HttpStatus.OK);
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                .body(null);
-//        }
-//    }
     /**
      * ham lay sach item trong po va tien do cua item
      *
