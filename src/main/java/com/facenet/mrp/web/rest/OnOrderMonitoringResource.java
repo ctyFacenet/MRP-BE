@@ -3,6 +3,7 @@ package com.facenet.mrp.web.rest;
 import com.facenet.mrp.domain.mrp.PurchaseOrderEntity;
 import com.facenet.mrp.service.MonitoringService;
 import com.facenet.mrp.service.MqqPriceService;
+import com.facenet.mrp.service.dto.PoExcelDTO;
 import com.facenet.mrp.service.dto.PurchaseOrderDTO;
 import com.facenet.mrp.service.dto.mrp.*;
 import com.facenet.mrp.service.dto.request.AddMonitoringItemRequest;
@@ -200,15 +201,15 @@ public class OnOrderMonitoringResource {
         return result;
     }
 
-//    @PostMapping("/to-excel")
-//    public ResponseEntity<?> exportToExcel(@RequestBody CreatePurchaseOrderDTO input) {
-//        try {
-//            return monitoringService.exportToExcel(input);
-//
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred during export: " + e.getMessage());
-//        }
-//    }
+    @PostMapping("/to-excel")
+    public ResponseEntity<?> exportToExcel(@RequestBody PoExcelDTO input) {
+        try {
+            return monitoringService.exportToExcel(input);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred during export: " + e.getMessage());
+        }
+    }
 
     @GetMapping(value = "/to-excel-pr", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<byte[]> exportToExcelPr() {

@@ -777,7 +777,7 @@ public class ReportService {
             paramIndex++;
         }
 
-         sql.append(" GROUP BY poi.item_code ORDER BY po.created_at DESC");
+         sql.append(" GROUP BY poi.item_code, po.po_code, po.vendor_code ORDER BY po.created_at DESC");
 
         // Create the query
         Query query = entityManager.createNativeQuery(sql.toString());
@@ -887,7 +887,8 @@ public class ReportService {
             .append("JOIN purchase_order_purchase_request pur_pr ON FIND_IN_SET(pr.pr_code, pur_pr.purchase_request_code) ")
             .append("JOIN purchase_order pur ON pur.id = pur_pr.purchase_order_id ")
             .append("WHERE pro.created_at >= ?1 ")
-            .append("  AND pro.created_at <= ?2");
+            .append("  AND pro.created_at <= ?2")
+            .append(" GROUP BY pr.so_code");
 
         int paramIndex = 3;
 
