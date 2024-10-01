@@ -33,6 +33,24 @@ public class PurchaseRecommendationDetailDTO implements Serializable {
     }
 
     @QueryProjection
+    public PurchaseRecommendationDetailDTO(String itemCode, String itemDescription, Double quantity, Date receiveDate, String vendorCode, String vendorName, Double price, String currency, Boolean isPromotion, Date endTime, Integer status, String note, Instant createdAt, String assignedUser) {
+        this.itemCode = itemCode;
+        this.itemDescription = itemDescription;
+        this.quantity = quantity;
+        this.receiveDate = receiveDate;
+        this.vendorCode = vendorCode;
+        this.vendorName = vendorName;
+        this.price = price;
+        this.currency = currency;
+        this.isPromotion = isPromotion;
+        this.endTime = endTime;
+        this.status = status;
+        this.note = note;
+        this.createdAt = createdAt;
+        this.assignedUser = assignedUser;
+    }
+
+    @QueryProjection
     public PurchaseRecommendationDetailDTO(String itemCode, String itemDescription, Double quantity, Date receiveDate, String vendorCode, String vendorName, Double price, String currency, Boolean isPromotion, Date endTime, Integer status, String note, Instant createdAt) {
         this.itemCode = itemCode;
         this.itemDescription = itemDescription;
