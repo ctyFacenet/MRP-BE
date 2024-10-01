@@ -731,8 +731,8 @@ public class ReportService {
 
         StringBuilder sql = new StringBuilder("SELECT pr.so_code as soCode, po.po_code as poCode, " +
             "poi.item_code as itemCode, poi.item_name as itemDescription, po.vendor_name as vendorName, " +
-            "SUM(sod.quantity) as requiredPurchaseQty, " +
-            "SUM(poip.quantity) as approvedPurchaseQty, pr.pr_create_date, sum(poip.quantity) as receivedQty, " +
+            "prd.required_quantity as requiredPurchaseQty, " +
+            "prd.quantity as approvedPurchaseQty, pr.pr_create_date, sum(poip.quantity) as receivedQty, " +
             "po.delivery_date as arriveDate, po.status as status, " +
             "poi.price as price, MAX(poip.date) " +
             "FROM purchase_order_item poi " +
