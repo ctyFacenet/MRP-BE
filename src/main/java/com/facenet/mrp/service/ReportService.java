@@ -24,9 +24,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -34,8 +31,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -63,6 +58,8 @@ public class ReportService {
     private final BranchGroupRepository branchGroupRepository;
     private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
+    private final KeycloakService keycloakService;
+
     public ReportService(ProductOrderRepository productOrderRepository,
                          PurchaseRecommendationRepository purchaseRecommendationRepository,
                          ForecastOrderDetailRepository forecastOrderDetailRepository,
@@ -77,7 +74,7 @@ public class ReportService {
                          PurchaseRecommendationPlanRepository planRepository,
                          EntityManager entityManager,
                          SapOnOrderDurationDetailRepository sapOnOrderDurationDetailRepository,
-                         BranchGroupRepository branchGroupRepository) {
+                         BranchGroupRepository branchGroupRepository, KeycloakService keycloakService) {
         this.productOrderRepository = productOrderRepository;
         this.forecastOrderDetailRepository = forecastOrderDetailRepository;
         this.productOrderDetailRepository = productOrderDetailRepository;
@@ -93,6 +90,7 @@ public class ReportService {
         this.planRepository = planRepository;
         this.entityManager = entityManager;
         this.branchGroupRepository = branchGroupRepository;
+        this.keycloakService = keycloakService;
     }
 
     public List<ReportDTO> getReport(ReportFilter filter){
@@ -987,7 +985,8 @@ public class ReportService {
             report.setPoCode((String)item[1]);
             report.setCustomerName((String)item[2]);
             report.setOrderer((String)item[3]);
-            report.setBuyer((String)item[4]);
+            String buyerNames = keycloakService.getFullNamesByUsernames((String)item[4]);
+            report.setBuyer(buyerNames);
             report.setOrderTime((Date)item[5]);
             report.setDeliveryTime((Date)item[6]);
 
