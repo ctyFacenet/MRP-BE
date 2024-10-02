@@ -7,11 +7,9 @@ import com.facenet.mrp.repository.sap.OcrdRepository;
 import com.facenet.mrp.repository.sap.OitmRepository;
 import com.facenet.mrp.security.SecurityUtils;
 import com.facenet.mrp.service.dto.*;
-import com.facenet.mrp.service.dto.mrp.OnOrderMonitoringDTO;
 import com.facenet.mrp.service.dto.mrp.SendApprovalRequest;
 import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
-import com.facenet.mrp.service.dto.sap.PurchaseRequestApiDTO;
 import com.facenet.mrp.service.dto.sap.PurchaseRequestDetailApiDTO;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.mapper.ItemHoldMapper;
@@ -34,18 +32,13 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManager;
 import java.io.*;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -68,12 +61,13 @@ public class PurchaseRecommendationDetailService {
     private final MrpSubRepository mrpSubRepository;
     private final PurchaseRequestService purchaseRequestService;
     private final OitmRepository oitmRepository;
+    private final KeycloakService keycloakService;
 
     public PurchaseRecommendationDetailService(PurchaseHasRecommendationRepository purchaseHasRecommendationRepository, PurchaseRecommendationBatchRepository purchaseRecommendationBatchRepository, PurchaseRecommendationDetailRepository purchaseRecommendationDetailRepository, PurchaseRecommendationRepository purchaseRecommendationRepository, OcrdRepository ocrdRepository, MqqPriceRepository mqqPriceRepository, ItemHoldRepository itemHoldRepository, ItemHoldMapper itemHoldMapper, @Qualifier("mrpEntityManager") EntityManager entityManager, PurchaseRecommendationPlanRepository planRepository, RateExchangeService rateExchangeService, RecommendationPlanMapper planMapper, PurchaseRequestApiMapper purchaseRequestApiMapper,
                                                ConfigRepository configRepository,
                                                ApprovalUserAuthorizationRepository approvalUserAuthorizationRepository,
                                                MrpSubRepository mrpSubRepository, PurchaseRequestService purchaseRequestService,
-                                               OitmRepository oitmRepository) {
+                                               OitmRepository oitmRepository, KeycloakService keycloakService) {
         this.purchaseHasRecommendationRepository = purchaseHasRecommendationRepository;
         this.purchaseRecommendationBatchRepository = purchaseRecommendationBatchRepository;
         this.purchaseRecommendationDetailRepository = purchaseRecommendationDetailRepository;
@@ -89,6 +83,7 @@ public class PurchaseRecommendationDetailService {
         this.mrpSubRepository = mrpSubRepository;
         this.purchaseRequestService = purchaseRequestService;
         this.oitmRepository = oitmRepository;
+        this.keycloakService = keycloakService;
     }
 
     /**
@@ -829,7 +824,7 @@ public class PurchaseRecommendationDetailService {
                     row.createCell(5).setCellValue("");
                 }
                 row.createCell(6).setCellValue(prDTO.getNote());
-                row.createCell(7).setCellValue(prDTO.getAssignedUser());
+                row.createCell(7).setCellValue(keycloakService.getFullNameByUsername(prDTO.getAssignedUser()));
 
                 // Apply style to each cell
                 for (int i = 0; i < columns.length; i++) {
