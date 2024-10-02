@@ -395,8 +395,6 @@ public class PurchaseRecommendationDetailService {
 
                 // Increment the time used
                 purchaseRecommendationDetailEntity.getMoqPriceEntity().getVendorItemEntity().incrementTimeUsed();
-            } else {
-                throw new CustomException(HttpStatus.BAD_REQUEST, "Product.has.no.vendor");
             }
         }
 
