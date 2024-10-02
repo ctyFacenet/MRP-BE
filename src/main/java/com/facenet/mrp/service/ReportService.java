@@ -989,8 +989,8 @@ public class ReportService {
             report.setOrderTime((Date)item[5]);
             report.setDeliveryTime((Date)item[6]);
 
-            totalRequiredItemQty = getSuppliesCount(soCodes, fcCodes).size();
-            totalPrItemQty = getPrCount(soCodes, fcCodes).size();
+            totalRequiredItemQty = Math.toIntExact(getSuppliesCount(soCodes, fcCodes).get(report.getSoCode()));
+            totalPrItemQty = Math.toIntExact(getPrCount(soCodes, fcCodes).get(report.getSoCode()));
             logger.info("Number: {} - {}", totalRequiredItemQty, totalPrItemQty);
             report.setTotalRequiredItemQty(totalRequiredItemQty);
             report.setTotalPrItemQty(totalPrItemQty);

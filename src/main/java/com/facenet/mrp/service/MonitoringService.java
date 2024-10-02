@@ -235,6 +235,7 @@ public class MonitoringService {
             if (filter.getMrpCode() != null && !filter.getMrpCode().isEmpty()) {
                 sqlBuilderFirst.append(" AND pr.mrp_code LIKE :mrpCode");
             }
+            sqlBuilderFirst.append(" order by po.created_at desc");
             Query queryFirst = entityManager.createNativeQuery(sqlBuilderFirst.toString());
 
             if (filter.getPrCode() != null && !filter.getPrCode().isEmpty()) {

@@ -280,6 +280,7 @@ public class PurchaseRequestService {
         }
 
         cq.where(predicates.toArray(new Predicate[0]));
+        cq.orderBy(cb.desc(root.get("createdAt")));
         TypedQuery<PurchaseRequestEntity> query = entityManager.createQuery(cq);
 
         // Pagination
@@ -324,6 +325,7 @@ public class PurchaseRequestService {
         }
 
         cq.where(predicates.toArray(new Predicate[0]));
+        cq.orderBy(cb.desc(root.get("createdAt")));
         TypedQuery<PurchaseRequestDetailEntity> query = entityManager.createQuery(cq);
 
         // Pagination
