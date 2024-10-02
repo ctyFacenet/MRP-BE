@@ -162,8 +162,7 @@ public class BomService {
         resultList.addAll(list);
         for(BomItemDetailDTO item: list){
             if(item.getMaterialGroup().equals("BTP") || item.getMaterialGroup().equals("TP")){
-                count ++;
-                dequy(item,resultList,count,item.getMaterialCode());
+                dequy(item,resultList,count+1,item.getMaterialCode());
             }
         }
         return resultList;
