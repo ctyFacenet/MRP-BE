@@ -5,6 +5,7 @@ import com.facenet.mrp.domain.sap.QOitmEntity;
 import com.facenet.mrp.domain.sap.QOittEntity;
 import com.facenet.mrp.repository.sap.CoittRepository;
 import com.facenet.mrp.repository.sap.Itt1Repository;
+import com.facenet.mrp.repository.sap.OitmRepository;
 import com.facenet.mrp.repository.sap.OittRepository;
 import com.facenet.mrp.service.dto.BomDTO;
 import com.facenet.mrp.service.dto.BomItemDetailDTO;
@@ -35,13 +36,16 @@ public class BomService {
     private final CoittRepository coittRepository;
     private final Itt1Repository itt1Repository;
     private final OittRepository oittRepository;
+    private final OitmRepository oitmRepository;
 
     public BomService(@Qualifier("sapEntityManager") EntityManager entityManager, CoittRepository coittRepository, Itt1Repository itt1Repository,
-                      OittRepository oittRepository) {
+                      OittRepository oittRepository,
+                      OitmRepository oitmRepository) {
         this.entityManager = entityManager;
         this.coittRepository = coittRepository;
         this.itt1Repository = itt1Repository;
         this.oittRepository = oittRepository;
+        this.oitmRepository = oitmRepository;
     }
 
     /**
@@ -150,6 +154,7 @@ public class BomService {
         for(BomItemDetailDTO item: result){
             if(!itemList.contains(item.getMaterialCode())){
                 itemList.add(item.getMaterialCode());
+                item.setUnit(oitmRepository.getByItemCode(item.getMaterialCode()).getSalUnitMsr());
                 item.setLevel(count);
                 if(count == 1){
                     item.setRootMaterial(productCode);
@@ -162,8 +167,7 @@ public class BomService {
         resultList.addAll(list);
         for(BomItemDetailDTO item: list){
             if(item.getMaterialGroup().equals("BTP") || item.getMaterialGroup().equals("TP")){
-                count ++;
-                dequy(item,resultList,count,item.getMaterialCode());
+                dequy(item,resultList,count+1,item.getMaterialCode());
             }
         }
         return resultList;
