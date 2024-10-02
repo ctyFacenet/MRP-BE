@@ -87,6 +87,8 @@ public class MonitoringService {
     @Autowired
     PurchaseRequestEntityRepository purchaseRequestEntityRepository;
     @Autowired
+    PurchaseRequestDetailEntityRepository purchaseRequestDetailEntityRepository;
+    @Autowired
     PurchaseRecommendationDetailRepository recommendationDetailRepository;
 
     @Autowired
@@ -702,6 +704,12 @@ public class MonitoringService {
                 progressEntity.setQuantity(progressDto.getQuantity());
                 progress.add(progressEntity);
             }
+
+            List<PurchaseRequestDetailEntity> purchaseOrderDetails = purchaseRequestDetailEntityRepository.findByItemCode(itemDto.getItemCode());
+            for (PurchaseRequestDetailEntity detail : purchaseOrderDetails) {
+                detail.setPoPostedQuantity(detail.getPoPostedQuantity() + itemDto.getQuantity());
+            }
+            purchaseRequestDetailEntityRepository.saveAll(purchaseOrderDetails);
         }
 
         List<PurchaseOrderItemEntity> savedItems = purchaseOrderItemRepository.saveAll(items);

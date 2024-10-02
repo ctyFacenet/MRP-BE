@@ -9,4 +9,5 @@ import java.util.List;
 public interface PurchaseRequestDetailEntityRepository extends JpaRepository<PurchaseRequestDetailEntity, Integer>
 {
     List<PurchaseRequestDetailEntity> findAllByPrCodeAndIsActive(String prCode, int active);
+    List<PurchaseRequestDetailEntity> findByItemCode(String itemCode);
 }
