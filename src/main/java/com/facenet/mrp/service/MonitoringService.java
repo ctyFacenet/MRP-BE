@@ -309,7 +309,7 @@ public class MonitoringService {
                 }
 
                 // Cuối cùng, có thể thêm phần sắp xếp kết quả nếu cần
-                sqlBuilder.append(" ORDER BY po.po_code"); // Sắp xếp theo ngày tạo
+                sqlBuilder.append(" ORDER BY po.created_at desc"); // Sắp xếp theo ngày tạo
                 // Tạo truy vấn từ chuỗi SQL
 
                 Query query = entityManager.createNativeQuery(sqlBuilder.toString());
