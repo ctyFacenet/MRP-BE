@@ -9,6 +9,7 @@ import com.facenet.mrp.service.dto.InventoryDetailDTO;
 import com.facenet.mrp.service.dto.OitmDTO;
 import com.facenet.mrp.service.dto.mrp.WarehouseEntityDto;
 import com.facenet.mrp.service.dto.response.PageResponse;
+import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.mapper.OitmMapper;
 import com.facenet.mrp.service.mapper.WarehouseEntityMapper;
 import com.facenet.mrp.service.model.OitmFilter;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -63,7 +65,7 @@ public class WarehouseService {
 
             String firstCellValue = getCellValueAsString(row.getCell(0));
             if (firstCellValue == null || firstCellValue.isEmpty()) {
-                break;
+                throw new CustomException(HttpStatus.BAD_REQUEST, "excel.is.empty");
             }
 
             String itemCode = getCellValueAsString(row.getCell(1));
