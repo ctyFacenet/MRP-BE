@@ -363,7 +363,7 @@ public class PurchaseRecommendationDetailService {
                         input.getItems(),
                         batch
                     );
-                    throw new CustomException( "create.pr.failed");
+                    throw new CustomException( "Tạo mới PR thất bại!");
                 }
             }
 
@@ -396,7 +396,7 @@ public class PurchaseRecommendationDetailService {
                 // Increment the time used
                 purchaseRecommendationDetailEntity.getMoqPriceEntity().getVendorItemEntity().incrementTimeUsed();
             } else {
-                throw new CustomException(HttpStatus.BAD_REQUEST, "Product.has.no.vendor");
+                throw new CustomException(HttpStatus.BAD_REQUEST, "Mã sản phẩm chưa có nhà cung cấp");
             }
         }
 
