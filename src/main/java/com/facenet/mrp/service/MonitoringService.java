@@ -237,7 +237,7 @@ public class MonitoringService {
             if (filter.getMrpCode() != null && !filter.getMrpCode().isEmpty()) {
                 sqlBuilderFirst.append(" AND pr.mrp_code LIKE :mrpCode");
             }
-            sqlBuilderFirst.append(" order by po.created_at desc");
+            sqlBuilderFirst.append(" ORDER BY po.created_at DESC");
             Query queryFirst = entityManager.createNativeQuery(sqlBuilderFirst.toString());
 
             if (filter.getPrCode() != null && !filter.getPrCode().isEmpty()) {
@@ -309,7 +309,7 @@ public class MonitoringService {
                 }
 
                 // Cuối cùng, có thể thêm phần sắp xếp kết quả nếu cần
-                sqlBuilder.append(" ORDER BY po.created_at desc"); // Sắp xếp theo ngày tạo
+                sqlBuilder.append(" ORDER BY po.created_at DESC"); // Sắp xếp theo ngày tạo
                 // Tạo truy vấn từ chuỗi SQL
 
                 Query query = entityManager.createNativeQuery(sqlBuilder.toString());
@@ -495,7 +495,7 @@ public class MonitoringService {
             }
 
             // Cuối cùng, có thể thêm phần sắp xếp kết quả nếu cần
-            sqlBuilder.append(" ORDER BY po.po_code"); // Sắp xếp theo ngày tạo
+            sqlBuilder.append(" ORDER BY po.created_at DESC"); // Sắp xếp theo ngày tạo
             // Tạo truy vấn từ chuỗi SQL
 
             Query query = entityManager.createNativeQuery(sqlBuilder.toString());
