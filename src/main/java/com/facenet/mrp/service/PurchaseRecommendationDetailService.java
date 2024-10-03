@@ -872,35 +872,47 @@ public class PurchaseRecommendationDetailService {
 //                sheet.autoSizeColumn(i);  // Adjust the column width based on the content
 //            }
 
+            CellStyle borderedStyle = workbook.createCellStyle();
+            borderedStyle.setFont(defaultFont);
+            borderedStyle.setBorderTop(BorderStyle.THIN);
+            borderedStyle.setBorderBottom(BorderStyle.THIN);
+            borderedStyle.setBorderLeft(BorderStyle.THIN);
+            borderedStyle.setBorderRight(BorderStyle.THIN);
+            borderedStyle.setAlignment(HorizontalAlignment.CENTER);
+
             // Add "Mục đích sử dụng" row and merge A to H, align text to the left
             Row usageRow = sheet.createRow(rowNum++);
             Cell usageCell = usageRow.createCell(0);
             usageCell.setCellValue("Mục đích sử dụng:");
             CellStyle leftAlignStyle = workbook.createCellStyle();
             leftAlignStyle.setFont(defaultFont);
+            leftAlignStyle.setBorderTop(BorderStyle.THIN);
+            leftAlignStyle.setBorderBottom(BorderStyle.THIN);
+            leftAlignStyle.setBorderLeft(BorderStyle.THIN);
+            leftAlignStyle.setBorderRight(BorderStyle.THIN);
             leftAlignStyle.setAlignment(HorizontalAlignment.LEFT); // Left-aligned
             usageCell.setCellStyle(leftAlignStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 7));
-
+            
             // Add the approval row (Duyệt, Đơn vị mua hàng, and Ngày)
             Row approvalRow = sheet.createRow(rowNum++);
 
             // Merge A-B into "Duyệt"
             Cell approveCell = approvalRow.createCell(0);
             approveCell.setCellValue("DUYỆT");
-            approveCell.setCellStyle(defaultStyle);
+            approveCell.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 1));
 
             // Merge C-D into "Đơn vị mua hàng"
             Cell buyingUnitCell = approvalRow.createCell(2);
             buyingUnitCell.setCellValue("ĐƠN VỊ MUA HÀNG");
-            buyingUnitCell.setCellStyle(defaultStyle);
+            buyingUnitCell.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 2, 3));
 
             // Merge E-H into the current date in Vietnamese format
             Cell dateCell = approvalRow.createCell(4);
             dateCell.setCellValue(vietnameseDateFormat.format(new Date()));
-            dateCell.setCellStyle(defaultStyle);
+            dateCell.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 4, 7));
 
             // Add the "Đơn vị đề nghị" row and merge E-H
@@ -909,19 +921,19 @@ public class PurchaseRecommendationDetailService {
             // Merge A-B in the second row for "Duyệt"
             Cell approveCell3 = suggestionRow.createCell(0);
             approveCell3.setCellValue("");
-            approveCell3.setCellStyle(defaultStyle);
+            approveCell3.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 1));
 
             // Merge C-D in the second row for "Đơn vị mua hàng"
             Cell buyingUnitCell3 = suggestionRow.createCell(2);
             buyingUnitCell3.setCellValue("");
-            buyingUnitCell3.setCellStyle(defaultStyle);
+            buyingUnitCell3.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 2, 3));
 
 
             Cell suggestionCell = suggestionRow.createCell(4);
             suggestionCell.setCellValue("ĐƠN VỊ ĐỀ NGHỊ");
-            suggestionCell.setCellStyle(defaultStyle);
+            suggestionCell.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 4, 7));
 
             // Add new row below the "Duyệt", "Đơn vị mua hàng" and "Ngày"
@@ -930,19 +942,19 @@ public class PurchaseRecommendationDetailService {
             // Merge A-B in the second row for "Duyệt"
             Cell approveCell2 = approvalRow2.createCell(0);
             approveCell2.setCellValue("");
-            approveCell2.setCellStyle(defaultStyle);
+            approveCell2.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 1));
 
             // Merge C-D in the second row for "Đơn vị mua hàng"
             Cell buyingUnitCell2 = approvalRow2.createCell(2);
             buyingUnitCell2.setCellValue("");
-            buyingUnitCell2.setCellStyle(defaultStyle);
+            buyingUnitCell2.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 2, 3));
 
             // Merge E-H in the second row for the date
             Cell dateCell2 = approvalRow2.createCell(4);
             dateCell2.setCellValue("");
-            dateCell2.setCellStyle(defaultStyle);
+            dateCell2.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 4, 7));
 
 
