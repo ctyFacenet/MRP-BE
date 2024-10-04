@@ -1013,14 +1013,29 @@ private void mergeCellExcel (Sheet sheet,Row row,Workbook workbook,int rowStart,
                 CellStyle titleStyle = workbook.createCellStyle();
                 titleStyle.setAlignment(HorizontalAlignment.CENTER);
                 titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-                titleStyle.setFillForegroundColor(IndexedColors.GREEN.getIndex()); // Màu nền xanh
+                titleStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
                 titleStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND); // Thiết lập kiểu gạch nền
 
                 Font titleFont = workbook.createFont();
-                titleFont.setColor(IndexedColors.RED.getIndex());
                 titleFont.setBold(true);
                 titleStyle.setFont(titleFont);
                 cellFont.setCellStyle(titleStyle);
+            }
+            for(int i=5;i<=rowDetail-2;i=i+4){
+                Row rowFont1 = sheet.getRow(i);
+
+                for(int j =0;j<=maxColProgress;j++){
+                    Cell cellFont1 = rowFont1.getCell(j);
+                    CellStyle titleStyle = workbook.createCellStyle();
+                    titleStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+                    titleStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND); // Thiết lập kiểu gạch nền
+                    cellFont1.setCellStyle(titleStyle);
+                    if(j>=11){
+                        Row rowFont2 = sheet.getRow(i+1) ;
+                        Cell cellFont2 = rowFont2.getCell(j);
+                        cellFont2.setCellStyle(titleStyle);
+                    }
+                }
             }
             workbook.write(out);
             ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray());

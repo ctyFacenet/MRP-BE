@@ -31,6 +31,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.transaction.Transactional;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -874,10 +876,10 @@ public class ReportService {
 
         sql.append("SELECT ")
             .append("    pr.so_code AS MaSO, ")
-            .append("    GROUP_CONCAT(DISTINCT(pur.po_code) ORDER BY pur.po_code SEPARATOR ', ') as MaPO, ")
-            .append("    GROUP_CONCAT(DISTINCT(pr_detail.ncc_name) ORDER BY pr_detail.ncc_name SEPARATOR ', ') as TenKhachHang, ")
-            .append("    GROUP_CONCAT(DISTINCT(pr.pr_create_user) ORDER BY pr.pr_create_user SEPARATOR ', ') as NguoiDatHang, ")
-            .append("    GROUP_CONCAT(DISTINCT(pred.assigned_user) ORDER BY pred.assigned_user SEPARATOR ', ') as NguoiMuaHang, ")
+            .append("    GROUP_CONCAT(DISTINCT(pur.po_code) ORDER BY pur.po_code SEPARATOR '\n') as MaPO, ")
+            .append("    GROUP_CONCAT(DISTINCT(pro.customer_name) ORDER BY pro.customer_name SEPARATOR '\n') as TenKhachHang, ")
+            .append("    GROUP_CONCAT(DISTINCT(pr.pr_create_user) ORDER BY pr.pr_create_user SEPARATOR '\n') as NguoiDatHang, ")
+            .append("    GROUP_CONCAT(DISTINCT(pred.assigned_user) ORDER BY pred.assigned_user SEPARATOR '\n') as NguoiMuaHang, ")
             .append("    pro.order_date AS ThoiGianDatHang, ")
             .append("    pro.deliver_date AS ThoiGianTraHang ")
             .append("FROM product_order pro ")
@@ -1060,28 +1062,59 @@ public class ReportService {
                 Row row = sheet.createRow(rowNum++);
 
                 row.createCell(0).setCellValue(stt++);
-                row.createCell(1).setCellValue(dto.getSoCode());
-                row.createCell(2).setCellValue(dto.getPoCode());
-                row.createCell(3).setCellValue(dto.getCustomerName());
-                row.createCell(4).setCellValue(dto.getOrderer());
-                row.createCell(5).setCellValue(dto.getBuyer());
-                row.createCell(6).setCellValue(dateFormat.format(dto.getOrderTime()));
-                row.createCell(7).setCellValue(dateFormat.format(dto.getDeliveryTime()));
-                row.createCell(8).setCellValue(dto.getTotalRequiredItemQty());
-                row.createCell(9).setCellValue(dto.getTotalPrItemQty());
-                row.createCell(10).setCellValue(dto.getUnreceivedQty());
+
+                Cell cell1 = row.createCell(1);
+                cell1.setCellValue(dto.getSoCode());
+                cell1.setCellStyle(initCellStyle(workbook));
+
+                Cell cell2 = row.createCell(2);
+                cell2.setCellValue(dto.getPoCode());
+                cell2.setCellStyle(initCellStyle(workbook));
+
+                Cell cell3 = row.createCell(3);
+                cell3.setCellValue(dto.getCustomerName());
+                cell3.setCellStyle(initCellStyle(workbook));
+
+                Cell cell4 = row.createCell(4);
+                cell4.setCellValue(dto.getOrderer());
+                cell4.setCellStyle(initCellStyle(workbook));
+
+                Cell cell5 = row.createCell(5);
+                cell5.setCellValue(dto.getBuyer());
+                cell5.setCellStyle(initCellStyle(workbook));
+
+                Cell cell6 = row.createCell(6);
+                cell6.setCellValue(dateFormat.format(dto.getOrderTime()));
+                cell6.setCellStyle(initCellStyle(workbook));
+
+                Cell cell7 = row.createCell(7);
+                cell7.setCellValue(dateFormat.format(dto.getDeliveryTime()));
+                cell7.setCellStyle(initCellStyle(workbook));
+
+                Cell cell8 = row.createCell(8);
+                cell8.setCellValue(dto.getTotalRequiredItemQty());
+                cell8.setCellStyle(initCellStyle(workbook));
+
+                Cell cell9 = row.createCell(9);
+                cell9.setCellValue(dto.getTotalPrItemQty());
+                cell9.setCellStyle(initCellStyle(workbook));
+
+                Cell cell10 = row.createCell(10);
+                cell10.setCellValue(dto.getUnreceivedQty());
+                cell10.setCellStyle(initCellStyle(workbook));
 
                 Cell cell = row.createCell(11);
                 cell.setCellValue(dto.getCompletionRate());
                 cell.setCellStyle(styleDouble);
+                cell.setCellStyle(initCellStyle(workbook));
 
             }
             for (int i = 0; i < columns.length; i++) {
                 sheet.autoSizeColumn(i);
             }
 
-//            FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
-//            workbook.write(out);
+            // FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
+            // workbook.write(out);
             // Convert workbook to byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
@@ -1301,4 +1334,17 @@ public class ReportService {
         cellStyle.setAlignment(HorizontalAlignment.CENTER);
         return cellStyle;
     }
+
+    private CellStyle initCellStyle(Workbook workbook) {
+        // Init cell cellStyle
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setWrapText(true);
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        return cellStyle;
+    }
+
 }

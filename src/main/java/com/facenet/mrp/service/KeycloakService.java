@@ -46,6 +46,7 @@ public class KeycloakService
     }
 
     public String getFullNamesByUsernames(String usernames) {
+        if(usernames == null || usernames.isEmpty()) return null;
         // Tách chuỗi đầu vào thành danh sách username
         List<String> usernameList = Arrays.asList(usernames.split(","));
 
