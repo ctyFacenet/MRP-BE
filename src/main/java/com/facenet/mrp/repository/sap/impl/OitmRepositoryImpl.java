@@ -61,6 +61,12 @@ public class OitmRepositoryImpl implements OitmCustomRepository {
         Root<OitmEntity> oitm = cq.from(OitmEntity.class);
         predicates = getPredicates(oitm,cb,oitmFilter);
 
+        // Thêm điều kiện WhsCode phải thuộc list<String> warehouse của oitmFilter
+        if (oitmFilter.getWarehouse() != null && !oitmFilter.getWarehouse().isEmpty()) {
+            Join<OitmEntity, OitwEntity> oitwJoin = oitm.join(OitmEntity_.OITW_ENTITIES);
+            predicates.add(oitwJoin.get(OitwEntity_.WHS_CODE).in(oitmFilter.getWarehouse()));
+        }
+
         cq.multiselect(oitm
             ,cb.sum(oitm.join(OitmEntity_.OITW_ENTITIES).get(OitwEntity_.ON_HAND)));
 

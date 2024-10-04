@@ -11,13 +11,14 @@ import java.util.List;
 @Service
 public class OwhsService {
     private final OwhsRepository owhsRepository;
-
-    public OwhsService(OwhsRepository owhsRepository) {
+    private final WarehouseChosenService warehouseChosenService;
+    public OwhsService(OwhsRepository owhsRepository, WarehouseChosenService warehouseChosenService) {
         this.owhsRepository = owhsRepository;
+        this.warehouseChosenService = warehouseChosenService;
     }
 
     public CommonResponse<List<OwhsEntity>> getAllWarehouses() {
-        List<OwhsEntity> warehouses = owhsRepository.findAll();
+        List<OwhsEntity> warehouses = owhsRepository.findByWarehouseCodes(warehouseChosenService.getWarehouseCodes(1));
 
         // Manually add KVTCT and KHA warehouses
         OwhsEntity khoVatTuCongTy = new OwhsEntity();

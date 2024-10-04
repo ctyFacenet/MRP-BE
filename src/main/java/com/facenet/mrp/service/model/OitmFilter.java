@@ -1,5 +1,7 @@
 package com.facenet.mrp.service.model;
 
+import java.util.List;
+
 public class OitmFilter {
 
 
@@ -14,6 +16,7 @@ public class OitmFilter {
     private String groupName;
     private String status;
     private String sapType;
+    private List<String> warehouse;
 
     public String getSapType() {
         return sapType;
@@ -101,5 +104,13 @@ public class OitmFilter {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public List<String> getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(List<String> warehouse) {
+        this.warehouse = warehouse;
     }
 }
