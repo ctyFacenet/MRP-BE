@@ -18,7 +18,13 @@ public class OwhsService {
     }
 
     public CommonResponse<List<OwhsEntity>> getAllWarehouses() {
-        List<OwhsEntity> warehouses = owhsRepository.findByWarehouseCodes(warehouseChosenService.getWarehouseCodes(1));
+        List<String> warehouse = warehouseChosenService.getWarehouseCodes(1);
+        List<OwhsEntity> warehouses = new ArrayList<>();
+        if (warehouse.isEmpty()){
+            warehouses = owhsRepository.findAll();
+        } else {
+            warehouses = owhsRepository.findByWarehouseCodes(warehouse);
+        }
 
         // Manually add KVTCT and KHA warehouses
         OwhsEntity khoVatTuCongTy = new OwhsEntity();
