@@ -741,7 +741,7 @@ public class PurchaseRecommendationDetailService {
     {
         List<PurchaseRecommendationDetailDTO> data = new ArrayList<>();
         data = getAllItemsHasRecommendation(purchaseRecommendationId, batch, input).getData();
-        String[] columns = {"STT", "Tên vật tư", "Xuất xứ", "ĐVT", "Số lượng", "Thời gian", "Ghi chú", "Người mua"};
+        String[] columns = {"STT", "Tên vật tư, phụ tùng, thông số kỹ thuật", "Xuất xứ", "ĐVT", "Số lượng", "Thời gian cần", "Ghi chú", "Người mua hàng"};
         SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
         SimpleDateFormat vietnameseDateFormat = new SimpleDateFormat("'Ngày' dd 'tháng' MM 'năm' yyyy");
 
@@ -893,7 +893,7 @@ public class PurchaseRecommendationDetailService {
             leftAlignStyle.setAlignment(HorizontalAlignment.LEFT); // Left-aligned
             usageCell.setCellStyle(leftAlignStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 7));
-            
+
             // Add the approval row (Duyệt, Đơn vị mua hàng, and Ngày)
             Row approvalRow = sheet.createRow(rowNum++);
 
@@ -902,18 +902,29 @@ public class PurchaseRecommendationDetailService {
             approveCell.setCellValue("DUYỆT");
             approveCell.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 1));
+            Cell secondMergedCell = approvalRow.createCell(1); // cột B
+            secondMergedCell.setCellStyle(borderedStyle);
 
             // Merge C-D into "Đơn vị mua hàng"
             Cell buyingUnitCell = approvalRow.createCell(2);
             buyingUnitCell.setCellValue("ĐƠN VỊ MUA HÀNG");
             buyingUnitCell.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 2, 3));
+            Cell thirdMergedCell = approvalRow.createCell(3); // cột B
+            thirdMergedCell.setCellStyle(borderedStyle);
+
 
             // Merge E-H into the current date in Vietnamese format
             Cell dateCell = approvalRow.createCell(4);
             dateCell.setCellValue(vietnameseDateFormat.format(new Date()));
             dateCell.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 4, 7));
+            Cell fifthMergedCell = approvalRow.createCell(5);
+            fifthMergedCell.setCellStyle(borderedStyle);
+            Cell fifthMergedCell_1 = approvalRow.createCell(6);
+            fifthMergedCell_1.setCellStyle(borderedStyle);
+            Cell fifthMergedCell_2 = approvalRow.createCell(7);
+            fifthMergedCell_2.setCellStyle(borderedStyle);
 
             // Add the "Đơn vị đề nghị" row and merge E-H
             Row suggestionRow = sheet.createRow(rowNum++);
@@ -923,18 +934,27 @@ public class PurchaseRecommendationDetailService {
             approveCell3.setCellValue("");
             approveCell3.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 1));
+            Cell secondMergedCell_secondRow = suggestionRow.createCell(1); // cột B
+            secondMergedCell_secondRow.setCellStyle(borderedStyle);
 
             // Merge C-D in the second row for "Đơn vị mua hàng"
             Cell buyingUnitCell3 = suggestionRow.createCell(2);
             buyingUnitCell3.setCellValue("");
             buyingUnitCell3.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 2, 3));
-
+            Cell thirdMergedCell_secondRow = suggestionRow.createCell(3); // cột B
+            thirdMergedCell_secondRow.setCellStyle(borderedStyle);
 
             Cell suggestionCell = suggestionRow.createCell(4);
             suggestionCell.setCellValue("ĐƠN VỊ ĐỀ NGHỊ");
             suggestionCell.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 4, 7));
+            Cell fifthMergedCell_secondRow = suggestionRow.createCell(5);
+            fifthMergedCell_secondRow.setCellStyle(borderedStyle);
+            Cell fifthMergedCell_1_secondRow = suggestionRow.createCell(6);
+            fifthMergedCell_1_secondRow.setCellStyle(borderedStyle);
+            Cell fifthMergedCell_2_secondRow = suggestionRow.createCell(7);
+            fifthMergedCell_2_secondRow.setCellStyle(borderedStyle);
 
             // Add new row below the "Duyệt", "Đơn vị mua hàng" and "Ngày"
             Row approvalRow2 = sheet.createRow(rowNum++);
@@ -944,22 +964,31 @@ public class PurchaseRecommendationDetailService {
             approveCell2.setCellValue("");
             approveCell2.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 0, 1));
+            Cell secondMergedCell_thirdRow = approvalRow2.createCell(1); // cột B
+            secondMergedCell_thirdRow.setCellStyle(borderedStyle);
 
             // Merge C-D in the second row for "Đơn vị mua hàng"
             Cell buyingUnitCell2 = approvalRow2.createCell(2);
             buyingUnitCell2.setCellValue("");
             buyingUnitCell2.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 2, 3));
+            Cell thirdMergedCell_thirdRow = approvalRow2.createCell(3); // cột B
+            thirdMergedCell_thirdRow.setCellStyle(borderedStyle);
 
             // Merge E-H in the second row for the date
             Cell dateCell2 = approvalRow2.createCell(4);
             dateCell2.setCellValue("");
             dateCell2.setCellStyle(borderedStyle);
             sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, 4, 7));
+            Cell fifthMergedCell_thirdRow = approvalRow2.createCell(5);
+            fifthMergedCell_thirdRow.setCellStyle(borderedStyle);
+            Cell fifthMergedCell_1_thirdRow = approvalRow2.createCell(6);
+            fifthMergedCell_1_thirdRow.setCellStyle(borderedStyle);
+            Cell fifthMergedCell_2_thirdRow = approvalRow2.createCell(7);
+            fifthMergedCell_2_thirdRow.setCellStyle(borderedStyle);
 
-
-            FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
-            workbook.write(out);
+            // FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
+            // workbook.write(out);
             // Convert workbook to byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
