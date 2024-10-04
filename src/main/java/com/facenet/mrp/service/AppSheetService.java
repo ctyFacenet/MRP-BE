@@ -55,7 +55,7 @@ public class AppSheetService {
         return Arrays.asList(response.getBody());
     }
 
-//    @Scheduled(fixedDelay = 30 * 60 * 1000)
+    @Scheduled(fixedDelay = 30 * 60 * 1000)
     @Transactional
     public void saveDataToWarehouse() {
         warehouseRepository.deleteAllByWarehouse(Constants.Warehouse.Phu_tung_nhua);
