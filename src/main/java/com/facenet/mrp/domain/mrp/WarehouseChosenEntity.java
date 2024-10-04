@@ -5,7 +5,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "warehouse_chosen", schema = "material_requirements_planning", catalog = "")
 public class WarehouseChosenEntity {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     @Column(name = "id")
     private int id;
