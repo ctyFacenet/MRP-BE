@@ -620,11 +620,14 @@ public class MrpAdvancedAnalysisServiceV3 {
 
 
             itemResult.setInStockQuantity(lastInStockQuantity);
-            itemResult.setReadyQuantity(itemResult.getInStockQuantity() // Warehouse
+            // Tính toán readyQuantity
+            double readyQuantity = itemResult.getInStockQuantity() // Warehouse
 //                    + mrpResultDTO.getExpectedQuantity() // PR
-                    + itemResult.getSumPoAndDeliveringQuantity() // PR
-                    - itemResult.getRequiredQuantity() // Hold quantity
-            );
+                + itemResult.getSumPoAndDeliveringQuantity() // PR
+                - itemResult.getRequiredQuantity(); // Hold quantity
+
+            // Kiểm tra nếu readyQuantity âm thì set bằng 0
+            itemResult.setReadyQuantity(Math.max(readyQuantity, 0));
 
 //            if (mrpResultDTO.getReadyQuantity() > 0) {
 //            if (itemResult.getReadyQuantity() > itemResult.getOriginQuantity()) {
