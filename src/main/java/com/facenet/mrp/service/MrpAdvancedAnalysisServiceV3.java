@@ -50,9 +50,13 @@ public class MrpAdvancedAnalysisServiceV3 {
     private final MrpOrderQuantityRepository mrpOrderQuantityRepository;
 
     private final WarehouseEntityRepository warehouseEntityRepository;
+    private final PurchaseRequestDetailEntityRepository purchaseRequestDetailEntityRepository;
+    private final PurchaseOrderItemRepository purchaseOrderItemRepository;
 
 
-    public MrpAdvancedAnalysisServiceV3(CloneBomService bomService, MrpAnalysisCache mrpAnalysisCache, ItemHoldRepository itemHoldRepository, OitwRepository oitwRepository, MrpBomDetailRepository mrpBomDetailRepository, PurchaseRecommendationPlanRepository purchaseRecommendationPlanRepository, Prq1Repository prq1Repository, Por1Repository por1Repository, MrpOrderQuantityRepository mrpOrderQuantityRepository, WarehouseEntityRepository warehouseEntityRepository) {
+    public MrpAdvancedAnalysisServiceV3(CloneBomService bomService, MrpAnalysisCache mrpAnalysisCache, ItemHoldRepository itemHoldRepository, OitwRepository oitwRepository, MrpBomDetailRepository mrpBomDetailRepository, PurchaseRecommendationPlanRepository purchaseRecommendationPlanRepository, Prq1Repository prq1Repository, Por1Repository por1Repository, MrpOrderQuantityRepository mrpOrderQuantityRepository, WarehouseEntityRepository warehouseEntityRepository,
+                                        PurchaseRequestDetailEntityRepository purchaseRequestDetailEntityRepository,
+                                        PurchaseOrderItemRepository purchaseOrderItemRepository) {
         this.bomService = bomService;
         this.mrpAnalysisCache = mrpAnalysisCache;
         this.itemHoldRepository = itemHoldRepository;
@@ -63,6 +67,8 @@ public class MrpAdvancedAnalysisServiceV3 {
         this.por1Repository = por1Repository;
         this.mrpOrderQuantityRepository = mrpOrderQuantityRepository;
         this.warehouseEntityRepository = warehouseEntityRepository;
+        this.purchaseRequestDetailEntityRepository = purchaseRequestDetailEntityRepository;
+        this.purchaseOrderItemRepository = purchaseOrderItemRepository;
     }
 
     public AdvancedMrpDTO pagingCache(String ssId, int page, int pageSize, AnalyticsSearchRequest filter) {
@@ -212,8 +218,11 @@ public class MrpAdvancedAnalysisServiceV3 {
         if (advancedMrpDTO.getAnalysisWhs().contains("PR/PO")) {
             itemOnOrderQuantityMap = purchaseRecommendationPlanRepository.sumAllQuantityOfItemsByDayMap(totalStartTime.getTime(), totalEndTime.getTime());
             // Từ kỳ 2 sẽ ko lấy             System.err.println("FIRST TIME");
-            prQuantityMap = prq1Repository.getOpenQuantityMap();
-            poQuantityMap = por1Repository.getOpenQuantityMap();
+//            prQuantityMap = prq1Repository.getOpenQuantityMap();
+//            poQuantityMap = por1Repository.getOpenQuantityMap();
+
+            prQuantityMap = purchaseRequestDetailEntityRepository.getOpenQuantityMap();
+            poQuantityMap = purchaseOrderItemRepository.getOpenQuantityMap();
         }
 
 
@@ -359,11 +368,14 @@ public class MrpAdvancedAnalysisServiceV3 {
 //                    }
 
                     mrpResultDTO.setInStockQuantity(lastInStockQuantity);
-                    mrpResultDTO.setReadyQuantity(mrpResultDTO.getInStockQuantity() // Warehouse
-//                            + mrpResultDTO.getExpectedQuantity() // PR
-                            + mrpResultDTO.getSumPoAndDeliveringQuantity() // PR
-                            - mrpResultDTO.getRequiredQuantity() // Hold quantity
-                    );
+                    // Tính toán readyQuantity
+                    double readyQuantity = mrpResultDTO.getInStockQuantity() // Warehouse
+//                    + mrpResultDTO.getExpectedQuantity() // PR
+                        + mrpResultDTO.getSumPoAndDeliveringQuantity() // PR
+                        - mrpResultDTO.getRequiredQuantity(); // Hold quantity
+
+                    // Kiểm tra nếu readyQuantity âm thì set bằng 0
+                    mrpResultDTO.setReadyQuantity(Math.max(readyQuantity, 0));
 
 //                    if (mrpResultDTO.getReadyQuantity() > 0) {
 //                    if (mrpResultDTO.getReadyQuantity() > sumOriginQuantity) {
