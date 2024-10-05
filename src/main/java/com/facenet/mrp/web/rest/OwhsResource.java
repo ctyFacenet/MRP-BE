@@ -19,6 +19,11 @@ public class OwhsResource {
     }
 
     @GetMapping("")
+    public CommonResponse<List<OwhsEntity>> getWarehousesChosen() {
+        return owhsService.getWarehousesChosen();
+    }
+
+    @GetMapping("/all")
     public CommonResponse<List<OwhsEntity>> getAllWarehouses() {
         return owhsService.getAllWarehouses();
     }
