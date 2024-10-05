@@ -9,6 +9,7 @@ import com.facenet.mrp.repository.mrp.VendorItemRepository;
 import com.facenet.mrp.repository.sap.OcrdRepository;
 import com.facenet.mrp.repository.sap.OitmCustomRepository;
 import com.facenet.mrp.repository.sap.OitmEntityRepository;
+import com.facenet.mrp.service.WarehouseChosenService;
 import com.facenet.mrp.service.dto.ItemWithTypeDTO;
 import com.facenet.mrp.service.dto.ListOfUnitPricesDTO;
 import com.facenet.mrp.service.dto.QListOfUnitPricesDTO;
@@ -51,6 +52,8 @@ public class OitmRepositoryImpl implements OitmCustomRepository {
     private OcrdRepository ocrdRepository;
     @Autowired
     private OitmEntityRepository oitmEntityRepository;
+    @Autowired
+    private WarehouseChosenService warehouseChosenService;
 
     @Override
     public Page<OitmEntity> getOitmList(Pageable pageable, OitmFilter oitmFilter) {
@@ -61,10 +64,12 @@ public class OitmRepositoryImpl implements OitmCustomRepository {
         Root<OitmEntity> oitm = cq.from(OitmEntity.class);
         predicates = getPredicates(oitm,cb,oitmFilter);
 
-        // Thêm điều kiện WhsCode phải thuộc list<String> warehouse của oitmFilter
-        if (oitmFilter.getWarehouse() != null && !oitmFilter.getWarehouse().isEmpty()) {
+        List<String> warehouse = warehouseChosenService.getWarehouseCodes(1);
+
+        // Thêm điều kiện WhsCode phải thuộc list<String> warehouse
+        if (warehouse != null && !warehouse.isEmpty()) {
             Join<OitmEntity, OitwEntity> oitwJoin = oitm.join(OitmEntity_.OITW_ENTITIES);
-            predicates.add(oitwJoin.get(OitwEntity_.WHS_CODE).in(oitmFilter.getWarehouse()));
+            predicates.add(oitwJoin.get(OitwEntity_.WHS_CODE).in(warehouse));
         }
 
         cq.multiselect(oitm
