@@ -7,6 +7,7 @@ import com.facenet.mrp.repository.sap.OcrdRepository;
 import com.facenet.mrp.service.dto.InventoryDetailDTO;
 import com.facenet.mrp.service.dto.InventorySupplierDTO;
 import com.facenet.mrp.service.dto.mrp.VendorCodeForDetailReport;
+import com.facenet.mrp.service.utils.Constants;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,6 +40,9 @@ public class InventoryDetailService {
 
     @Autowired
     private InventoryDetailRepository inventoryDetailRepository;
+
+    @Autowired
+    private WarehouseChosenService warehouseChosenService;
     /**
      * lấy thông tin tồn kho chi tiết theo mã hàng hóa
      * @param itemCode
@@ -61,14 +65,21 @@ public class InventoryDetailService {
             log.error("Tham số truyền vào không đúng!");
             return Collections.emptyList();
         }
-
+        List<String> listWarehouse = warehouseChosenService.getWarehouseCodes(1);
         // Initialize the list that will store all inventory details
         List<InventoryDetailDTO> finalList = new ArrayList<>();
-        List<InventoryDetailDTO> list = inventoryDetailRepository.getInventoryDetailByItemCode(itemCode);
+        List<InventoryDetailDTO> list = inventoryDetailRepository.getInventoryDetailByItemCode(itemCode, listWarehouse);
         finalList.addAll(list);
         // Add inventory details for other warehouse
-        List<InventoryDetailDTO> otherWarehouseDetails = warehouseService.getInventoryDetails(itemCode);
-        finalList.addAll(otherWarehouseDetails);
+        if(listWarehouse.contains("KHA")){
+            List<InventoryDetailDTO> otherWarehouseDetails = warehouseService.getInventoryDetails(itemCode, Constants.Warehouse.Hoa_an);
+            finalList.addAll(otherWarehouseDetails);
+        }
+
+        if(listWarehouse.contains("KVTCT")){
+            List<InventoryDetailDTO> otherWarehouseDetails = warehouseService.getInventoryDetails(itemCode, Constants.Warehouse.Cty);
+            finalList.addAll(otherWarehouseDetails);
+        }
         log.info("------End get inventory detail by item code-------");
         return finalList;
     }

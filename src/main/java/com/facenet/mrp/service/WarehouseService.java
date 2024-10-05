@@ -202,47 +202,47 @@ public class WarehouseService {
         };
     }
 
-    public List<InventoryDetailDTO> getInventoryDetails(String itemCode) {
+    public List<InventoryDetailDTO> getInventoryDetails(String itemCode, Integer type) {
         List<InventoryDetailDTO> inventoryDetails = new ArrayList<>();
-
-        // Get details for type 2 (Kho Hòa An)
-        List<InventoryDetailDTO> khoHoaAnDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, 2)
-            .stream()
-            .map(detail -> {
-                detail.setVendorId("KHA");
-                detail.setVendorName("Kho Hòa An");
-                setDefaultValuesIfNull(detail);
-                return detail;
-            })
-            .collect(Collectors.toList());
-        if (khoHoaAnDetails.isEmpty()) {
-            InventoryDetailDTO defaultDetail = new InventoryDetailDTO();
-            defaultDetail.setVendorId("KHA");
-            defaultDetail.setVendorName("Kho Hòa An");
-            setDefaultValuesIfNull(defaultDetail);
-            khoHoaAnDetails.add(defaultDetail);
+        if(type == Constants.Warehouse.Hoa_an){
+            // Get details for type 2 (Kho Hòa An)
+            List<InventoryDetailDTO> khoHoaAnDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, 2)
+                .stream()
+                .map(detail -> {
+                    detail.setVendorId("KHA");
+                    detail.setVendorName("Kho Hòa An");
+                    setDefaultValuesIfNull(detail);
+                    return detail;
+                })
+                .collect(Collectors.toList());
+            if (khoHoaAnDetails.isEmpty()) {
+                InventoryDetailDTO defaultDetail = new InventoryDetailDTO();
+                defaultDetail.setVendorId("KHA");
+                defaultDetail.setVendorName("Kho Hòa An");
+                setDefaultValuesIfNull(defaultDetail);
+                khoHoaAnDetails.add(defaultDetail);
+            }
+            inventoryDetails.addAll(khoHoaAnDetails);
+        } else if (type == Constants.Warehouse.Cty){
+            // Get details for type 3 (Kho vật tư công ty)
+            List<InventoryDetailDTO> khoVatTuCongTyDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, 3)
+                .stream()
+                .map(detail -> {
+                    detail.setVendorId("KVTCT");
+                    detail.setVendorName("Kho vật tư công ty");
+                    setDefaultValuesIfNull(detail);
+                    return detail;
+                })
+                .collect(Collectors.toList());
+            if (khoVatTuCongTyDetails.isEmpty()) {
+                InventoryDetailDTO defaultDetail = new InventoryDetailDTO();
+                defaultDetail.setVendorId("KVTCT");
+                defaultDetail.setVendorName("Kho vật tư công ty");
+                setDefaultValuesIfNull(defaultDetail);
+                khoVatTuCongTyDetails.add(defaultDetail);
+            }
+            inventoryDetails.addAll(khoVatTuCongTyDetails);
         }
-        inventoryDetails.addAll(khoHoaAnDetails);
-
-        // Get details for type 3 (Kho vật tư công ty)
-        List<InventoryDetailDTO> khoVatTuCongTyDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, 3)
-            .stream()
-            .map(detail -> {
-                detail.setVendorId("KVTCT");
-                detail.setVendorName("Kho vật tư công ty");
-                setDefaultValuesIfNull(detail);
-                return detail;
-            })
-            .collect(Collectors.toList());
-        if (khoVatTuCongTyDetails.isEmpty()) {
-            InventoryDetailDTO defaultDetail = new InventoryDetailDTO();
-            defaultDetail.setVendorId("KVTCT");
-            defaultDetail.setVendorName("Kho vật tư công ty");
-            setDefaultValuesIfNull(defaultDetail);
-            khoVatTuCongTyDetails.add(defaultDetail);
-        }
-        inventoryDetails.addAll(khoVatTuCongTyDetails);
-
         return inventoryDetails;
     }
 
