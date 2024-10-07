@@ -39,10 +39,13 @@ public class WarehouseService {
     private final ItemRepository itemRepository;
 
     @Autowired
-    OitmService oitmService;
+    private OitmService oitmService;
 
     @Autowired
-    OitmMapper oitmMapper;
+    private OitmMapper oitmMapper;
+
+    @Autowired
+    private WarehouseChosenService warehouseChosenService;
     private final WarehouseEntityMapper warehouseEntityMapper;
     public WarehouseService(WarehouseEntityRepository warehouseRepository, ItemRepository itemRepository, WarehouseEntityMapper warehouseEntityMapper) {
         this.warehouseRepository = warehouseRepository;
@@ -263,8 +266,22 @@ public class WarehouseService {
 
     @Transactional(readOnly = true)
     public List<WarehouseEntityDto> getAllByItemCodes(List<String> itemCodes) {
-        Specification<WarehouseEntity> spec = (root, query, criteriaBuilder) ->
-            root.get("itemCode").in(itemCodes);
+        List<String> warehouse = warehouseChosenService.getWarehouseCodes(1);
+        int type;
+        if (warehouse.contains("KHA")) {
+            type = Constants.Warehouse.Hoa_an;
+        } else if (warehouse.contains("KVTCT")) {
+            type = Constants.Warehouse.Cty;
+        } else {
+            type = 0;
+        }
+
+        Specification<WarehouseEntity> spec = (root, query, criteriaBuilder) -> {
+            Predicate itemCodePredicate = root.get("itemCode").in(itemCodes);
+
+            Predicate typePredicate = criteriaBuilder.equal(root.get("type"), type);
+            return criteriaBuilder.and(itemCodePredicate, typePredicate);
+        };
 
         List<WarehouseEntity> warehouseEntities = warehouseRepository.findAll(spec);
 
