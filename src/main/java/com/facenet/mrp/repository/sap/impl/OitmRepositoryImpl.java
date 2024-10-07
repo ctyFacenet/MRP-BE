@@ -66,17 +66,27 @@ public class OitmRepositoryImpl implements OitmCustomRepository {
 
         List<String> warehouse = warehouseChosenService.getWarehouseCodes(1);
 
-        // Thêm điều kiện WhsCode phải thuộc list<String> warehouse
-        if (warehouse != null && !warehouse.isEmpty()) {
-            Join<OitmEntity, OitwEntity> oitwJoin = oitm.join(OitmEntity_.OITW_ENTITIES);
-            predicates.add(oitwJoin.get(OitwEntity_.WHS_CODE).in(warehouse));
-        }
+        // Tạo subquery để tính tổng tồn kho
+        Subquery<Double> subquery = cq.subquery(Double.class);
+        Root<OitwEntity> oitw = subquery.from(OitwEntity.class);
 
-        cq.multiselect(oitm
-            ,cb.sum(oitm.join(OitmEntity_.OITW_ENTITIES).get(OitwEntity_.ON_HAND)));
+        // Điều kiện cho subquery
+        Predicate whsCodePredicate = oitw.get(OitwEntity_.WHS_CODE).in(warehouse);
+        Predicate itemCodePredicate = cb.equal(oitw.get(OitwEntity_.ITEM_CODE), oitm.get(OitmEntity_.ITEM_CODE));
+        subquery.select(cb.sum(oitw.get(OitwEntity_.ON_HAND)))
+            .where(cb.and(whsCodePredicate, itemCodePredicate));
 
+        // Thêm điều kiện cho truy vấn chính
+        predicates.add(cb.exists(subquery));
+
+        cq.multiselect(
+            oitm,
+            cb.coalesce(subquery, 0.0) // Đảm bảo nếu không có kho nào thì giá trị sẽ là 0
+        );
+
+        // Nhóm theo itemCode
         cq.where(cb.and(predicates.toArray(new Predicate[0])));
-        cq.groupBy(oitm);
+        cq.groupBy(oitm.get(OitmEntity_.ITEM_CODE));
         TypedQuery<OitmEntity> query = sapEntityManager.createQuery(cq);
 
         //get list
