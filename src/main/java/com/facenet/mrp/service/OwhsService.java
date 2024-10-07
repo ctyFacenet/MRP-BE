@@ -37,6 +37,11 @@ public class OwhsService {
         khoHoaAn.setWhsName("Kho Hòa An");
         warehouses.add(khoHoaAn);
 
+        OwhsEntity khoThanhPham = new OwhsEntity();
+        khoThanhPham.setWhsCode("KTP");
+        khoThanhPham.setWhsName("Kho Thành Phẩm");
+        warehouses.add(khoThanhPham);
+
         return new CommonResponse<>()
             .success()
             .data(warehouses);
@@ -56,6 +61,12 @@ public class OwhsService {
         khoHoaAn.setWhsName("Kho Hòa An");
         warehouses.add(khoHoaAn);
 
+        OwhsEntity khoThanhPham = new OwhsEntity();
+        khoThanhPham.setWhsCode("KTP");
+        khoThanhPham.setWhsName("Kho Thành Phẩm");
+        warehouses.add(khoThanhPham);
+
+
         return new CommonResponse<>()
             .success()
             .data(warehouses);
@@ -70,6 +81,7 @@ public class OwhsService {
         }
         whsCodes.add("KVTCT"); // Kho vật tư công ty
         whsCodes.add("KHA");   // Kho Hòa An
+        whsCodes.add("KTP"); //Kho thành phẩm
 
         return whsCodes;
     }

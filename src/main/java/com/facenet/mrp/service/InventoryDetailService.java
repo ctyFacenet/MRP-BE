@@ -80,6 +80,11 @@ public class InventoryDetailService {
             List<InventoryDetailDTO> otherWarehouseDetails = warehouseService.getInventoryDetails(itemCode, Constants.Warehouse.Cty);
             finalList.addAll(otherWarehouseDetails);
         }
+
+        if(listWarehouse.contains("KTP")){
+            List<InventoryDetailDTO> otherWarehouseDetails = warehouseService.getInventoryDetails(itemCode, Constants.Warehouse.Tp);
+            finalList.addAll(otherWarehouseDetails);
+        }
         log.info("------End get inventory detail by item code-------");
         return finalList;
     }

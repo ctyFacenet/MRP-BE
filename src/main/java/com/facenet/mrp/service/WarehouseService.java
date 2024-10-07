@@ -209,7 +209,7 @@ public class WarehouseService {
         List<InventoryDetailDTO> inventoryDetails = new ArrayList<>();
         if(type == Constants.Warehouse.Hoa_an){
             // Get details for type 2 (Kho Hòa An)
-            List<InventoryDetailDTO> khoHoaAnDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, 2)
+            List<InventoryDetailDTO> khoHoaAnDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, Constants.Warehouse.Hoa_an)
                 .stream()
                 .map(detail -> {
                     detail.setVendorId("KHA");
@@ -228,7 +228,7 @@ public class WarehouseService {
             inventoryDetails.addAll(khoHoaAnDetails);
         } else if (type == Constants.Warehouse.Cty){
             // Get details for type 3 (Kho vật tư công ty)
-            List<InventoryDetailDTO> khoVatTuCongTyDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, 3)
+            List<InventoryDetailDTO> khoVatTuCongTyDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, Constants.Warehouse.Cty)
                 .stream()
                 .map(detail -> {
                     detail.setVendorId("KVTCT");
@@ -241,6 +241,25 @@ public class WarehouseService {
                 InventoryDetailDTO defaultDetail = new InventoryDetailDTO();
                 defaultDetail.setVendorId("KVTCT");
                 defaultDetail.setVendorName("Kho vật tư công ty");
+                setDefaultValuesIfNull(defaultDetail);
+                khoVatTuCongTyDetails.add(defaultDetail);
+            }
+            inventoryDetails.addAll(khoVatTuCongTyDetails);
+        } else if (type == Constants.Warehouse.Tp){
+            // Get details for type 4 (Kho thành phẩm)
+            List<InventoryDetailDTO> khoVatTuCongTyDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, Constants.Warehouse.Tp)
+                .stream()
+                .map(detail -> {
+                    detail.setVendorId("KTP");
+                    detail.setVendorName("Kho thành phẩm");
+                    setDefaultValuesIfNull(detail);
+                    return detail;
+                })
+                .collect(Collectors.toList());
+            if (khoVatTuCongTyDetails.isEmpty()) {
+                InventoryDetailDTO defaultDetail = new InventoryDetailDTO();
+                defaultDetail.setVendorId("KTP");
+                defaultDetail.setVendorName("Kho thành phẩm");
                 setDefaultValuesIfNull(defaultDetail);
                 khoVatTuCongTyDetails.add(defaultDetail);
             }
@@ -272,6 +291,8 @@ public class WarehouseService {
             type = Constants.Warehouse.Hoa_an;
         } else if (warehouse.contains("KVTCT")) {
             type = Constants.Warehouse.Cty;
+        } else if (warehouse.contains("KTP")) {
+            type = Constants.Warehouse.Tp;
         } else {
             type = 0;
         }
