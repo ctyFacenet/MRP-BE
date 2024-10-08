@@ -875,9 +875,9 @@ public class ReportService {
         StringBuilder sql = new StringBuilder();
 
         sql.append("SELECT ")
-            .append("    pr.so_code AS MaSO, ")
+            .append("    pro.product_order_code AS MaSO, ")
             .append("    GROUP_CONCAT(DISTINCT(pur.po_code) ORDER BY pur.po_code SEPARATOR '\n') as MaPO, ")
-            .append("    GROUP_CONCAT(DISTINCT(pro.customer_name) ORDER BY pro.customer_name SEPARATOR '\n') as TenKhachHang, ")
+            .append("    GROUP_CONCAT(DISTINCT(pro_detail.customer_name) ORDER BY pro_detail.customer_name SEPARATOR '\n') as TenKhachHang, ")
             .append("    GROUP_CONCAT(DISTINCT(pr.pr_create_user) ORDER BY pr.pr_create_user SEPARATOR '\n') as NguoiDatHang, ")
             .append("    GROUP_CONCAT(DISTINCT(pred.assigned_user) ORDER BY pred.assigned_user SEPARATOR '\n') as NguoiMuaHang, ")
             .append("    pro.order_date AS ThoiGianDatHang, ")
@@ -889,9 +889,11 @@ public class ReportService {
             .append("LEFT JOIN purchase_order pur ON pur.id = pur_pr.purchase_order_id ")
             .append("LEFT JOIN purchase_recommendation pre ON pre.mrp_sub_code = pr.mrp_code  ")
             .append("LEFT JOIN purchase_recommendation_detail pred ON pred.purchase_recommendation_id = pre.purchase_recommendation_id  ")
+            .append("LEFT JOIN product_order_detail pro_detail ON pro.product_order_code = pro_detail.product_order_code ")
             .append("WHERE pro.created_at >= ?1 ")
             .append("  AND pro.created_at <= ?2")
-            .append(" GROUP BY pr.so_code");
+            .append(" GROUP BY pro.product_order_code ")
+            .append("ORDER BY pro.created_at DESC ");
 
         int paramIndex = 3;
 
