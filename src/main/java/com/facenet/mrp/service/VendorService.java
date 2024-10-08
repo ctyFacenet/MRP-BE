@@ -133,7 +133,7 @@ public class VendorService {
                 return VendorEntityMapper.toDto(updatedVendor);
             });
     }
-    @Scheduled(fixedDelay = 30 * 60 * 1000)
+    @Scheduled(cron = "0 0 0/12 * * ?", zone = "Asia/Ho_Chi_Minh")
     @Transactional
     public void syncVendorsFromSap() {
         // Bước 1: Lấy tất cả các bản ghi hiện có trong bảng VendorEntity có cột sap = 1
@@ -209,7 +209,7 @@ public class VendorService {
         return result;
     }
 
-    @Scheduled(fixedDelay = 30 * 60 * 1000)
+    @Scheduled(cron = "0 0 0/12 * * ?", zone = "Asia/Ho_Chi_Minh")
     @Transactional
     public void syncVendorsItemFromSap() {
         // Bước 1: Lấy tất cả các bản ghi hiện có trong bảng VendorItemEntity có cột sap = 1
@@ -252,7 +252,7 @@ public class VendorService {
         vendorItemRepository.saveAll(vendorItemsToSave);
     }
 
-    @Scheduled(fixedDelay = 30 * 60 * 1000)
+    @Scheduled(cron = "0 0 0/12 * * ?", zone = "Asia/Ho_Chi_Minh")
     @Transactional
     public void syncItemsFromSap() {
         // Bước 1: Lấy tất cả các bản ghi hiện có trong bảng ItemEntity
