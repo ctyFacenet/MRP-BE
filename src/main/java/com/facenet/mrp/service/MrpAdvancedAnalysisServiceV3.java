@@ -234,10 +234,13 @@ public class MrpAdvancedAnalysisServiceV3 {
 
             // Check for "KVTCT" and "KHA" in input.getListAnalysisWhs()
             if (advancedMrpDTO.getWarehouseAnalysis().contains("KVTCT")) {
-                warehouseList.add(3); // Add type 3 for "KVTCT"
+                warehouseList.add(Constants.Warehouse.Cty); // Add type 3 for "KVTCT"
             }
             if (advancedMrpDTO.getWarehouseAnalysis().contains("KHA")) {
-                warehouseList.add(2); // Add type 2 for "KHA"
+                warehouseList.add(Constants.Warehouse.Hoa_an); // Add type 2 for "KHA"
+            }
+            if (advancedMrpDTO.getWarehouseAnalysis().contains("KTP")) {
+                warehouseList.add(Constants.Warehouse.Tp);
             }
 
             // Proceed with fetching the inventory data if types are available

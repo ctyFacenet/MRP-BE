@@ -39,10 +39,13 @@ public class WarehouseService {
     private final ItemRepository itemRepository;
 
     @Autowired
-    OitmService oitmService;
+    private OitmService oitmService;
 
     @Autowired
-    OitmMapper oitmMapper;
+    private OitmMapper oitmMapper;
+
+    @Autowired
+    private WarehouseChosenService warehouseChosenService;
     private final WarehouseEntityMapper warehouseEntityMapper;
     public WarehouseService(WarehouseEntityRepository warehouseRepository, ItemRepository itemRepository, WarehouseEntityMapper warehouseEntityMapper) {
         this.warehouseRepository = warehouseRepository;
@@ -202,47 +205,66 @@ public class WarehouseService {
         };
     }
 
-    public List<InventoryDetailDTO> getInventoryDetails(String itemCode) {
+    public List<InventoryDetailDTO> getInventoryDetails(String itemCode, Integer type) {
         List<InventoryDetailDTO> inventoryDetails = new ArrayList<>();
-
-        // Get details for type 2 (Kho Hòa An)
-        List<InventoryDetailDTO> khoHoaAnDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, 2)
-            .stream()
-            .map(detail -> {
-                detail.setVendorId("KHA");
-                detail.setVendorName("Kho Hòa An");
-                setDefaultValuesIfNull(detail);
-                return detail;
-            })
-            .collect(Collectors.toList());
-        if (khoHoaAnDetails.isEmpty()) {
-            InventoryDetailDTO defaultDetail = new InventoryDetailDTO();
-            defaultDetail.setVendorId("KHA");
-            defaultDetail.setVendorName("Kho Hòa An");
-            setDefaultValuesIfNull(defaultDetail);
-            khoHoaAnDetails.add(defaultDetail);
+        if(type == Constants.Warehouse.Hoa_an){
+            // Get details for type 2 (Kho Hòa An)
+            List<InventoryDetailDTO> khoHoaAnDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, Constants.Warehouse.Hoa_an)
+                .stream()
+                .map(detail -> {
+                    detail.setVendorId("KHA");
+                    detail.setVendorName("Kho Hòa An");
+                    setDefaultValuesIfNull(detail);
+                    return detail;
+                })
+                .collect(Collectors.toList());
+            if (khoHoaAnDetails.isEmpty()) {
+                InventoryDetailDTO defaultDetail = new InventoryDetailDTO();
+                defaultDetail.setVendorId("KHA");
+                defaultDetail.setVendorName("Kho Hòa An");
+                setDefaultValuesIfNull(defaultDetail);
+                khoHoaAnDetails.add(defaultDetail);
+            }
+            inventoryDetails.addAll(khoHoaAnDetails);
+        } else if (type == Constants.Warehouse.Cty){
+            // Get details for type 3 (Kho vật tư công ty)
+            List<InventoryDetailDTO> khoVatTuCongTyDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, Constants.Warehouse.Cty)
+                .stream()
+                .map(detail -> {
+                    detail.setVendorId("KVTCT");
+                    detail.setVendorName("Kho vật tư công ty");
+                    setDefaultValuesIfNull(detail);
+                    return detail;
+                })
+                .collect(Collectors.toList());
+            if (khoVatTuCongTyDetails.isEmpty()) {
+                InventoryDetailDTO defaultDetail = new InventoryDetailDTO();
+                defaultDetail.setVendorId("KVTCT");
+                defaultDetail.setVendorName("Kho vật tư công ty");
+                setDefaultValuesIfNull(defaultDetail);
+                khoVatTuCongTyDetails.add(defaultDetail);
+            }
+            inventoryDetails.addAll(khoVatTuCongTyDetails);
+        } else if (type == Constants.Warehouse.Tp){
+            // Get details for type 4 (Kho thành phẩm)
+            List<InventoryDetailDTO> khoVatTuCongTyDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, Constants.Warehouse.Tp)
+                .stream()
+                .map(detail -> {
+                    detail.setVendorId("KTP");
+                    detail.setVendorName("Kho thành phẩm");
+                    setDefaultValuesIfNull(detail);
+                    return detail;
+                })
+                .collect(Collectors.toList());
+            if (khoVatTuCongTyDetails.isEmpty()) {
+                InventoryDetailDTO defaultDetail = new InventoryDetailDTO();
+                defaultDetail.setVendorId("KTP");
+                defaultDetail.setVendorName("Kho thành phẩm");
+                setDefaultValuesIfNull(defaultDetail);
+                khoVatTuCongTyDetails.add(defaultDetail);
+            }
+            inventoryDetails.addAll(khoVatTuCongTyDetails);
         }
-        inventoryDetails.addAll(khoHoaAnDetails);
-
-        // Get details for type 3 (Kho vật tư công ty)
-        List<InventoryDetailDTO> khoVatTuCongTyDetails = warehouseRepository.getInventoryDetailByItemCode(itemCode, 3)
-            .stream()
-            .map(detail -> {
-                detail.setVendorId("KVTCT");
-                detail.setVendorName("Kho vật tư công ty");
-                setDefaultValuesIfNull(detail);
-                return detail;
-            })
-            .collect(Collectors.toList());
-        if (khoVatTuCongTyDetails.isEmpty()) {
-            InventoryDetailDTO defaultDetail = new InventoryDetailDTO();
-            defaultDetail.setVendorId("KVTCT");
-            defaultDetail.setVendorName("Kho vật tư công ty");
-            setDefaultValuesIfNull(defaultDetail);
-            khoVatTuCongTyDetails.add(defaultDetail);
-        }
-        inventoryDetails.addAll(khoVatTuCongTyDetails);
-
         return inventoryDetails;
     }
 
@@ -263,8 +285,24 @@ public class WarehouseService {
 
     @Transactional(readOnly = true)
     public List<WarehouseEntityDto> getAllByItemCodes(List<String> itemCodes) {
-        Specification<WarehouseEntity> spec = (root, query, criteriaBuilder) ->
-            root.get("itemCode").in(itemCodes);
+        List<String> warehouse = warehouseChosenService.getWarehouseCodes(1);
+        int type;
+        if (warehouse.contains("KHA")) {
+            type = Constants.Warehouse.Hoa_an;
+        } else if (warehouse.contains("KVTCT")) {
+            type = Constants.Warehouse.Cty;
+        } else if (warehouse.contains("KTP")) {
+            type = Constants.Warehouse.Tp;
+        } else {
+            type = 0;
+        }
+
+        Specification<WarehouseEntity> spec = (root, query, criteriaBuilder) -> {
+            Predicate itemCodePredicate = root.get("itemCode").in(itemCodes);
+
+            Predicate typePredicate = criteriaBuilder.equal(root.get("type"), type);
+            return criteriaBuilder.and(itemCodePredicate, typePredicate);
+        };
 
         List<WarehouseEntity> warehouseEntities = warehouseRepository.findAll(spec);
 

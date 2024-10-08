@@ -1,5 +1,7 @@
 package com.facenet.mrp.service.model;
 
+import java.util.List;
+
 public class OitmFilter {
 
 
@@ -102,4 +104,5 @@ public class OitmFilter {
     public void setStatus(String status) {
         this.status = status;
     }
+
 }

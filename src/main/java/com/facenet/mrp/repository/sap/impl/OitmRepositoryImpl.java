@@ -9,6 +9,7 @@ import com.facenet.mrp.repository.mrp.VendorItemRepository;
 import com.facenet.mrp.repository.sap.OcrdRepository;
 import com.facenet.mrp.repository.sap.OitmCustomRepository;
 import com.facenet.mrp.repository.sap.OitmEntityRepository;
+import com.facenet.mrp.service.WarehouseChosenService;
 import com.facenet.mrp.service.dto.ItemWithTypeDTO;
 import com.facenet.mrp.service.dto.ListOfUnitPricesDTO;
 import com.facenet.mrp.service.dto.QListOfUnitPricesDTO;
@@ -51,6 +52,8 @@ public class OitmRepositoryImpl implements OitmCustomRepository {
     private OcrdRepository ocrdRepository;
     @Autowired
     private OitmEntityRepository oitmEntityRepository;
+    @Autowired
+    private WarehouseChosenService warehouseChosenService;
 
     @Override
     public Page<OitmEntity> getOitmList(Pageable pageable, OitmFilter oitmFilter) {
@@ -61,11 +64,29 @@ public class OitmRepositoryImpl implements OitmCustomRepository {
         Root<OitmEntity> oitm = cq.from(OitmEntity.class);
         predicates = getPredicates(oitm,cb,oitmFilter);
 
-        cq.multiselect(oitm
-            ,cb.sum(oitm.join(OitmEntity_.OITW_ENTITIES).get(OitwEntity_.ON_HAND)));
+        List<String> warehouse = warehouseChosenService.getWarehouseCodes(1);
 
+        // Tạo subquery để tính tổng tồn kho
+        Subquery<Double> subquery = cq.subquery(Double.class);
+        Root<OitwEntity> oitw = subquery.from(OitwEntity.class);
+
+        // Điều kiện cho subquery
+        Predicate whsCodePredicate = oitw.get(OitwEntity_.WHS_CODE).in(warehouse);
+        Predicate itemCodePredicate = cb.equal(oitw.get(OitwEntity_.ITEM_CODE), oitm.get(OitmEntity_.ITEM_CODE));
+        subquery.select(cb.sum(oitw.get(OitwEntity_.ON_HAND)))
+            .where(cb.and(whsCodePredicate, itemCodePredicate));
+
+        // Thêm điều kiện cho truy vấn chính
+        predicates.add(cb.exists(subquery));
+
+        cq.multiselect(
+            oitm,
+            cb.coalesce(subquery, 0.0) // Đảm bảo nếu không có kho nào thì giá trị sẽ là 0
+        );
+
+        // Nhóm theo itemCode
         cq.where(cb.and(predicates.toArray(new Predicate[0])));
-        cq.groupBy(oitm);
+        cq.groupBy(oitm.get(OitmEntity_.ITEM_CODE));
         TypedQuery<OitmEntity> query = sapEntityManager.createQuery(cq);
 
         //get list
