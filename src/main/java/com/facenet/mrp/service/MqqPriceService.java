@@ -75,7 +75,7 @@ public class MqqPriceService {
             throw new CustomException("record.notfound");
         }
     }
-    @Scheduled(fixedDelay = 30 * 60 * 1000)
+    @Scheduled(cron = "0 0 0/12 * * ?", zone = "Asia/Ho_Chi_Minh")
     @Transactional
     public void synchronizeMqqPrice() {
         // Bước 1: Lấy tất cả bản ghi sap = 1 từ bảng MqqPriceEntity

@@ -4,6 +4,7 @@ import com.facenet.mrp.domain.mrp.WarehouseEntity;
 import com.facenet.mrp.repository.mrp.WarehouseEntityRepository;
 import com.facenet.mrp.service.dto.MaterialDTO;
 import com.facenet.mrp.service.utils.Constants;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -55,7 +56,7 @@ public class AppSheetService {
         return Arrays.asList(response.getBody());
     }
 
-//    @Scheduled(fixedDelay = 30 * 60 * 1000)
+    @Scheduled(cron = "0 0 0 * * ?", zone = "Asia/Ho_Chi_Minh")
     @Transactional
     public void saveDataToWarehouse() {
         warehouseRepository.deleteAllByWarehouse(Constants.Warehouse.Phu_tung_nhua);
