@@ -892,7 +892,8 @@ public class ReportService {
             .append("LEFT JOIN product_order_detail pro_detail ON pro.product_order_code = pro_detail.product_order_code ")
             .append("WHERE pro.created_at >= ?1 ")
             .append("  AND pro.created_at <= ?2")
-            .append(" GROUP BY pro.product_order_code");
+            .append(" GROUP BY pro.product_order_code ")
+            .append("ORDER BY pro.created_at DESC ");
 
         int paramIndex = 3;
 
