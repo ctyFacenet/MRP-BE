@@ -30,7 +30,6 @@ import com.facenet.mrp.service.model.ProductOrderDetailResponse;
 import com.facenet.mrp.service.model.ResultCode;
 import com.facenet.mrp.service.utils.Constants;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -118,17 +117,15 @@ public class ProductOrderDetailService {
         ProductOrderDetailFilter filter = input.getFilter();
         QProductOrder qProductOrder = productOrder;
         QProductOrderDetail qProductOrderDetail = QProductOrderDetail.productOrderDetail;
-        JPAQuery<ProductOrderDetail> query = new
-            JPAQueryFactory(entityManager)
+
+        JPAQuery<ProductOrderDetail> query = new JPAQueryFactory(entityManager)
             .selectFrom(qProductOrderDetail);
-//            .join(qProductOrder).on(qProductOrder.productOrderCode.eq(String.valueOf(qProductOrderDetail.productOrderCode)))
-//            .limit(pageable.getPageSize())
-//            .offset(pageable.getOffset())
-//            .orderBy(qProductOrderDetail.itemIndex.asc());
+
         BooleanBuilder booleanBuilder = new BooleanBuilder();
         booleanBuilder.and(qProductOrderDetail.productOrderCode.productOrderCode.eq(productOrderCode));
-//        booleanBuilder.and(qProductOrder.isActive.eq((byte) 1));
         booleanBuilder.and(qProductOrderDetail.isActive.eq((byte) 1));
+
+        // Các điều kiện lọc
         if (!StringUtils.isEmpty(filter.getProductCode())) {
             booleanBuilder.and(qProductOrderDetail.productCode.containsIgnoreCase(filter.getProductCode()));
         }
@@ -146,7 +143,7 @@ public class ProductOrderDetailService {
             LocalDate localDate = orderedTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             booleanBuilder.and(qProductOrder.orderDate.year().eq(localDate.getYear())
                 .and(qProductOrder.orderDate.month().eq(localDate.getMonthValue()))
-                .and(qProductOrder.orderDate.dayOfMonth().eq(localDate.getDayOfMonth()  - 1)));
+                .and(qProductOrder.orderDate.dayOfMonth().eq(localDate.getDayOfMonth() - 1)));
         }
         if (filter.getDeliveryTime() != null) {
             Date deliveryTime = filter.getDeliveryTime();
@@ -158,88 +155,91 @@ public class ProductOrderDetailService {
         if (!StringUtils.isEmpty(filter.getSupplyMethod())) {
             booleanBuilder.and(qProductOrderDetail.supplyType.containsIgnoreCase(filter.getSupplyMethod()));
         }
-
         if (!StringUtils.isEmpty(filter.getProductOrderChild())) {
             booleanBuilder.and(qProductOrderDetail.productOrderChild.containsIgnoreCase(filter.getProductOrderChild()));
         }
-
         if (!StringUtils.isEmpty(filter.getCustomerCode())) {
             booleanBuilder.and(qProductOrderDetail.customerCode.containsIgnoreCase(filter.getCustomerCode()));
         }
         if (!StringUtils.isEmpty(filter.getCustomerName())) {
             booleanBuilder.and(qProductOrderDetail.customerName.containsIgnoreCase(filter.getCustomerName()));
         }
-
         if (!StringUtils.isEmpty(filter.getSaleCode())) {
             booleanBuilder.and(qProductOrderDetail.saleCode.containsIgnoreCase(filter.getSaleCode()));
         }
 
-        query.where(booleanBuilder).orderBy(Expressions.numberTemplate(Integer.class, "CAST(SUBSTRING({0}, CHARINDEX('-', {0}, CHARINDEX('-', {0}, CHARINDEX('-', {0}) + 1) + 1) + 1, LEN({0})) AS INT)", qProductOrderDetail.productOrderChild).asc());
+        // Fetch results
+        query.where(booleanBuilder);
         List<ProductOrderDetail> result = query.fetch();
         long count = query.fetchCount();
-//        Page<ProductOrderDetail> productOrderDetailPage = new PageImpl<>(result, pageable, count);
-        logger.info("productOrderDetailPage.content: {}", result.size());
-        if (result.isEmpty() || result == null) {
+
+        // Nếu không có kết quả
+        if (result == null || result.isEmpty()) {
             throw new CustomException("record.notfound");
-//            logger.info("No record for product order {}", productOrderCode);
-        } else if (!result.isEmpty() || !(result == null)) {
-            resultCode.setResponseCode("00");
-            resultCode.setMessage("Thành công");
-            resultCode.setOk(true);
-
-            result
-                .forEach(productOrderDetail -> poCodeList.add(productOrderDetail.getProductCode()));
-
-            List<CurrentInventory> currentInventoryList1 = oitwRepository.getAllInStockQuantityByItemCode(poCodeList);
-            List<CurrentInventory> currentInventoryList2 = warehouseEntityRepository.getAllInStockQuantityByItemCode(poCodeList);
-
-            // Tạo một Map để lưu tổng số lượng theo itemCode
-            Map<String, Double> combinedInventoryMap = new HashMap<>();
-
-            // Thêm số lượng từ danh sách đầu tiên vào Map
-            for (CurrentInventory item : currentInventoryList1) {
-                combinedInventoryMap.merge(item.getItemCode(), item.getCurrentQuantity(), Double::sum);
-            }
-
-            // Thêm số lượng từ danh sách thứ hai vào Map
-            for (CurrentInventory item : currentInventoryList2) {
-                combinedInventoryMap.merge(item.getItemCode(), item.getCurrentQuantity(), Double::sum);
-            }
-
-            // Chuyển đổi Map thành danh sách
-            List<CurrentInventory> currentInventoryList = combinedInventoryMap.entrySet().stream()
-                .map(entry -> new CurrentInventory(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
-
-            for (String poCode : poCodeList) {
-                for (CurrentInventory item : currentInventoryList) {
-                    if (poCode.equals(item.getItemCode())) {
-                        inStockQuantityHM.put(poCode, item.getCurrentQuantity());
-                    }
-                }
-            }
-            logger.info("poCodeList: {}", poCodeList);
-            logger.info("inStockQuantityHM: {}", inStockQuantityHM);
-
-            for (ProductOrderDetail detail : result) {
-                Double inStockQuantity = inStockQuantityHM.get(detail.getProductCode());
-                if (inStockQuantity == null) inStockQuantity = 0.0;
-                missingQuantity = Double.valueOf(detail.getQuantity()) - inStockQuantity;
-                if (missingQuantity <= 0) {
-                    missingQuantity = 0.0;
-                }
-
-                dtoList.add(mapper.entityToDto(
-                    detail,
-                    inStockQuantityHM.get(detail.getProductCode()),
-                    String.format("%.1f", missingQuantity)));
-            }
-            response.setResult(resultCode);
-            response.setDataCount(count);
-            response.setData(dtoList);
         }
+
+        // Sắp xếp các kết quả dựa trên phần số sau dấu gạch ngang
+        result.sort((p1, p2) -> {
+            Integer num1 = extractNumberFromProductOrderChild(p1.getProductOrderChild());
+            Integer num2 = extractNumberFromProductOrderChild(p2.getProductOrderChild());
+            return num1.compareTo(num2);
+        });
+
+        // Xử lý các logic tiếp theo
+        resultCode.setResponseCode("00");
+        resultCode.setMessage("Thành công");
+        resultCode.setOk(true);
+
+        result.forEach(productOrderDetail -> poCodeList.add(productOrderDetail.getProductCode()));
+
+        List<CurrentInventory> currentInventoryList1 = oitwRepository.getAllInStockQuantityByItemCode(poCodeList);
+        List<CurrentInventory> currentInventoryList2 = warehouseEntityRepository.getAllInStockQuantityByItemCode(poCodeList);
+
+        Map<String, Double> combinedInventoryMap = new HashMap<>();
+        for (CurrentInventory item : currentInventoryList1) {
+            combinedInventoryMap.merge(item.getItemCode(), item.getCurrentQuantity(), Double::sum);
+        }
+        for (CurrentInventory item : currentInventoryList2) {
+            combinedInventoryMap.merge(item.getItemCode(), item.getCurrentQuantity(), Double::sum);
+        }
+
+        List<CurrentInventory> currentInventoryList = combinedInventoryMap.entrySet().stream()
+            .map(entry -> new CurrentInventory(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList());
+
+        for (String poCode : poCodeList) {
+            for (CurrentInventory item : currentInventoryList) {
+                if (poCode.equals(item.getItemCode())) {
+                    inStockQuantityHM.put(poCode, item.getCurrentQuantity());
+                }
+            }
+        }
+
+        for (ProductOrderDetail detail : result) {
+            Double inStockQuantity = inStockQuantityHM.get(detail.getProductCode());
+            if (inStockQuantity == null) inStockQuantity = 0.0;
+            missingQuantity = Double.valueOf(detail.getQuantity()) - inStockQuantity;
+            if (missingQuantity <= 0) {
+                missingQuantity = 0.0;
+            }
+
+            dtoList.add(mapper.entityToDto(
+                detail,
+                inStockQuantityHM.get(detail.getProductCode()),
+                String.format("%.1f", missingQuantity)));
+        }
+
+        response.setResult(resultCode);
+        response.setDataCount(count);
+        response.setData(dtoList);
         return response;
     }
+
+    private Integer extractNumberFromProductOrderChild(String productOrderChild) {
+        String[] parts = productOrderChild.split("-");
+        return Integer.parseInt(parts[parts.length - 1]); // Lấy phần số cuối cùng
+    }
+
 
     /**
      * @param poCode
