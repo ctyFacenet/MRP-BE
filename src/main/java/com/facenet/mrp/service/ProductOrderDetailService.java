@@ -30,6 +30,7 @@ import com.facenet.mrp.service.model.ProductOrderDetailResponse;
 import com.facenet.mrp.service.model.ResultCode;
 import com.facenet.mrp.service.utils.Constants;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -173,7 +174,7 @@ public class ProductOrderDetailService {
             booleanBuilder.and(qProductOrderDetail.saleCode.containsIgnoreCase(filter.getSaleCode()));
         }
 
-        query.where(booleanBuilder).orderBy(qProductOrderDetail.productOrderChild.asc());
+        query.where(booleanBuilder).orderBy(Expressions.numberTemplate(Integer.class, "CAST(SUBSTRING({0}, CHARINDEX('-', {0}, CHARINDEX('-', {0}, CHARINDEX('-', {0}) + 1) + 1) + 1, LEN({0})) AS INT)", qProductOrderDetail.productOrderChild).asc());
         List<ProductOrderDetail> result = query.fetch();
         long count = query.fetchCount();
 //        Page<ProductOrderDetail> productOrderDetailPage = new PageImpl<>(result, pageable, count);
