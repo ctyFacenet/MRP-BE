@@ -192,7 +192,7 @@ spring:
   thymeleaf:
     cache: false
 server:
-  port: 8313
+  port: 8314
 
 jhipster:
   # CORS is only enabled by default with the "dev" profile

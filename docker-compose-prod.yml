@@ -1,13 +1,13 @@
 version: '3.8'
 services:
   backend:
-    container_name: mrp-be-xp
+    container_name: mrp-be-xp-test
     build:
       dockerfile: Dockerfile
-    image: mrp-be-xp
+    image: mrp-be-xp-test
     restart: always
     ports:
-      - '8313:8313'
+      - '8314:8314'
     volumes:
       - /home/ubuntu/uploads:/rd/uploads
       - /home/ubuntu/mrp/be/static:/home/ubuntu/mrp/be/static
