@@ -56,7 +56,7 @@ public class AppSheetService {
         return Arrays.asList(response.getBody());
     }
 
-    @Scheduled(cron = "0 0 0 * * ?", zone = "Asia/Ho_Chi_Minh")
+    //@Scheduled(cron = "0 0 0 * * ?", zone = "Asia/Ho_Chi_Minh")
     @Transactional
     public void saveDataToWarehouse() {
         warehouseRepository.deleteAllByWarehouse(Constants.Warehouse.Phu_tung_nhua);

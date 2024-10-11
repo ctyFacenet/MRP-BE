@@ -51,7 +51,7 @@ public class MaterialOnOrderSummaryJob {
     @Autowired
     private PrPoGrpoCache prPoGrpoCache;
 
-//    @Scheduled(fixedDelay = 30 * 60 * 1000)
+//    //@Scheduled(fixedDelay = 30 * 60 * 1000)
     public void poOnOrderSummary() {
         logger.info("------ start run PO_OnOrderSummary job ------");
         PoFilter poFilter = new PoFilter();
@@ -137,7 +137,7 @@ public class MaterialOnOrderSummaryJob {
     }
 
 
-    @Scheduled(fixedDelay = 30 * 60 * 1000)
+    //@Scheduled(fixedDelay = 30 * 60 * 1000)
     public void prOnOrderSummary() {
         logger.info("------ start run PR_OnOrderSummary job ------");
         PageFilterInput<PurchaseRequestDTO> input = new PageFilterInput<>();
@@ -227,7 +227,7 @@ public class MaterialOnOrderSummaryJob {
         logger.info("------ finish run PR_OnOrderSummary job ------");
     }
 
-    @Scheduled(fixedDelay = 30 * 60 * 1000)
+    //@Scheduled(fixedDelay = 30 * 60 * 1000)
     public void grpoOnOrderSummary() {
         logger.info("------ start run GRPO_OnOrderSummary job ------");
         PageFilterInput<GrpoDTO> input = new PageFilterInput<>();
