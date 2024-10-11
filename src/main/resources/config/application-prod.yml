@@ -154,7 +154,7 @@ spring:
           useServerPrepStmts: true
     sap:
       type: com.zaxxer.hikari.HikariDataSource
-      jdbc-url: jdbc:sqlserver://10.162.70.133:1433;database=XPN_UAT_THANG3;encrypt=true;trustServerCertificate=true;
+      jdbc-url: jdbc:sqlserver://10.162.70.133:1433;database=XPN_UAT_THANG3;encrypt=false;trustServerCertificate=true;
       username: sa
       password: rangdong@123
   #      jdbc-url: jdbc:sqlserver://192.168.68.3;databaseName=Thang4;encrypt=true;trustServerCertificate=true;
