@@ -121,19 +121,19 @@ public class DetailVendorService {
         List<DataItemInVendor> listData = new ArrayList<>();
         PageResponse<List<ItemInVendorDTO>> listVendor = getAllItemAlongVendor(input, vendorCode, pageable);
         List<ItemInVendorDTO> list = listVendor.getData();
-        RequestInput<OitmFilter> requestInput = new RequestInput<>();
-        OitmFilter filter = new OitmFilter();
-        requestInput.setFilter(filter);
-        requestInput.setPageNumber(10);
-        requestInput.setPageSize(10);
-        List<OitmDTO> oitmStockList = oitmResource.getOitmWithWarehouseStock(requestInput).getBody().getData();
-        // Tạo một Map từ OitmDTO để dễ dàng tra cứu tồn kho theo productId
-        Map<String, Long> stockByProductId = oitmStockList.stream()
-            .collect(Collectors.toMap(OitmDTO::getProductId, OitmDTO::getTotalInStock));
-
 //        List<LeadTimeEntity> leadTimeEntities = leadTimeRepository.getLeadTime(vendorCode);
         for (ItemInVendorDTO item : list) {
             DataItemInVendor dataItemInVendor = new DataItemInVendor();
+            RequestInput<OitmFilter> requestInput = new RequestInput<>();
+            OitmFilter filter = new OitmFilter();
+            filter.setProductId(item.getItemCode());
+            requestInput.setFilter(filter);
+            requestInput.setPageNumber(0);
+            requestInput.setPageSize(1);
+            List<OitmDTO> oitmStockList = oitmResource.getOitmWithWarehouseStock(requestInput).getBody().getData();
+            Map<String, Long> stockByProductId = oitmStockList.stream()
+                .collect(Collectors.toMap(OitmDTO::getProductId, OitmDTO::getTotalInStock));
+
 //            for (LeadTimeEntity leadTime:leadTimeEntities) {
 //                System.out.println(item.getItemCode() + "---" +leadTime.getItemCode());
 //                if(item.getItemCode().equals(leadTime.getItemCode())){
