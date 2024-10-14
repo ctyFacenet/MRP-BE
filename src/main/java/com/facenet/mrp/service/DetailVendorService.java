@@ -170,6 +170,8 @@ public class DetailVendorService {
             dataItemInVendor.setGroupName(item.getGroupName());
             if (item.getGroupType() == Constants.BTP) {
                 dataItemInVendor.setGroup("BTP");
+            } else if (item.getGroupType() == Constants.TP){
+                dataItemInVendor.setGroup("TP");
             } else {
                 dataItemInVendor.setGroup("NVL");
             }
