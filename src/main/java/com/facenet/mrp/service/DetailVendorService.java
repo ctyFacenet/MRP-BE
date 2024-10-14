@@ -124,6 +124,8 @@ public class DetailVendorService {
         RequestInput<OitmFilter> requestInput = new RequestInput<>();
         OitmFilter filter = new OitmFilter();
         requestInput.setFilter(filter);
+        requestInput.setPageNumber(10);
+        requestInput.setPageSize(10);
         List<OitmDTO> oitmStockList = oitmResource.getOitmWithWarehouseStock(requestInput).getBody().getData();
         // Tạo một Map từ OitmDTO để dễ dàng tra cứu tồn kho theo productId
         Map<String, Long> stockByProductId = oitmStockList.stream()
