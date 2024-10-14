@@ -11,6 +11,6 @@ services:
     volumes:
       - /home/ubuntu/uploads:/rd/uploads
       - /home/ubuntu/mrp/be/static:/home/ubuntu/mrp/be/static
-      - /home/ubuntu/mrp/logs:/app/log
+      - /home/ubuntu/mrp/logs:/log
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
