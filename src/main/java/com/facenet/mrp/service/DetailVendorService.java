@@ -11,10 +11,13 @@ import com.facenet.mrp.service.dto.response.CommonResponse;
 import com.facenet.mrp.service.dto.response.PageResponse;
 import com.facenet.mrp.service.exception.CustomException;
 import com.facenet.mrp.service.model.MqqPriceExcelModel;
+import com.facenet.mrp.service.model.OitmFilter;
 import com.facenet.mrp.service.model.PageFilterInput;
+import com.facenet.mrp.service.model.RequestInput;
 import com.facenet.mrp.service.utils.Constants;
 import com.facenet.mrp.service.utils.CsvHandle;
 import com.facenet.mrp.service.utils.XlsxExcelHandle;
+import com.facenet.mrp.web.rest.OitmResource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -82,6 +85,8 @@ public class DetailVendorService {
     private VendorRepository vendorRepository;
     @Autowired
     private RateExchangeService rateExchangeService;
+    @Autowired
+    private OitmResource oitmResource;
 
     //hàm lấy thông tin ncc chi tiết
     public PageResponse<?> getData(PageFilterInput<VendorDetailForm> input, String vendorCode, Pageable pageable) throws JsonProcessingException {
@@ -116,7 +121,15 @@ public class DetailVendorService {
         List<DataItemInVendor> listData = new ArrayList<>();
         PageResponse<List<ItemInVendorDTO>> listVendor = getAllItemAlongVendor(input, vendorCode, pageable);
         List<ItemInVendorDTO> list = listVendor.getData();
-        List<LeadTimeEntity> leadTimeEntities = leadTimeRepository.getLeadTime(vendorCode);
+        RequestInput<OitmFilter> requestInput = new RequestInput<>();
+        OitmFilter filter = new OitmFilter();
+        requestInput.setFilter(filter);
+        List<OitmDTO> oitmStockList = oitmResource.getOitmWithWarehouseStock(requestInput).getBody().getData();
+        // Tạo một Map từ OitmDTO để dễ dàng tra cứu tồn kho theo productId
+        Map<String, Long> stockByProductId = oitmStockList.stream()
+            .collect(Collectors.toMap(OitmDTO::getProductId, OitmDTO::getTotalInStock));
+
+//        List<LeadTimeEntity> leadTimeEntities = leadTimeRepository.getLeadTime(vendorCode);
         for (ItemInVendorDTO item : list) {
             DataItemInVendor dataItemInVendor = new DataItemInVendor();
 //            for (LeadTimeEntity leadTime:leadTimeEntities) {
@@ -160,7 +173,9 @@ public class DetailVendorService {
             }
             dataItemInVendor.setStatus(item.getStatus());
             dataItemInVendor.setProductType(item.getType());
-            dataItemInVendor.setTotalInventory(item.getOnHand());
+//            dataItemInVendor.setTotalInventory(item.getOnHand());
+            Long totalStock = stockByProductId.getOrDefault(item.getItemCode(), 0L);
+            dataItemInVendor.setTotalInventory(totalStock);
             dataItemInVendor.setUnit(item.getUnit());
             dataItemInVendor.setSap(itemRepository.getSap(vendorCode, item.getItemCode()));
             listData.add(dataItemInVendor);
