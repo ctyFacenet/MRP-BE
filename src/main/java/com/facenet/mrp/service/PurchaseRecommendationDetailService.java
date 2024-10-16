@@ -779,7 +779,7 @@ public class PurchaseRecommendationDetailService {
 
             // Add "Số:" in column G
             Cell titleCellWithNumber = titleRow.createCell(6);
-            titleCellWithNumber.setCellValue("Số:");
+            titleCellWithNumber.setCellValue("Số:" + purchaseRecommendationId.toString());
             titleCellWithNumber.setCellStyle(titleStyle);
 
             CellStyle unitStyle = workbook.createCellStyle();
