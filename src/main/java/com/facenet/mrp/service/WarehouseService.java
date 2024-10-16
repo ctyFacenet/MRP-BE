@@ -66,12 +66,11 @@ public class WarehouseService {
                 continue;
             }
 
-            String firstCellValue = getCellValueAsString(row.getCell(0));
-            if (firstCellValue == null || firstCellValue.isEmpty()) {
+            String itemCode = getCellValueAsString(row.getCell(1));
+            if (itemCode == null || itemCode.isEmpty()) {
                 throw new CustomException(HttpStatus.BAD_REQUEST, "excel.is.empty");
             }
 
-            String itemCode = getCellValueAsString(row.getCell(1));
             itemCodesFromFile.add(itemCode);
 
             WarehouseEntity entity = new WarehouseEntity();
