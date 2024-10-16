@@ -842,7 +842,7 @@ public class PurchaseRecommendationDetailService {
                 row.createCell(1).setCellValue(prDTO.getItemDescription());
                 row.createCell(2).setCellValue(prDTO.getVendorName());
                 row.createCell(3).setCellValue(oitmEntity.getSalUnitMsr());
-                row.createCell(4).setCellValue(Math.round(prDTO.getSumRequestQuantity() * 10));
+                row.createCell(4).setCellValue(Math.round(prDTO.getSumRequestQuantity() * 10) / 10.0);
                 if (prDTO.getReceiveDate() != null) {
                     row.createCell(5).setCellValue(dateFormatter.format(prDTO.getReceiveDate()));
                 } else {
