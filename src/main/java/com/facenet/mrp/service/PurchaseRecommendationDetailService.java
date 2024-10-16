@@ -779,7 +779,7 @@ public class PurchaseRecommendationDetailService {
 
             // Add "Số:" in column G
             Cell titleCellWithNumber = titleRow.createCell(6);
-            titleCellWithNumber.setCellValue("Số:");
+            titleCellWithNumber.setCellValue("Số:" + purchaseRecommendationId);
             titleCellWithNumber.setCellStyle(titleStyle);
 
             CellStyle unitStyle = workbook.createCellStyle();
@@ -987,8 +987,8 @@ public class PurchaseRecommendationDetailService {
             Cell fifthMergedCell_2_thirdRow = approvalRow2.createCell(7);
             fifthMergedCell_2_thirdRow.setCellStyle(borderedStyle);
 
-            // FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
-            // workbook.write(out);
+//             FileOutputStream out = new FileOutputStream(new File("E:/test.xlsx"));
+//             workbook.write(out);
             // Convert workbook to byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
