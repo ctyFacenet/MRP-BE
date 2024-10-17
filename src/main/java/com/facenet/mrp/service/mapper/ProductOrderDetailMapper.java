@@ -10,6 +10,7 @@ import org.mapstruct.ReportingPolicy;
 public interface ProductOrderDetailMapper {
 
     @Mapping(target = "id", source = "productOrderDetail.id")
+    @Mapping(target = "productId", source = "productOrderDetail.id")
     @Mapping(target = "productCode", source = "productOrderDetail.productCode")
     @Mapping(target = "productName", source = "productOrderDetail.productName")
     @Mapping(target = "itemGroup", constant = "TP")
