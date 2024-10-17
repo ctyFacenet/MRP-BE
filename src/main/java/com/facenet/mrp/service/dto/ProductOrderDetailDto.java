@@ -7,6 +7,7 @@ import java.util.Date;
 public class ProductOrderDetailDto implements Serializable {
 
     private Integer id;
+    private Integer productId;
     private String mrpPoId;
     private String productCode;
 
@@ -220,5 +221,13 @@ public class ProductOrderDetailDto implements Serializable {
 
     public void setStatusPlanning(Integer statusPlanning) {
         this.statusPlanning = statusPlanning;
+    }
+
+    public Integer getProductId() {
+        return productId;
+    }
+
+    public void setProductId(Integer productId) {
+        this.productId = productId;
     }
 }
