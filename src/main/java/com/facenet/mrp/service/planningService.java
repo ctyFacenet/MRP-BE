@@ -160,7 +160,7 @@ public class planningService {
 
         // Sử dụng phương thức replace() để xóa chuỗi con
         String newProductOrder = productOrder.replace(chuoiCanXoa, "");
-        String callWo = apiListWo+newProductOrder;
+        String callWo = apiListWo+productOrder;
         ResponseEntity<List<WorkOrder>> response = restTemplate.exchange(
             callWo,
             HttpMethod.GET,
