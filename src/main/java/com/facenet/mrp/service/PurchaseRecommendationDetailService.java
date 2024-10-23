@@ -333,6 +333,7 @@ public class PurchaseRecommendationDetailService {
 
         // Hold Item when accepting PR
         if (input.getIsApproval()) {
+            logger.info("IF Create PR");
             PurchaseHasRecommendationEntity purchaseHasRecommendationEntity = purchaseHasRecommendationRepository.getPurchaseHasRecommendationBatch(purchaseRecommendationId, batch);
             List<PurchaseRequestDetailApiDTO> purchaseRequestDetailApiList = planRepository.getAllApprovedByItems(purchaseRecommendationEntity, Constants.PurchaseRecommendationPlan.ACCEPTED, input.getItems(), batch);
             purchaseRequestDetailApiList.removeIf(detailApiDTO -> detailApiDTO.getRequiredQuantity() <= 0.0);
@@ -375,6 +376,7 @@ public class PurchaseRecommendationDetailService {
 //        );
 
         // Change status PRecommendation => APPROVED or REJECTED
+        logger.info("Change status PRecommendation => APPROVED or REJECTED");
         List<PurchaseRecommendationDetailEntity> purchaseRecommendationDetailEntities = purchaseRecommendationDetailRepository.getAllWaitingForApprove(
             purchaseRecommendationEntity,
             List.of(Constants.PurchaseRecommendationDetail.SEND_APPROVAL, Constants.PurchaseRecommendationDetail.REJECTED),
@@ -390,6 +392,8 @@ public class PurchaseRecommendationDetailService {
 
                 // Increment the time used
                 purchaseRecommendationDetailEntity.getMoqPriceEntity().getVendorItemEntity().incrementTimeUsed();
+            } else {
+                logger.warn("VendorItemEntity is null for purchase recommendation detail: {}", purchaseRecommendationDetailEntity.getPurchaseRecommendationDetailId());
             }
         }
 
