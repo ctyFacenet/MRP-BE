@@ -210,9 +210,14 @@ jhipster:
     use-json-format: false # By default, logs are not in Json format
     logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
       enabled: false
-      host: localhost
-      port: 5000
-      queue-size: 512
+      host: 192.168.1.23
+      port: 5001
+      ring-buffer-size: 512
+
+logstash:
+  host: 222.252.25.37
+  port: 5001
+  appName: mrp-be-prod
 
 keycloak:
   auth-server-url: http://10.162.70.88:8080/auth
