@@ -73,4 +73,24 @@
         <resetJUL>true</resetJUL>
     </contextListener>
 
+    <springProperty name="logstash.host" source="logstash.host" />
+    <springProperty  name="logstash.port" source="logstash.port" />
+    <springProperty  name="logstash.appName" source="logstash.appName" />
+
+    <appender name="logstashAppender" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${logstash.host}:${logstash.port}</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"appName":"${logstash.appName}"}</customFields>
+        </encoder>
+    </appender>
+    <appender name="asyncLogstash" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="logstashAppender"/>
+        <queueSize>512</queueSize>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="asyncLogstash"/>
+        <appender-ref ref="CONSOLE" />
+    </root>
+
 </configuration>
