@@ -39,7 +39,8 @@ public interface PurchaseRecommendationPlanRepository extends PagingAndSortingRe
     @Query("select new com.facenet.mrp.service.dto.sap.PurchaseRequestDetailApiDTO(p.itemCode, m.vendorCode, p.requiredQuantity, p.dueDate) from PurchaseRecommendationPurchasePlanEntity p " +
         "left join PurchaseRecommendationDetailEntity pd on p.purchaseRecommendationDetailId = pd.purchaseRecommendationDetailId " +
         "left join MqqPriceEntity m on m.itemPriceId = pd.moqPriceId " +
-        "where p.isActive = true and pd.isActive = true and m.isActive = 1 " +
+        "where p.isActive = true and pd.isActive = true " +
+//        "and m.isActive = 1 " + //Bỏ để chạy mã không có nhà cung cấp
         "and p.status = :status " +
         "and pd.purchaseRecommendation = :purchaseRecommendation " +
         "and p.itemCode in :items and p.batch = :batchNumber")
